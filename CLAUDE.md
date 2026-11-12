@@ -4,10 +4,12 @@ Native macOS app that converts scanned documents (a PDF or a folder of page imag
 into EPUB 3, reproducing the document's formatting as faithfully as possible:
 headings, paragraphs, illustrations with captions, and footnotes.
 
-Status: **document model and EPUB export implemented** in `Packages/ScanCore`
-(`DocumentModel`, `EPUBExport`), with tests. `App/` is a placeholder SwiftUI
-shell. Nothing reads page images yet. Modules listed below that do not exist
-yet are the agreed target, created when a test first needs them.
+Status: **first end-to-end pipeline works from the command line**: a folder
+of page images goes through Vision OCR, layout analysis and EPUB export
+(`pagescan` CLI, all in `Packages/ScanCore`). `App/` is still a placeholder
+shell. Illustrations, notes, PDF input and the review UI are not built; see
+`docs/features/` for what each piece does and its limits. Modules listed
+below that do not exist yet are created when a test first needs them.
 
 ## Product decisions
 
@@ -99,6 +101,7 @@ Packages/ScanCore/          Swift package, no UI imports
     LayoutAnalysis/         block classification heuristics
     EPUBExport/             EPUB 3 writer
     ProjectStore/           project bundle persistence
+    Conversion/             pipeline: pages -> Document
     pagescan/               CLI for batch conversion and debugging
   Tests/                    one test target per module + Fixtures/
 App/                        SwiftUI app (thin: views + view models)
@@ -146,6 +149,7 @@ Testing approach per layer:
 ```bash
 swift test --package-path Packages/ScanCore            # all core tests
 swift test --package-path Packages/ScanCore --filter LayoutAnalysisTests
+swift run --package-path Packages/ScanCore -c release pagescan <folder>   # folder -> EPUB
 xcodebuild -project App/PDFToEPUB.xcodeproj -scheme PDFToEPUB build
 swiftformat . && swiftlint                             # before every commit
 ```
@@ -213,8 +217,11 @@ swiftformat . && swiftlint                             # before every commit
 1. ~~Scaffold package, app shell~~ (done; lint/format tools not installed yet).
 2. ~~Vision spike; findings in ADR 0001~~ (done).
 3. ~~Document model + EPUB export~~ (done; passes `epubcheck` 5.4.0).
-4. Import + OCR + plain paragraphs end to end, CLI first.
-5. Layout analysis: headers/footers, headings, hyphenation, page joins.
-6. Footnotes, then illustrations and captions.
+4. ~~Folder import + OCR + paragraphs and headings end to end, CLI~~ (done).
+5. Illustrations: detect picture regions, keep OCR text inside them out of
+   the body, embed the crops, attach captions, use page 1 as the cover.
+   Highest priority: text inside pictures currently creates bogus headings.
+6. Notes: colour-based reference detection, endnote bodies, linking.
+   Then bold/body-size headings and running header removal.
 7. App UI: import, progress, review screen, corrections, export.
 8. Project persistence and correction propagation.
