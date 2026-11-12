@@ -1,0 +1,5 @@
+# Tests decode fixture bytes leniently on purpose; a nil would only hide the real assertion failure.
+disabled_rules:
+  - optional_data_string_conversion
+  - large_tuple
+  - line_length # expected-XHTML literals are clearer on one line

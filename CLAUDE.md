@@ -154,7 +154,8 @@ xcodebuild -project App/PDFToEPUB.xcodeproj -scheme PDFToEPUB build
 swiftformat . && swiftlint                             # before every commit
 ```
 
-`epubcheck` is installed (Homebrew). Still to install: `swiftlint`, `swiftformat`.
+`epubcheck`, `swiftlint` and `swiftformat` are installed (Homebrew); configs are `.swiftformat`, `.swiftlint.yml`
+and `Packages/ScanCore/Tests/.swiftlint.yml`.
 
 ### Code standards
 
@@ -207,14 +208,14 @@ swiftformat . && swiftlint                             # before every commit
 
 ## Environment notes
 
-- `xcodebuild` currently fails on this machine with "failed to load a required
-  plug-in"; it needs `sudo xcodebuild -runFirstLaunch`, which only the user can
-  run. Until then the app target cannot be built from the command line and
-  `App/PDFToEPUB.xcodeproj` (hand-written) is unverified. `swift test` works.
+- `xcodebuild` works (Xcode 26.3, after the user ran
+  `sudo xcodebuild -runFirstLaunch`). `App/PDFToEPUB.xcodeproj` builds with
+  warnings as errors and links `ScanCore`; the app itself is still a
+  placeholder window. `swift test` works.
 
 ## Suggested milestone order
 
-1. ~~Scaffold package, app shell~~ (done; lint/format tools not installed yet).
+1. ~~Scaffold package, app shell~~ (done).
 2. ~~Vision spike; findings in ADR 0001~~ (done).
 3. ~~Document model + EPUB export~~ (done; passes `epubcheck` 5.4.0).
 4. ~~Folder import + OCR + paragraphs and headings end to end, CLI~~ (done).

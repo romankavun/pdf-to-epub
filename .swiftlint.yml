@@ -1,0 +1,28 @@
+# SwiftFormat is the arbiter of formatting; SwiftLint only checks what it cannot fix.
+included:
+  - Packages/ScanCore/Sources
+  - Packages/ScanCore/Tests
+  - App
+excluded:
+  - .build
+  - DerivedData
+
+disabled_rules:
+  - trailing_comma # SwiftFormat adds trailing commas in multiline literals.
+  - opening_brace # SwiftFormat wraps long signatures with the brace on its own line.
+
+line_length:
+  warning: 120
+  error: 160
+  ignores_comments: true
+  ignores_urls: true
+
+identifier_name:
+  min_length: 2 # allows x, y for geometry
+  excluded: [id, x, y]
+
+type_name:
+  min_length: 2 # allows the conventional nested `ID`
+
+todo:
+  severity: warning
