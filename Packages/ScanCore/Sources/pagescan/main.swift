@@ -27,11 +27,19 @@ do {
     let engine = VisionOCREngine(languages: options.language.hasPrefix("en") ? ["en-US"] : [options.language, "en-US"])
     let metadata = DocumentMetadata(title: options.title, author: options.author, language: options.language)
     let document = try await DocumentConverter(engine: engine).convert(pageURLs: pages, metadata: metadata) { done, total in
-        if done % 25 == 0 || done == total { print("  \(done)/\(total)") }
+        if done % 25 == 0 || done == total {
+            print("  \(done)/\(total)")
+        }
     }
     try EPUBExporter().export(document, to: options.output)
 
-    let headings = document.blocks.count { if case .heading = $0 { true } else { false } }
+    let headings = document.blocks.count {
+        if case .heading = $0 {
+            true
+        } else {
+            false
+        }
+    }
     print("Wrote \(options.output.path)")
     print("  chapters: \(document.chapters.count), headings: \(headings), paragraphs: \(document.blocks.count - headings)")
 } catch {

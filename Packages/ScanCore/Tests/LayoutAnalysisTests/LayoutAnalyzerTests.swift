@@ -8,7 +8,9 @@ import Testing
 /// 0.017 tall, 0.02 apart, start at x = 0.05; a first line is indented to 0.08.
 private let margin = 0.05, indent = 0.08, pitch = 0.02
 
-private func line(_ text: String, x: Double = margin, y: Double, width: Double = 0.9, height: Double = 0.017) -> TextLine {
+private func line(_ text: String, x: Double = margin, y: Double, width: Double = 0.9,
+                  height: Double = 0.017) -> TextLine
+{
     TextLine(text: text, box: CGRect(x: x, y: y, width: width, height: height))
 }
 
@@ -28,7 +30,13 @@ private func page(top: Double = 0.1, _ texts: [String]) -> RecognizedPage {
 }
 
 private func paragraphs(_ blocks: [Block]) -> [String] {
-    blocks.compactMap { if case let .paragraph(content) = $0 { content.plainText } else { nil } }
+    blocks.compactMap {
+        if case let .paragraph(content) = $0 {
+            content.plainText
+        } else {
+            nil
+        }
+    }
 }
 
 @Suite("LayoutAnalyzer")
@@ -92,7 +100,7 @@ struct LayoutAnalyzerTests {
     @Test("a paragraph continues onto the next page when that page starts unindented")
     func continuesAcrossPages() {
         let pages = [
-            page([">first a", "first b", "first c"]) .with(pageNumber: "1"),
+            page([">first a", "first b", "first c"]).with(pageNumber: "1"),
             page(["first d", "first e", ">second a"]).with(pageNumber: "2"),
         ]
         #expect(paragraphs(analyzer.blocks(from: pages)) == ["first a first b first c first d first e", "second a"])

@@ -45,7 +45,9 @@ public struct LayoutAnalyzer: Sendable {
         var blocks: [Block] = []
         var draft: Draft?
         func flush() {
-            if let draft { blocks.append(draft.block) }
+            if let draft {
+                blocks.append(draft.block)
+            }
             draft = nil
         }
 
@@ -55,20 +57,19 @@ public struct LayoutAnalyzer: Sendable {
                 let step = previous.map { Double(line.box.minY - $0.box.minY) }
                 let height = Double(line.box.height)
                 let isHeading = height >= options.headingHeightFactor * metrics.lineHeight
-                let continues: Bool
-                if isHeading {
+                let continues: Bool = if isHeading {
                     // Only a wrapped heading continues: same page, directly below.
-                    continues = draft?.isHeading == true && step.map { $0 < 2 * height } == true
+                    draft?.isHeading == true && step.map { $0 < 2 * height } == true
                 } else if draft == nil || draft?.isHeading == true {
-                    continues = false
+                    false
                 } else if Double(line.box.minX) > metrics.margin + options.indentThreshold {
-                    continues = false
+                    false
                 } else if let step {
-                    continues = step <= options.paragraphGapFactor * metrics.lineStep
+                    step <= options.paragraphGapFactor * metrics.lineStep
                 } else {
                     // First line of a page, not indented: the paragraph from
                     // the previous page runs on.
-                    continues = true
+                    true
                 }
                 if !continues {
                     flush()

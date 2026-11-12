@@ -28,8 +28,17 @@ struct CommandLineOptionsTests {
     @Test("rejects a missing input, an unknown option and an option without a value")
     func errors() {
         #expect(throws: CommandLineError.missingInput) { try CommandLineOptions(arguments: []) }
-        #expect(throws: CommandLineError.unknownOption("--bogus")) { try CommandLineOptions(arguments: ["/in", "--bogus", "x"]) }
-        #expect(throws: CommandLineError.missingValue("--title")) { try CommandLineOptions(arguments: ["/in", "--title"]) }
-        #expect(throws: CommandLineError.unexpectedArgument("/second")) { try CommandLineOptions(arguments: ["/in", "/second"]) }
+        #expect(throws: CommandLineError.unknownOption("--bogus")) { try CommandLineOptions(arguments: [
+            "/in",
+            "--bogus",
+            "x",
+        ]) }
+        #expect(throws: CommandLineError.missingValue("--title")) {
+            try CommandLineOptions(arguments: ["/in", "--title"])
+        }
+        #expect(throws: CommandLineError.unexpectedArgument("/second")) { try CommandLineOptions(arguments: [
+            "/in",
+            "/second",
+        ]) }
     }
 }

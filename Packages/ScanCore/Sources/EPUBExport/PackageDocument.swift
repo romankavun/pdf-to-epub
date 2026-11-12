@@ -25,7 +25,12 @@ enum PackageDocument {
         lines.append("</metadata>")
 
         lines.append("<manifest>")
-        lines.append(item(id: "nav", href: EPUBLayout.navigationDocument, mediaType: "application/xhtml+xml", properties: "nav"))
+        lines.append(item(
+            id: "nav",
+            href: EPUBLayout.navigationDocument,
+            mediaType: "application/xhtml+xml",
+            properties: "nav"
+        ))
         lines.append(item(id: "style", href: EPUBLayout.stylesheet, mediaType: "text/css"))
         let chapterIDs = document.chapters.indices.map { index in
             EPUBLayout.chapterPath(index: index).replacingOccurrences(of: ".xhtml", with: "")
@@ -50,6 +55,7 @@ enum PackageDocument {
 
     private static func item(id: String, href: String, mediaType: String, properties: String? = nil) -> String {
         let propertiesAttribute = properties.map { " properties=\"\($0)\"" } ?? ""
+        // swiftlint:disable:next line_length
         return "<item id=\"\(id)\" href=\"\(href.xmlEscaped)\" media-type=\"\(mediaType.xmlEscaped)\"\(propertiesAttribute)/>"
     }
 }

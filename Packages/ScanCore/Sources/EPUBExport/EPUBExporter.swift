@@ -54,6 +54,7 @@ public struct EPUBExporter: Sendable {
         return entries
     }
 
+    // swiftlint:disable line_length
     private static let container = """
     <?xml version="1.0" encoding="UTF-8"?>
     <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
@@ -63,6 +64,7 @@ public struct EPUBExporter: Sendable {
     </container>
 
     """
+    // swiftlint:enable line_length
 
     /// Deliberately small: reading systems apply the reader's own font and
     /// size preferences, and heavy styling fights them.

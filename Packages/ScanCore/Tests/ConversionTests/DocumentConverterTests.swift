@@ -16,7 +16,10 @@ private struct FakeEngine: OCREngine {
 
 private func body(_ texts: [String], top: Double = 0.2) -> [TextLine] {
     texts.enumerated().map { index, text in
-        TextLine(text: text, box: CGRect(x: index == 0 ? 0.08 : 0.05, y: top + Double(index) * 0.02, width: 0.9, height: 0.017))
+        TextLine(
+            text: text,
+            box: CGRect(x: index == 0 ? 0.08 : 0.05, y: top + Double(index) * 0.02, width: 0.9, height: 0.017)
+        )
     }
 }
 
@@ -26,7 +29,12 @@ private func title(_ text: String) -> TextLine {
 
 @Suite("DocumentConverter")
 struct DocumentConverterTests {
-    private let metadata = DocumentMetadata(identifier: "urn:uuid:0f8fad5b-d9cb-469f-a165-70867728950e", title: "Whole Document", author: nil, language: "uk")
+    private let metadata = DocumentMetadata(
+        identifier: "urn:uuid:0f8fad5b-d9cb-469f-a165-70867728950e",
+        title: "Whole Document",
+        author: nil,
+        language: "uk"
+    )
     private let urls = ["1.png", "2.png", "3.png"].map { URL(fileURLWithPath: "/pages/\($0)") }
     private let engine = FakeEngine(pages: [
         "1.png": RecognizedPage(lines: body(["preface a", "preface b", "preface c"])),
@@ -48,7 +56,10 @@ struct DocumentConverterTests {
 
     @Test("a document that starts with a heading has no untitled leading chapter")
     func startsWithHeading() async throws {
-        let document = try await DocumentConverter(engine: engine).convert(pageURLs: Array(urls.dropFirst()), metadata: metadata)
+        let document = try await DocumentConverter(engine: engine).convert(
+            pageURLs: Array(urls.dropFirst()),
+            metadata: metadata
+        )
         #expect(document.chapters.map(\.title) == ["Chapter One", "Chapter Two"])
     }
 

@@ -46,7 +46,8 @@ func renderSyntheticPage() -> CGImage {
         text.draw(in: NSRect(x: 200, y: y, width: CGFloat(width) - 400, height: height))
     }
     func plain(_ string: String, size: CGFloat, _ alignment: NSTextAlignment,
-               bold: Bool = false, indent: CGFloat = 0) -> NSAttributedString {
+               bold: Bool = false, indent: CGFloat = 0) -> NSAttributedString
+    {
         NSAttributedString(string: string, attributes: [
             .font: font(size, bold: bold), .foregroundColor: NSColor.black,
             .paragraphStyle: style(alignment, indent: indent),
@@ -128,11 +129,20 @@ func report(image: CGImage, languages: [String]?, verbose: Bool) async throws {
     }
     let lines = document.paragraphs.flatMap(\.lines)
     let confidences = lines.compactMap { $0.topCandidates(1).first?.confidence }
-    print(String(format: "  %dx%d langs=%@ time=%.2fs paragraphs=%d lines=%d lists=%d tables=%d title=%@ conf min/avg=%.2f/%.2f",
-                 image.width, image.height, languages?.joined(separator: "+") ?? "auto", elapsed,
-                 document.paragraphs.count, lines.count, document.lists.count, document.tables.count,
-                 document.title == nil ? "no" : "yes",
-                 confidences.min() ?? 0, confidences.reduce(0, +) / Float(max(confidences.count, 1))))
+    print(String(
+        format: "  %dx%d langs=%@ time=%.2fs paragraphs=%d lines=%d lists=%d tables=%d title=%@ conf min/avg=%.2f/%.2f",
+        image.width,
+        image.height,
+        languages?.joined(separator: "+") ?? "auto",
+        elapsed,
+        document.paragraphs.count,
+        lines.count,
+        document.lists.count,
+        document.tables.count,
+        document.title == nil ? "no" : "yes",
+        confidences.min() ?? 0,
+        confidences.reduce(0, +) / Float(max(confidences.count, 1))
+    ))
     guard verbose else { return }
     for (index, paragraph) in document.paragraphs.enumerated() {
         let alignment = paragraph.textAlignment.map { "\($0)" } ?? "nil"
@@ -157,8 +167,12 @@ func blueInkFraction(in box: NormalizedRect, of image: CGImage, pixels: [UInt8])
         for x in max(0, Int(rect.minX)) ..< min(image.width, Int(rect.maxX)) {
             let offset = (y * image.width + x) * 4
             let (r, g, b) = (Int(pixels[offset]), Int(pixels[offset + 1]), Int(pixels[offset + 2]))
-            if r + g + b < 540 { ink += 1 }
-            if b > r + 60, b > g + 40 { blue += 1 }
+            if r + g + b < 540 {
+                ink += 1
+            }
+            if b > r + 60, b > g + 40 {
+                blue += 1
+            }
         }
     }
     return ink == 0 ? 0 : Double(blue) / Double(ink)
@@ -190,7 +204,6 @@ func reportColouredWords(image: CGImage) async throws {
 
 // MARK: - Entry point
 
-
 let paths = CommandLine.arguments.dropFirst()
 if paths.isEmpty {
     let image = renderSyntheticPage()
@@ -199,9 +212,11 @@ if paths.isEmpty {
     try await report(image: image, languages: ["uk-UA"], verbose: false)
     try await report(image: upscale(image, by: 2), languages: ["uk-UA", "en-US"], verbose: true)
 }
+
 for path in paths {
     guard let image = NSImage(contentsOf: URL(fileURLWithPath: path))?
-        .cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+        .cgImage(forProposedRect: nil, context: nil, hints: nil)
+    else {
         fatalError("Cannot load image at \(path)")
     }
     print(path)

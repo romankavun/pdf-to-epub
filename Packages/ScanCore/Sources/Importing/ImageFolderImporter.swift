@@ -21,7 +21,9 @@ public struct ImageFolderImporter: Sendable {
     /// comes before `page_10`. Hidden files and subfolders are ignored.
     public func pageURLs(in folder: URL) throws -> [URL] {
         var isDirectory: ObjCBool = false
-        guard FileManager.default.fileExists(atPath: folder.path, isDirectory: &isDirectory), isDirectory.boolValue else {
+        guard FileManager.default.fileExists(atPath: folder.path, isDirectory: &isDirectory),
+              isDirectory.boolValue
+        else {
             throw ImportError.notADirectory(folder)
         }
         let contents = try FileManager.default.contentsOfDirectory(

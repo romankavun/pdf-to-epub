@@ -16,7 +16,11 @@ public enum Block: Sendable, Codable, Equatable {
         case let .figure(figure): figure.caption
         }
         return content.compactMap { inline in
-            if case let .noteReference(id) = inline { id } else { nil }
+            if case let .noteReference(id) = inline {
+                id
+            } else {
+                nil
+            }
         }
     }
 }

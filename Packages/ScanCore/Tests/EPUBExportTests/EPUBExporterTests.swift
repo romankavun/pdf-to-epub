@@ -98,7 +98,7 @@ struct EPUBExporterTests {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).epub")
         defer { try? FileManager.default.removeItem(at: url) }
         try exporter.export(Fixtures.document, to: url, modified: modified)
-        let result = try Shell.run(try #require(EPUBCheck.path), ["--failonwarnings", url.path])
+        let result = try Shell.run(#require(EPUBCheck.path), ["--failonwarnings", url.path])
         #expect(result.status == 0, "\(String(decoding: result.output, as: UTF8.self))")
     }
 }

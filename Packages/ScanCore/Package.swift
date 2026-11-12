@@ -5,7 +5,10 @@ let package = Package(
     name: "ScanCore",
     platforms: [.macOS(.v26)],
     products: [
-        .library(name: "ScanCore", targets: ["DocumentModel", "EPUBExport", "OCR", "LayoutAnalysis", "Importing", "Conversion"]),
+        .library(
+            name: "ScanCore",
+            targets: ["DocumentModel", "EPUBExport", "OCR", "LayoutAnalysis", "Importing", "Conversion"]
+        ),
         .executable(name: "pagescan", targets: ["pagescan"]),
     ],
     targets: [
@@ -15,7 +18,10 @@ let package = Package(
         .target(name: "LayoutAnalysis", dependencies: ["DocumentModel", "OCR"]),
         .target(name: "Importing"),
         .target(name: "Conversion", dependencies: ["DocumentModel", "OCR", "LayoutAnalysis"]),
-        .executableTarget(name: "pagescan", dependencies: ["DocumentModel", "OCR", "Importing", "Conversion", "EPUBExport"]),
+        .executableTarget(
+            name: "pagescan",
+            dependencies: ["DocumentModel", "OCR", "Importing", "Conversion", "EPUBExport"]
+        ),
         .testTarget(name: "ImportingTests", dependencies: ["Importing"]),
         .testTarget(name: "ConversionTests", dependencies: ["Conversion", "DocumentModel", "OCR"]),
         .testTarget(name: "OCRTests", dependencies: ["OCR"]),

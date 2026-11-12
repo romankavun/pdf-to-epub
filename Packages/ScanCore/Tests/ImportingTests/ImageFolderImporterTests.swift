@@ -12,7 +12,10 @@ struct ImageFolderImporterTests {
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         for name in names {
             let file = url.appendingPathComponent(name)
-            try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(
+                at: file.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
             try Data().write(to: file)
         }
         return url
@@ -22,14 +25,35 @@ struct ImageFolderImporterTests {
     func naturalOrder() throws {
         let url = try folder(["shot_10.png", "shot_2.png", "shot_1.png", "shot_100.png"])
         defer { try? FileManager.default.removeItem(at: url) }
-        #expect(try importer.pageURLs(in: url).map(\.lastPathComponent) == ["shot_1.png", "shot_2.png", "shot_10.png", "shot_100.png"])
+        #expect(try importer.pageURLs(in: url).map(\.lastPathComponent) == [
+            "shot_1.png",
+            "shot_2.png",
+            "shot_10.png",
+            "shot_100.png",
+        ])
     }
 
     @Test("keeps image files of any supported type and ignores everything else")
     func filtersFiles() throws {
-        let url = try folder(["a.PNG", "b.jpg", "c.jpeg", "d.tiff", "e.heic", "notes.txt", ".DS_Store", ".hidden.png", "sub/f.png"])
+        let url = try folder([
+            "a.PNG",
+            "b.jpg",
+            "c.jpeg",
+            "d.tiff",
+            "e.heic",
+            "notes.txt",
+            ".DS_Store",
+            ".hidden.png",
+            "sub/f.png",
+        ])
         defer { try? FileManager.default.removeItem(at: url) }
-        #expect(try importer.pageURLs(in: url).map(\.lastPathComponent) == ["a.PNG", "b.jpg", "c.jpeg", "d.tiff", "e.heic"])
+        #expect(try importer.pageURLs(in: url).map(\.lastPathComponent) == [
+            "a.PNG",
+            "b.jpg",
+            "c.jpeg",
+            "d.tiff",
+            "e.heic",
+        ])
     }
 
     @Test("fails clearly when the folder is missing or has no images")

@@ -104,7 +104,7 @@ enum ZipWriter {
 }
 
 private extension Data {
-    mutating func append<T: FixedWidthInteger>(littleEndian value: T) {
+    mutating func append(littleEndian value: some FixedWidthInteger) {
         Swift.withUnsafeBytes(of: value.littleEndian) { append(contentsOf: $0) }
     }
 }
