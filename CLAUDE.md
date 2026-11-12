@@ -4,10 +4,10 @@ Native macOS app that converts scanned documents (a PDF or a folder of page imag
 into EPUB 3, reproducing the document's formatting as faithfully as possible:
 headings, paragraphs, illustrations with captions, and footnotes.
 
-Status: **scaffolded.** `Packages/ScanCore` has the first `DocumentModel` slice
-with tests; `App/` is a placeholder SwiftUI shell; the Vision spike is done
-(see `docs/adr/0001-vision-document-recognition.md`). Modules listed below that
-do not exist yet are the agreed target, created when a test first needs them.
+Status: **document model and EPUB export implemented** in `Packages/ScanCore`
+(`DocumentModel`, `EPUBExport`), with tests. `App/` is a placeholder SwiftUI
+shell. Nothing reads page images yet. Modules listed below that do not exist
+yet are the agreed target, created when a test first needs them.
 
 ## Product decisions
 
@@ -150,7 +150,7 @@ xcodebuild -project App/PDFToEPUB.xcodeproj -scheme PDFToEPUB build
 swiftformat . && swiftlint                             # before every commit
 ```
 
-Tools still to install: `swiftlint`, `swiftformat`, `epubcheck` (Homebrew).
+`epubcheck` is installed (Homebrew). Still to install: `swiftlint`, `swiftformat`.
 
 ### Code standards
 
@@ -163,6 +163,7 @@ Tools still to install: `swiftlint`, `swiftformat`, `epubcheck` (Homebrew).
   production code.
 - Heavy work (OCR, image processing) runs off the main actor, reports
   progress, and supports cancellation.
+- ZIP output uses the in-house `ZipWriter` (Foundation has no ZIP API).
 - Prefer Apple frameworks. A third-party dependency needs a stated reason and
   the user's approval.
 - Small, focused commits in Conventional Commits format (`feat:`, `fix:`,
@@ -211,7 +212,7 @@ Tools still to install: `swiftlint`, `swiftformat`, `epubcheck` (Homebrew).
 
 1. ~~Scaffold package, app shell~~ (done; lint/format tools not installed yet).
 2. ~~Vision spike; findings in ADR 0001~~ (done).
-3. Document model + EPUB export (testable without OCR).
+3. ~~Document model + EPUB export~~ (done; passes `epubcheck` 5.4.0).
 4. Import + OCR + plain paragraphs end to end, CLI first.
 5. Layout analysis: headers/footers, headings, hyphenation, page joins.
 6. Footnotes, then illustrations and captions.
