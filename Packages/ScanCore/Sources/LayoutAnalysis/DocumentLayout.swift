@@ -80,6 +80,8 @@ public struct DocumentLayout: Sendable, Equatable {
     /// the document. Identifiers are `note-N`, where N counts every note text
     /// found, linked or not.
     public var notes: [Note]
+    /// Where the text of each note of ``notes`` lies, in the same order.
+    public var noteSources: [BlockSource]
     /// References that could not be linked to a note. They stay in the text
     /// as their label.
     public var unlinkedReferences: Int
@@ -91,12 +93,14 @@ public struct DocumentLayout: Sendable, Equatable {
         blocks: [Block],
         sources: [BlockSource] = [],
         notes: [Note] = [],
+        noteSources: [BlockSource] = [],
         unlinkedReferences: Int = 0,
         unlinkedNotes: Int = 0
     ) {
         self.blocks = blocks
         self.sources = sources
         self.notes = notes
+        self.noteSources = noteSources
         self.unlinkedReferences = unlinkedReferences
         self.unlinkedNotes = unlinkedNotes
     }

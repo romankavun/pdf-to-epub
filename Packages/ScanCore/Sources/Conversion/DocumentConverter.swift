@@ -18,17 +18,22 @@ public struct Conversion: Sendable, Equatable {
     /// The origin of each block of ``Document/blocks``, in the same order;
     /// ``BlockSource/page`` indexes ``pageURLs``.
     public var blockSources: [BlockSource]
+    /// Where the text of each note of ``Document/notes`` lies, in the same
+    /// order; ``BlockSource/page`` indexes ``pageURLs``.
+    public var noteSources: [BlockSource]
 
     public init(
         document: Document,
         unlinkedReferences: Int = 0,
         unlinkedNotes: Int = 0,
         pageURLs: [URL] = [],
-        blockSources: [BlockSource] = []
+        blockSources: [BlockSource] = [],
+        noteSources: [BlockSource] = []
     ) {
         self.document = document
         self.pageURLs = pageURLs
         self.blockSources = blockSources
+        self.noteSources = noteSources
         self.unlinkedReferences = unlinkedReferences
         self.unlinkedNotes = unlinkedNotes
     }
@@ -135,7 +140,7 @@ public struct DocumentConverter: Sendable {
         )
         return Conversion(
             document: document, unlinkedReferences: layout.unlinkedReferences, unlinkedNotes: layout.unlinkedNotes,
-            pageURLs: pageURLs, blockSources: layout.sources
+            pageURLs: pageURLs, blockSources: layout.sources, noteSources: layout.noteSources
         )
     }
 

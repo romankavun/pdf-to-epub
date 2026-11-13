@@ -46,6 +46,8 @@ struct NoteLinker {
 
         var blocks: [Block] = []
         var kept: [BlockSource] = []
+        // The origin of every note text, linked or not.
+        var noteSources: [BlockSource] = []
         var noteIndex = 0
         for (draft, source) in zip(drafts, sources) {
             defer {
@@ -63,6 +65,7 @@ struct NoteLinker {
                 let caption = inlines(caption, links: links)
                 blocks.append(.figure(Figure(imageID: imageID, alternativeText: "", caption: caption)))
             case .note:
+                noteSources.append(source)
                 let body = bodies[noteIndex]
                 noteIndex += 1
                 if !body.isReferenced {
@@ -75,7 +78,9 @@ struct NoteLinker {
             Note(id: Self.noteID(index), label: body.label, content: inlines(body.content))
         }
         return DocumentLayout(
-            blocks: blocks, sources: kept, notes: notes, unlinkedReferences: unlinkedReferences,
+            blocks: blocks, sources: kept, notes: notes,
+            noteSources: bodies.indices.filter { bodies[$0].isReferenced }.map { noteSources[$0] },
+            unlinkedReferences: unlinkedReferences,
             unlinkedNotes: bodies.count { !$0.isReferenced }
         )
     }
