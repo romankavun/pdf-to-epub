@@ -306,3 +306,24 @@ struct LayoutAnalyzerNoteTests {
         #expect(abs(layout.sources[2].box.minY - 0.16) < 1e-9)
     }
 }
+
+@Suite("LayoutAnalyzer notes: false labels and numbering systems")
+struct LayoutAnalyzerNoteLinkingTests {
+    @Test(
+        "a marker that opens a line but is followed by punctuation is a reference, not a note",
+        arguments: [".", ",", "•"]
+    )
+    func markerBeforePunctuation(punctuation: String) {
+        // The engine sometimes reports the end of a line as a line of its
+        // own, which then starts with the erased marker, away from the margin.
+        let layout = layout([page([
+            ">Text that cites a source{1}", ">{2}\(punctuation) And then goes on.", "", ">{1} Note one.",
+            ">{2} Note two.",
+        ])])
+        #expect(layout.blocks == [.paragraph([
+            "Text that cites a source", .noteReference("note-1"), .noteReference("note-2"),
+            .text((punctuation == "," ? "," : ".") + " And then goes on."),
+        ])])
+        #expect(layout.unlinkedNotes == 0)
+    }
+}

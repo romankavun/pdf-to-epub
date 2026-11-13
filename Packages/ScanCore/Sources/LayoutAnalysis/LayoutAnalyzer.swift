@@ -139,6 +139,9 @@ public struct LayoutAnalyzer: Sendable {
             // The first line under a picture; a heading is no caption.
             return !isHeading
         }
+        if row.isRemainder {
+            return !draft.isHeading
+        }
         if isHeading {
             // Only a wrapped heading continues: same page, directly below.
             return draft.isHeading && step.map { $0 < 2 * Double(row.line.box.height) } == true
