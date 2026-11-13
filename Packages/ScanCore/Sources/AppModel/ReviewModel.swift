@@ -43,29 +43,47 @@ public final class ReviewModel {
         case heading(level: Int)
         case paragraph
         case figure(imageID: ImageResource.ID)
+        /// The text of a linked note, which the document keeps apart from the
+        /// flow of blocks.
+        case note(label: String)
     }
 
-    /// One block of the document as shown in review.
+    /// Identifies a block or a note text across the pages it is shown on.
+    public enum ItemID: Sendable, Hashable {
+        /// A block, by its index in ``Document/blocks``.
+        case block(Int)
+        /// The text of a note in ``Document/notes``.
+        case note(Note.ID)
+    }
+
+    /// The part of a block or a note text that lies on one page.
+    ///
+    /// A paragraph that runs onto the next page appears on both pages with
+    /// the same ``id`` and text; only ``box`` and the continuation flags
+    /// differ.
     public struct Item: Sendable, Equatable, Identifiable {
-        /// The block's index in ``Document/blocks``.
-        public var id: Int
+        public var id: ItemID
         public var kind: Kind
-        /// The block's text; for a figure, its caption.
+        /// The whole text of the block, on every page it is shown on; for a
+        /// figure, its caption.
         public var runs: [Run]
-        /// The area the block covers on its page, normalized, origin at the
+        /// The area the block covers on this page, normalized, origin at the
         /// top-left corner.
         public var box: CGRect
         /// The number of flagged words in ``runs``.
         public var issueCount: Int
+        /// Whether the block starts on an earlier page.
+        public var continuesFromPreviousPage = false
+        /// Whether the block runs on to a later page.
+        public var continuesOnNextPage = false
     }
 
-    /// One page image with the blocks that start on it.
+    /// One page image with every block and note text that lies on it.
     public struct Page: Sendable, Equatable, Identifiable {
         /// The page's index in the document.
         public var id: Int
         public var url: URL
-        /// Empty for a cover, a blank page, or a page that only continues a
-        /// block from the page before.
+        /// Top to bottom. Empty for a cover or a blank page.
         public var items: [Item]
     }
 
@@ -79,35 +97,73 @@ public final class ReviewModel {
     /// The block in focus, always on the page being viewed.
     public private(set) var selectedItemID: Item.ID?
 
-    /// Blocks with at least one flagged word, in reading order.
-    private let flagged: [(itemID: Item.ID, page: Int)]
+    /// Blocks and notes with at least one flagged word, in the order of
+    /// the pages they start on, top to bottom. A block on two pages is one
+    /// stop, on the page it starts on.
+    private let flagged: [(itemID: ItemID, page: Int)]
 
     public init(conversion: Conversion, detector: SuspiciousWordDetector = SuspiciousWordDetector()) {
+        let shown = Self.items(of: conversion, detector: detector)
+        pages = Self.pages(showing: shown, urls: conversion.pageURLs)
+        images = Dictionary(conversion.document.images.map { ($0.id, $0.data) }) { first, _ in first }
+        issueCount = shown.reduce(0) { $0 + $1.item.issueCount }
+        flagged = shown.enumerated()
+            .filter { $0.element.item.issueCount > 0 }
+            .sorted {
+                let (left, right) = ($0.element.source.start, $1.element.source.start)
+                return (left.page, left.box.minY, $0.offset) < (right.page, right.box.minY, $1.offset)
+            }
+            .map { ($0.element.item.id, $0.element.source.page) }
+    }
+
+    /// Every block, then every linked note, each with its runs and where it
+    /// lies. An item's box is the one on the page it starts on.
+    private static func items(
+        of conversion: Conversion, detector: SuspiciousWordDetector
+    ) -> [(item: Item, source: BlockSource)] {
         let document = conversion.document
         let labels = Dictionary(document.notes.map { ($0.id, $0.label) }) { first, _ in first }
-        var itemsByPage: [Int: [Item]] = [:]
-        var flagged: [(itemID: Item.ID, page: Int)] = []
-        for (index, (block, source)) in zip(document.blocks, conversion.blockSources).enumerated() {
-            let (kind, content): (Kind, [Inline]) = switch block {
-            case let .heading(level, content): (.heading(level: level), content)
-            case let .paragraph(content): (.paragraph, content)
-            case let .figure(figure): (.figure(imageID: figure.imageID), figure.caption)
-            }
-            let runs = Self.runs(of: content, noteLabels: labels, detector: detector)
+        func item(_ id: ItemID, _ kind: Kind, _ content: [Inline], _ source: BlockSource) -> (Item, BlockSource) {
+            let runs = runs(of: content, noteLabels: labels, detector: detector)
             let issues = runs.count { $0.reason != nil }
-            itemsByPage[source.page, default: []].append(
-                Item(id: index, kind: kind, runs: runs, box: source.box, issueCount: issues)
-            )
-            if issues > 0 {
-                flagged.append((index, source.page))
+            return (Item(id: id, kind: kind, runs: runs, box: source.box, issueCount: issues), source)
+        }
+        let blocks = zip(document.blocks, conversion.blockSources).enumerated().map { index, pair in
+            let (block, source) = pair
+            return switch block {
+            case let .heading(level, content): item(.block(index), .heading(level: level), content, source)
+            case let .paragraph(content): item(.block(index), .paragraph, content, source)
+            case let .figure(figure): item(.block(index), .figure(imageID: figure.imageID), figure.caption, source)
             }
         }
-        pages = conversion.pageURLs.enumerated().map { index, url in
-            Page(id: index, url: url, items: itemsByPage[index] ?? [])
+        let notes = zip(document.notes, conversion.noteSources).map { note, source in
+            item(.note(note.id), .note(label: note.label), note.content, source)
         }
-        images = Dictionary(document.images.map { ($0.id, $0.data) }) { first, _ in first }
-        issueCount = pages.reduce(0) { $0 + $1.items.reduce(0) { $0 + $1.issueCount } }
-        self.flagged = flagged
+        return blocks + notes
+    }
+
+    /// The pages at `urls`, each with the part of every item that lies on
+    /// it, top to bottom.
+    private static func pages(showing items: [(item: Item, source: BlockSource)], urls: [URL]) -> [Page] {
+        var itemsByPage: [Int: [Item]] = [:]
+        for (item, source) in items {
+            let areas = source.areas
+            for (position, area) in areas.enumerated() {
+                var part = item
+                part.box = area.box
+                part.continuesFromPreviousPage = position > 0
+                part.continuesOnNextPage = position < areas.count - 1
+                itemsByPage[area.page, default: []].append(part)
+            }
+        }
+        return urls.enumerated().map { index, url in
+            // Notes come after all blocks in `items`; on the page they sit
+            // where they are printed. Equal tops keep their order.
+            let items = (itemsByPage[index] ?? []).enumerated()
+                .sorted { ($0.element.box.minY, $0.offset) < ($1.element.box.minY, $1.offset) }
+                .map(\.element)
+            return Page(id: index, url: url, items: items)
+        }
     }
 
     /// The page being viewed; `nil` only for a document without pages.
@@ -115,7 +171,7 @@ public final class ReviewModel {
         pages.indices.contains(pageIndex) ? pages[pageIndex] : nil
     }
 
-    /// The number of blocks that contain flagged words: the stops of
+    /// The number of blocks and note texts that contain flagged words: the stops of
     /// ``goToNextIssue()``.
     public var flaggedItemCount: Int {
         flagged.count
@@ -151,8 +207,13 @@ public final class ReviewModel {
         goToPage(pageIndex - 1)
     }
 
-    /// Puts the block in focus and shows its page.
+    /// Puts the block in focus. Stays on the page being viewed when part of
+    /// the block lies on it; otherwise shows the page the block starts on.
     public func select(itemID: Item.ID) {
+        if currentPage?.items.contains(where: { $0.id == itemID }) == true {
+            selectedItemID = itemID
+            return
+        }
         guard let page = pages.first(where: { $0.items.contains { $0.id == itemID } }) else { return }
         pageIndex = page.id
         selectedItemID = itemID

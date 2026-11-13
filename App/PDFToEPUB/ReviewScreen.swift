@@ -95,7 +95,7 @@ private struct PageScan: View {
     private func outlines(in size: CGSize) -> some View {
         ForEach(page.items) { item in
             let isSelected = item.id == selectedItemID
-            let color: Color = item.issueCount > 0 ? .orange : .accentColor
+            let color = item.outlineColor
             RoundedRectangle(cornerRadius: 3)
                 .fill(color.opacity(isSelected ? 0.25 : 0.001))
                 .stroke(color.opacity(isSelected ? 1 : 0.35), lineWidth: isSelected ? 2 : 1)
@@ -106,7 +106,7 @@ private struct PageScan: View {
     }
 }
 
-/// The blocks that start on the page, in reading order.
+/// The blocks and note texts on the page, top to bottom.
 private struct BlockList: View {
     var page: ReviewModel.Page
     var model: ReviewModel
@@ -114,9 +114,9 @@ private struct BlockList: View {
     var body: some View {
         if page.items.isEmpty {
             ContentUnavailableView(
-                "No text starts on this page",
+                "No text on this page",
                 systemImage: "text.page.slash",
-                description: Text("It is a cover, a blank page, or the end of a paragraph from the page before.")
+                description: Text("It is a cover or a blank page.")
             )
         } else {
             ScrollViewReader { proxy in
@@ -160,7 +160,12 @@ private struct BlockCard: View {
             HStack {
                 Text(kindName)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(item.kind.isNote ? AnyShapeStyle(item.outlineColor) : AnyShapeStyle(.secondary))
+                if item.continuesFromPreviousPage {
+                    Label("Continued from the previous page", systemImage: "arrow.turn.left.up")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 if item.issueCount > 0 {
                     Label("\(item.issueCount)", systemImage: "exclamationmark.triangle.fill")
                         .font(.caption)
@@ -178,6 +183,11 @@ private struct BlockCard: View {
                     .font(isHeading ? .title3.bold() : .body)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            if item.continuesOnNextPage {
+                Label("Continues on the next page", systemImage: "arrow.turn.right.down")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(10)
@@ -205,6 +215,7 @@ private struct BlockCard: View {
         case let .heading(level): "Heading \(level)"
         case .paragraph: "Paragraph"
         case .figure: "Illustration"
+        case let .note(label): "Note \(label)"
         }
     }
 
@@ -231,5 +242,28 @@ private struct BlockCard: View {
             result += part
         }
         return result
+    }
+}
+
+private extension ReviewModel.Kind {
+    var isNote: Bool {
+        if case .note = self {
+            true
+        } else {
+            false
+        }
+    }
+}
+
+private extension ReviewModel.Item {
+    /// Flagged blocks stand out; note texts are told apart from the body.
+    var outlineColor: Color {
+        if issueCount > 0 {
+            .orange
+        } else if kind.isNote {
+            .teal
+        } else {
+            .accentColor
+        }
     }
 }

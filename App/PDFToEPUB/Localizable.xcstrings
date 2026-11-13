@@ -107,6 +107,26 @@
         }
       }
     },
+    "Continued from the previous page" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Продовження з попередньої сторінки"
+          }
+        }
+      }
+    },
+    "Continues on the next page" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Продовжується на наступній сторінці"
+          }
+        }
+      }
+    },
     "Convert" : {
       "localizations" : {
         "uk" : {
@@ -243,12 +263,12 @@
         }
       }
     },
-    "It is a cover, a blank page, or the end of a paragraph from the page before." : {
+    "It is a cover or a blank page." : {
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Це обкладинка, порожня сторінка або закінчення абзацу з попередньої сторінки."
+            "value" : "Це обкладинка або порожня сторінка."
           }
         }
       }
@@ -323,12 +343,22 @@
         }
       }
     },
-    "No text starts on this page" : {
+    "No text on this page" : {
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "На цій сторінці не починається жоден блок"
+            "value" : "На цій сторінці немає тексту"
+          }
+        }
+      }
+    },
+    "Note %@" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Примітка %@"
           }
         }
       }
