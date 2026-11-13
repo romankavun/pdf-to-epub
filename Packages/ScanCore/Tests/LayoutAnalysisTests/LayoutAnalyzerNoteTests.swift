@@ -305,4 +305,18 @@ struct LayoutAnalyzerNoteTests {
         #expect(layout.sources.map(\.page) == [0, 1, 1])
         #expect(abs(layout.sources[2].box.minY - 0.16) < 1e-9)
     }
+
+    @Test("every linked note records where its text lies")
+    func linkedNoteSources() {
+        let layout = LayoutAnalyzer().layout(of: [prose, page([
+            ">Text{1} here{2} and{3}.", "", ">{1} First note.", ">{7} Orphan note.", ">{2} Second note,",
+        ]), page(["running on.", ">{3} Third note."])])
+
+        #expect(layout.notes.map(\.label) == ["1", "2", "3"])
+        #expect(layout.noteSources.map(\.areas.count) == [1, 2, 1])
+        #expect(layout.noteSources.map(\.page) == [1, 1, 2])
+        #expect(abs(layout.noteSources[0].box.minY - 0.14) < 1e-9)
+        #expect(abs(layout.noteSources[1].box.minY - 0.18) < 1e-9)
+        #expect(abs(layout.noteSources[2].box.minY - 0.12) < 1e-9)
+    }
 }

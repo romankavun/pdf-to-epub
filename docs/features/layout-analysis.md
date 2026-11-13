@@ -24,6 +24,15 @@ Pictures and their captions are described in
 
 Thresholds live in `LayoutAnalyzer.Options`.
 
+## Where each block comes from
+
+Besides the blocks, `DocumentLayout` records their origin for the review
+screen: `sources` gives, for every block, the area it covers on each page it
+touches (a `BlockSource` is the area on the page it starts on plus one per
+page it runs onto), and `noteSources` does the same for the text of every
+linked note, which is not among the blocks. A caption widens the area of
+its figure.
+
 ## Known limits
 
 - Headings set in bold at body size, and sub-headings in the body font, are

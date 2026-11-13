@@ -45,7 +45,12 @@ struct ReviewModelTests {
     @Test("groups blocks under the page they start on, keeping pages without blocks")
     func pages() {
         #expect(model.pages.map(\.url) == urls)
-        #expect(model.pages.map { $0.items.map(\.id) } == [[], [0, 1], [2, 3], [4]])
+        #expect(model.pages.map { $0.items.map(\.id) } == [
+            [],
+            [.block(0), .block(1)],
+            [.block(2), .block(3)],
+            [.block(4)],
+        ])
         #expect(model.pages[1].items[0].kind == .heading(level: 1))
         #expect(model.pages[2].items[1].kind == .figure(imageID: "figure-001"))
         #expect(model.pages[2].items[0].box == box(0.1))
@@ -77,7 +82,7 @@ struct ReviewModelTests {
 
     @Test("moves between pages within bounds and drops the selection")
     func pageNavigation() {
-        model.select(itemID: 2)
+        model.select(itemID: .block(2))
         #expect(model.pageIndex == 2)
 
         model.goToNextPage()
@@ -99,16 +104,16 @@ struct ReviewModelTests {
     func nextIssue() {
         model.goToNextIssue()
         #expect(model.pageIndex == 2)
-        #expect(model.selectedItemID == 2)
+        #expect(model.selectedItemID == .block(2))
         #expect(model.issuePosition == 1)
 
         model.goToNextIssue()
         #expect(model.pageIndex == 3)
-        #expect(model.selectedItemID == 4)
+        #expect(model.selectedItemID == .block(4))
         #expect(model.issuePosition == 2)
 
         model.goToNextIssue()
-        #expect(model.selectedItemID == 2)
+        #expect(model.selectedItemID == .block(2))
     }
 
     @Test("next issue starts from the page being viewed")
@@ -116,19 +121,19 @@ struct ReviewModelTests {
         model.goToPage(3)
 
         model.goToNextIssue()
-        #expect(model.selectedItemID == 4)
+        #expect(model.selectedItemID == .block(4))
 
         model.goToPage(3)
         model.goToPreviousIssue()
-        #expect(model.selectedItemID == 2)
+        #expect(model.selectedItemID == .block(2))
     }
 
     @Test("previous issue walks backwards and wraps around")
     func previousIssue() {
         model.goToPreviousIssue()
-        #expect(model.selectedItemID == 4)
+        #expect(model.selectedItemID == .block(4))
         model.goToPreviousIssue()
-        #expect(model.selectedItemID == 2)
+        #expect(model.selectedItemID == .block(2))
     }
 
     @Test("a document without flagged words has no issues to visit")
@@ -143,5 +148,86 @@ struct ReviewModelTests {
         #expect(model.issueCount == 0)
         #expect(model.selectedItemID == nil)
         #expect(model.pageIndex == 0)
+    }
+
+    @Test("a block that runs onto the next page is shown on both, counted once")
+    func continuedBlock() {
+        var conversion = sampleConversion()
+        var source = BlockSource(page: 2, box: box(0.3))
+        source.add(box(0.05), onPage: 3)
+        conversion.blockSources[3] = source
+        let model = ReviewModel(conversion: conversion)
+
+        #expect(model.pages[3].items.map(\.id) == [.block(3), .block(4)])
+        let start = model.pages[2].items[1], end = model.pages[3].items[0]
+        #expect(start.box == box(0.3) && end.box == box(0.05))
+        #expect(!start.continuesFromPreviousPage && start.continuesOnNextPage)
+        #expect(end.continuesFromPreviousPage && !end.continuesOnNextPage)
+        #expect(end.runs == start.runs)
+        #expect(model.pages[2].items[0].continuesFromPreviousPage == false)
+    }
+
+    @Test("a flagged block on two pages is one issue, visited on the page it starts on")
+    func continuedIssue() {
+        var conversion = sampleConversion()
+        var source = BlockSource(page: 2, box: box(0.1))
+        source.add(box(0.0), onPage: 3)
+        conversion.blockSources[2] = source
+        let model = ReviewModel(conversion: conversion)
+
+        #expect(model.issueCount == 2)
+        #expect(model.flaggedItemCount == 2)
+        model.goToNextIssue()
+        #expect(model.pageIndex == 2 && model.selectedItemID == .block(2))
+        model.goToNextIssue()
+        #expect(model.pageIndex == 3 && model.selectedItemID == .block(4))
+    }
+
+    @Test("selecting the part of a block on the page being viewed stays on that page")
+    func selectContinuation() {
+        var conversion = sampleConversion()
+        var source = BlockSource(page: 2, box: box(0.3))
+        source.add(box(0.05), onPage: 3)
+        conversion.blockSources[3] = source
+        let model = ReviewModel(conversion: conversion)
+
+        model.goToPage(3)
+        model.select(itemID: .block(3))
+        #expect(model.pageIndex == 3 && model.selectedItemID == .block(3))
+
+        model.goToPage(0)
+        model.select(itemID: .block(3))
+        #expect(model.pageIndex == 2)
+    }
+
+    @Test("linked note texts are shown on their page, in place, with flagged words")
+    func notes() {
+        var conversion = sampleConversion()
+        conversion.document.notes = [
+            Note(id: "note-1", label: "7", content: ["A n0te with ", .emphasis("text"), "."]),
+            Note(id: "note-2", label: "8", content: ["Clean note."]),
+        ]
+        conversion.noteSources = [BlockSource(page: 2, box: box(0.2)), BlockSource(page: 3, box: box(0.5))]
+        let model = ReviewModel(conversion: conversion)
+
+        #expect(model.pages[2].items.map(\.id) == [.block(2), .note("note-1"), .block(3)])
+        let note = model.pages[2].items[1]
+        #expect(note.kind == .note(label: "7"))
+        #expect(note.box == box(0.2))
+        #expect(note.runs == [
+            ReviewModel.Run(text: "A "),
+            ReviewModel.Run(text: "n0te", reason: .digitInsideWord),
+            ReviewModel.Run(text: " with "),
+            ReviewModel.Run(text: "text", style: .emphasis),
+            ReviewModel.Run(text: "."),
+        ])
+        #expect(model.pages[3].items.map(\.id) == [.block(4), .note("note-2")])
+        #expect(model.issueCount == 3)
+
+        model.goToPage(2)
+        model.goToNextIssue()
+        model.goToNextIssue()
+        #expect(model.selectedItemID == .note("note-1"))
+        #expect(model.issuePosition == 2)
     }
 }

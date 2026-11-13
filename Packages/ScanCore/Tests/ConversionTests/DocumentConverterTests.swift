@@ -231,6 +231,7 @@ struct DocumentConverterTests {
 
         #expect(engine.erased.values == [[], [reference], [], [label]])
         #expect(conversion.document.notes == [Note(id: "note-1", label: "1", content: ["The note."])])
+        #expect(conversion.noteSources.map(\.page) == [3])
         #expect(conversion.document.chapters[1].blocks.last == .paragraph([
             "one a", .noteReference("note-1"), " one b one c",
         ]))

@@ -179,9 +179,24 @@ struct LayoutAnalyzerPictureTests {
         #expect(layout.sources.map(\.page) == [0, 0, 1, 1])
         // First line indented to 0.08, second at the margin: the union.
         #expect(layout.sources[0].box.isClose(to: CGRect(x: 0.05, y: 0.1, width: 0.9, height: 0.037)))
-        // Only the part on the page where the block starts.
+        // The part on the page where the block starts.
         #expect(layout.sources[1].box.isClose(to: CGRect(x: 0.05, y: 0.14, width: 0.9, height: 0.037)))
         #expect(layout.sources[2].box == picture.box)
+    }
+
+    @Test("a block that runs onto the next page records its area on both pages")
+    func continuedBlockSource() {
+        let first = PageContent(lines: lines(top: 0.1, [">one a", "one b", ">two a", "two b"]))
+        let second = PageContent(lines: lines(top: 0.1, ["two c", "two d"]) + lines(top: 0.2, [">three a"]))
+
+        let layout = analyzer.layout(of: [first, second])
+
+        #expect(layout.sources.map(\.areas.count) == [1, 2, 1])
+        let areas = layout.sources[1].areas
+        #expect(areas.map(\.page) == [0, 1])
+        #expect(areas[0].box.isClose(to: CGRect(x: 0.05, y: 0.14, width: 0.9, height: 0.037)))
+        #expect(areas[1].box.isClose(to: CGRect(x: 0.05, y: 0.1, width: 0.87, height: 0.037)))
+        #expect(layout.sources[1].page == 0)
     }
 
     @Test("a caption widens the area of its figure instead of adding a block")
