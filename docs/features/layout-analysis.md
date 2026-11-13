@@ -1,9 +1,11 @@
 # Layout analysis
 
 Turns the text lines recognized on each page into headings and paragraphs
-(`LayoutAnalyzer` in the `LayoutAnalysis` module). It works on line positions
-only, never on pixels, and measures everything relative to the document's own
-typical line, so page size and resolution do not matter.
+(`LayoutAnalyzer` in the `LayoutAnalysis` module). It works on line and
+picture positions only, never on pixels, and measures everything relative to
+the document's own typical line, so page size and resolution do not matter.
+Pictures and their captions are described in
+[illustrations](illustrations.md).
 
 ## Rules
 
@@ -12,7 +14,9 @@ typical line, so page size and resolution do not matter.
 | Body margin | The most common left edge among long lines in the whole document |
 | New paragraph | The line starts to the right of the margin (first-line indent), **or** the vertical step from the previous line is more than 1.5 typical steps (a blank line) |
 | Paragraph across pages | A page whose first line is not indented continues the last paragraph of the previous page |
-| Heading | A line at least 1.5 times taller than the median line. Consecutive tall lines directly below each other form one heading. Always level 1 |
+| Heading | A line at least 1.5 times taller than the median line, whose box does not overlap a line above or below it by more than 10% of its height (a body line that the OCR engine measured two lines high does). Consecutive tall lines directly below each other form one heading. Always level 1 |
+| Line in pieces | Boxes side by side on one row (sharing over half their height, not overlapping horizontally) are joined into one line, left to right |
+| Text inside a picture | Dropped |
 | Page number | The last line of a page, if it is in the bottom 15%, at most four characters, digits only. Dropped |
 | Line joining | Lines are joined with a space; a line ending in a letter plus hyphen is joined without one, keeping the hyphen |
 
@@ -29,5 +33,6 @@ Thresholds live in `LayoutAnalyzer.Options`.
   which do not hyphenate; printed documents with soft hyphenation will get stray
   hyphens.
 - Running headers and footers other than a page number are not removed.
-- Single-column pages only.
+- Single-column pages only. Because pieces on one row are joined, a table
+  or two columns of text are read across, row by row.
 - No inline formatting (italic, bold) is recovered.

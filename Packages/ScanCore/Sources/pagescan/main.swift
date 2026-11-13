@@ -33,15 +33,17 @@ do {
     }
     try EPUBExporter().export(document, to: options.output)
 
-    let headings = document.blocks.count {
-        if case .heading = $0 {
-            true
-        } else {
-            false
+    var headings = 0, paragraphs = 0, figures = 0
+    for block in document.blocks {
+        switch block {
+        case .heading: headings += 1
+        case .paragraph: paragraphs += 1
+        case .figure: figures += 1
         }
     }
     print("Wrote \(options.output.path)")
-    print("  chapters: \(document.chapters.count), headings: \(headings), paragraphs: \(document.blocks.count - headings)")
+    print("  chapters: \(document.chapters.count), headings: \(headings), paragraphs: \(paragraphs), "
+        + "figures: \(figures), cover: \(document.coverImageID == nil ? "no" : "yes")")
 } catch {
     fail("pagescan: \(error)")
 }

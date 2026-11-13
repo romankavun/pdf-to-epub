@@ -45,7 +45,7 @@ struct LayoutAnalyzerTests {
 
     @Test("no pages or empty pages give no blocks")
     func empty() {
-        #expect(analyzer.blocks(from: []).isEmpty)
+        #expect(analyzer.blocks(from: [RecognizedPage]()).isEmpty)
         #expect(analyzer.blocks(from: [RecognizedPage(lines: [])]).isEmpty)
     }
 
@@ -88,6 +88,34 @@ struct LayoutAnalyzerTests {
         first.lines.append(line("A Very Long", y: 0.1, width: 0.5, height: 0.035))
         first.lines.append(line("Chapter Title", y: 0.145, width: 0.5, height: 0.035))
         #expect(analyzer.blocks(from: [first]).first == .heading(level: 1, content: ["A Very Long Chapter Title"]))
+    }
+
+    @Test("a tall box that overlaps the line below is a recognition glitch, not a heading")
+    func overlappingTallLine() {
+        var first = page([">body a", "body b", "", "body d", "body e"])
+        // The engine sometimes reports one body line with a box two lines high.
+        first.lines.append(line("body c", y: 0.1 + 2 * pitch - 0.008, height: 0.035))
+        #expect(analyzer.blocks(from: [first]) == [.paragraph(["body a body b body c body d body e"])])
+    }
+
+    @Test("a heading reported as two boxes side by side is still a heading")
+    func splitHeadingLine() {
+        var first = page(top: 0.2, [">body a", "body b", "body c", "body d"])
+        first.lines.append(line("Big", y: 0.1, width: 0.1, height: 0.035))
+        first.lines.append(line("Title", x: 0.17, y: 0.101, width: 0.2, height: 0.035))
+        #expect(analyzer.blocks(from: [first]).first == .heading(level: 1, content: ["Big Title"]))
+    }
+
+    @Test("a line reported as pieces side by side is read as one line, left to right")
+    func lineInPieces() {
+        var first = page([">first a", "", "first c", ">second a", "second b"])
+        // The second line of the paragraph arrives as two boxes, right piece first.
+        first.lines.append(line("right piece", x: 0.4, y: 0.1 + pitch + 0.001, width: 0.5))
+        first.lines.append(line("left piece", y: 0.1 + pitch, width: 0.3))
+        #expect(paragraphs(analyzer.blocks(from: [first])) == [
+            "first a left piece right piece first c",
+            "second a second b",
+        ])
     }
 
     @Test("drops a page number at the bottom but keeps numbers in the text")
