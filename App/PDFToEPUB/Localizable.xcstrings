@@ -27,6 +27,16 @@
         }
       }
     },
+    "Assembling the document…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Збирання книжки…"
+          }
+        }
+      }
+    },
     "Author" : {
       "localizations" : {
         "uk" : {

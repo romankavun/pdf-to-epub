@@ -60,8 +60,9 @@ private struct FakePipeline: ConversionPipeline {
     var pages: Result<[URL], ImportError> = .success(threePages)
     var failure: FakeFailure?
     var exportFailure: EPUBExportError?
-    /// When set, the conversion reports the first page and then waits.
+    /// When set, the conversion reports page `pauseAfter` and then waits.
     var gate: Gate?
+    var pauseAfter = 1
     let metadata = Recorder<DocumentMetadata>()
     let exports = Recorder<URL>()
 
@@ -80,7 +81,7 @@ private struct FakePipeline: ConversionPipeline {
         }
         for done in 1 ... pageURLs.count {
             progress(done, pageURLs.count)
-            if done == 1, let gate {
+            if done == pauseAfter, let gate {
                 await gate.wait()
                 try Task.checkCancellation()
             }
@@ -186,6 +187,36 @@ struct ConversionModelTests {
         gate.open()
         await model.conversionTask?.value
         #expect(model.phase == .finished(sampleConversion()))
+    }
+
+    @Test("names the page being recognized, which is the one after the pages done")
+    func pageInProgress() async {
+        let gate = Gate()
+        let model = ConversionModel(pipeline: FakePipeline(gate: gate))
+        model.open(folder: folder)
+        #expect(model.pageInProgress == nil)
+
+        model.start()
+        #expect(model.pageInProgress == .init(number: 1, url: threePages[0]))
+        #expect(await eventually { model.pageInProgress == .init(number: 2, url: threePages[1]) })
+
+        gate.open()
+        await model.conversionTask?.value
+        #expect(model.pageInProgress == nil)
+    }
+
+    @Test("once every page is recognized no page is in progress while the document is assembled")
+    func noPageWhileAssembling() async {
+        let gate = Gate()
+        let model = ConversionModel(pipeline: FakePipeline(gate: gate, pauseAfter: 3))
+        model.open(folder: folder)
+
+        model.start()
+        #expect(await eventually { model.phase == .converting(done: 3, total: 3) })
+        #expect(model.pageInProgress == nil)
+
+        gate.open()
+        await model.conversionTask?.value
     }
 
     @Test("a failed conversion shows the reason")

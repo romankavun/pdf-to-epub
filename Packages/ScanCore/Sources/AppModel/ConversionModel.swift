@@ -70,6 +70,29 @@ public final class ConversionModel {
         self.pipeline = pipeline
     }
 
+    /// A page image being recognized, for the progress screen to show.
+    public struct PageInProgress: Sendable, Equatable {
+        /// One-based position of the page in the document.
+        public var number: Int
+        public var url: URL
+
+        public init(number: Int, url: URL) {
+            self.number = number
+            self.url = url
+        }
+    }
+
+    /// The page the pipeline is working on while converting; `nil` in other
+    /// phases and once every page is recognized and the document is assembled.
+    ///
+    /// Derived from the count of pages done rather than reported by the
+    /// pipeline: pages are recognized one after another, so the next page
+    /// starts as soon as the previous one is reported done.
+    public var pageInProgress: PageInProgress? {
+        guard case let .converting(done, _) = phase, pages.indices.contains(done) else { return nil }
+        return PageInProgress(number: done + 1, url: pages[done])
+    }
+
     /// Whether ``start()`` would do anything.
     public var canStart: Bool {
         guard !pages.isEmpty, !trimmed(title).isEmpty else { return false }

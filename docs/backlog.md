@@ -28,26 +28,19 @@ were found while fixing the last one.
 2. **Part of a line is missing from the OCR output** (printed page 58,
    second paragraph). The right-hand part of a line, from the dash
    onwards, is not among the lines the engine returns, so its words are
-   lost from the document. Not yet investigated (engine, erased marker nearby, or a line filter).
+   lost from the document. Not yet investigated (engine, erased marker
+   nearby, or a line filter).
 3. **A dash is read twice where a line breaks into pieces** (printed page
    66): the left piece ends with "-" and the right piece starts with "—",
    so the joined text has "- —".
 
 ## Improvements
 
-### Next
-
-- **Page preview on the progress screen.** While converting, show the scan of
-  the page being processed with its number and a "page N of M" counter. Purely
-  visual: no recognized data is shown, nothing can be edited, so nothing can be
-  overwritten. Needs a new progress event "starting page N" that carries the
-  page image. Skip intermediate pages if they go faster than they can be read.
-
 ### Later
 
-- **Preview with outlines.** Extend the page preview with the current stage
-  (OCR, notes, illustrations) and the lines and blocks outlined on the scan as
-  soon as the page is recognized.
+- **Preview with outlines.** Extend the page preview on the progress screen
+  with the current stage (OCR, notes, illustrations) and the lines and blocks
+  outlined on the scan as soon as the page is recognized.
 - **Live review during conversion.** Review and correct the pages that are
   already converted while the rest are still being recognized. Layout analysis
   is wholfile (paragraphs continue across pages, note numbering is repaired

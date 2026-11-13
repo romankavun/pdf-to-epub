@@ -1,4 +1,5 @@
 import AppModel
+import ImageIO
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -17,7 +18,7 @@ struct ContentView: View {
             case .ready:
                 MetadataForm(model: model, chooseFolder: chooseFolder)
             case let .converting(done, total):
-                ProgressScreen(done: done, total: total, cancel: model.cancel)
+                ProgressScreen(done: done, total: total, page: model.pageInProgress, cancel: model.cancel)
             case let .finished(conversion):
                 if let review {
                     ReviewScreen(model: review) { self.review = nil }
@@ -136,19 +137,31 @@ private struct MetadataForm: View {
     }
 }
 
-/// Page counter shown while the pipeline runs.
+/// Page counter and the scan of the page being recognized, shown while the
+/// pipeline runs. Only the scan is shown, never recognized text: nothing
+/// here can be edited.
 private struct ProgressScreen: View {
     var done: Int
     var total: Int
+    var page: ConversionModel.PageInProgress?
     var cancel: () -> Void
 
     var body: some View {
         VStack(spacing: 16) {
+            PagePreview(url: page?.url)
+                .frame(maxHeight: .infinity)
             ProgressView(value: Double(done), total: Double(max(total, 1))) {
-                Text("Recognizing pages…")
+                // Once every page is recognized, layout analysis runs with
+                // no page in progress.
+                if page == nil {
+                    Text("Assembling the document…")
+                } else {
+                    Text("Recognizing pages…")
+                }
             } currentValueLabel: {
                 Text("\(done) of \(total)")
             }
+            .frame(maxWidth: 420)
             if done == 0 {
                 Text("The first page can take about a minute while the recognition model loads.")
                     .font(.callout)
@@ -157,7 +170,47 @@ private struct ProgressScreen: View {
             Button("Cancel", role: .cancel, action: cancel)
                 .keyboardShortcut(.cancelAction)
         }
-        .frame(maxWidth: 420)
+    }
+}
+
+/// A page scan scaled down to fit, loaded off the main actor.
+///
+/// The previous scan stays on screen until the next one is ready, so the
+/// preview does not flash empty between pages. A page that is replaced
+/// before it loads is skipped.
+private struct PagePreview: View {
+    var url: URL?
+    @State private var image: CGImage?
+
+    var body: some View {
+        Group {
+            if let image {
+                Image(decorative: image, scale: 1)
+                    .resizable()
+                    .scaledToFit()
+                    .clipShape(.rect(cornerRadius: 4))
+                    .shadow(radius: 3)
+            } else {
+                Color.clear
+            }
+        }
+        .task(id: url) {
+            guard let url, let loaded = await Self.thumbnail(of: url), !Task.isCancelled else { return }
+            image = loaded
+        }
+    }
+
+    /// Big enough for a window filling a large display, small enough to
+    /// decode quickly.
+    @concurrent
+    private static func thumbnail(of url: URL) async -> CGImage? {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceThumbnailMaxPixelSize: 1600,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+        ]
+        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
     }
 }
 
