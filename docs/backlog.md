@@ -18,9 +18,11 @@ notes) the same day. Printed page N is page image N + 1.
    page it covers.
 2. **A list is not captured** (printed pages 62, 63). *Not reproduced:* in
    the dump the items `1)`, `2)`, `3)` on printed pages 61-63 are separate
-   paragraphs with their own areas. Lists still have no rule of their own
-   (they come out as paragraphs, not `<ol>`). Needs the exact page from the
-   user before anything else.
+   paragraphs with their own areas, and the review model built from a full
+   conversion lists them on review pages 63 and 64 with those areas. Lists
+   still have no rule of their own (they come out as paragraphs, not
+   `<ol>`). If the outlines are still missing on screen, the cause is in the
+   view, not the model.
 3. **The first note under the rule is not outlined** (printed page 57, note
    50). *Diagnosed, two causes:*
    - Note 50 is recognized and linked. Review does not show the text of a
