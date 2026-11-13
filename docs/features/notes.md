@@ -6,7 +6,8 @@ of the chapter that refers to it (see [EPUB export](epub-export.md)).
 
 Nothing has to be switched on: `pagescan` and `DocumentConverter` do this for
 every page. The design and the measurements behind it are in
-[ADR 0003](../adr/0003-notes-by-colour-and-sequence.md).
+[ADR 0003](../adr/0003-notes-by-colour-and-sequence.md) and, for documents with
+two kinds of notes numbered apart, [ADR 0004](../adr/0004-two-numbering-systems.md).
 
 ## What counts as a note marker
 
@@ -48,6 +49,11 @@ web address are left alone and stay ordinary text.
   always starts a note.
 - Any other marker is a reference, including one that opens a line in the
   middle of a paragraph (it belongs to the last word of the line above).
+- A marker that opens a line and is followed by `.`, `,` or another closing
+  punctuation mark (or by a bullet, which is how a lone full stop is often
+  read) is never a note label: no note starts that way. The engine
+  sometimes reports the end of a line as a line of its own, starting right
+  at the erased marker. Such a line continues the block above it.
 - Markers inside pictures are ignored.
 
 ## Labels
@@ -65,8 +71,26 @@ A reference is linked by its own label:
 
 | The reference's label | Linked to |
 |---|---|
-| is the number of a note | that note; if several notes carry the number (numbering that restarts in every chapter), the one nearest to where the references before it have got to |
+| is the number of one note | that note |
+| is the number of several notes, some after the reference | the reference's own note (see below); without one, the furthest of them |
+| is the number of several notes, all before the reference | the one nearest to where the references before it have got to |
 | could not be read, or no note carries it | the next note in order |
+
+Several notes carry one number when numbering restarts in every chapter, or
+when a document numbers two kinds of notes apart: explanatory notes after each
+section, say, and a list of cited sources at the end of the document. A
+reference's **own** note is the nearest note after it that
+
+1. is in the first group of notes after the reference (notes with no
+   reference between them; a note's later paragraphs between them do not
+   count), or comes after the document's last reference, where notes collected
+   at the end are; and
+2. has no later reference before it with the same number: a note after a
+   section is referred to just before it appears, so an earlier reference
+   with that number cites something else.
+
+A reference with no own note repeats an earlier citation, and those go to
+the furthest note: the list cited again and again is the one at the end.
 
 Linking by label is what makes documents that **cite sources** work: there the
 same note is referred to several times and not in sequence. The fallback to
@@ -89,14 +113,15 @@ Nothing is dropped silently:
 |---|---|---|---|
 | A (letters, notes at section ends) | 18 | 0 | 1 |
 | B (roman numerals, notes at section ends) | 61 | 0 | 6 |
-| C (numbers, sources cited repeatedly, notes listed at the end of the document) | 461 | 10 | 55 |
+| C (numbers; explanatory notes after sections and sources listed at the end, numbered apart) | 500 | 10 | 8 |
 | D | 1 | 0 | 0 |
 
 All four outputs pass `epubcheck` with no messages. The links were not
 checked one by one against the documents; the counts say how many were made, not
-that each one is right. Set C is the weak spot: about one note text in nine
-is left without a reference, most likely because the label of its reference
-was misread or not read, and why has not been examined page by page.
+that each one is right. In document C, all 71 linked explanatory notes are
+referred to from at most ten pages before them. Of its eight unlinked
+notes, three are explanatory notes whose own reference was misread or merged
+with a neighbouring marker; the rest are in the list of sources.
 
 ## Known limits
 
@@ -105,8 +130,14 @@ was misread or not read, and why has not been examined page by page.
 - **Labels are short and OCR is weak on them.** The sequence repairs most
   errors, but a document whose notes are not numbered in sequence gets labels as
   read, or `*` where nothing was read.
-- **Two numbering systems in one document** collected in different places are
-  not told apart.
+- **Two numbering systems** are told apart only by where their notes are.
+  Two lists with the same numbers collected in one place are not told
+  apart, and when both systems start at the same number close together,
+  the first references go to the nearer note.
+- An explanatory note whose **own reference was misread** stays unlinked
+  rather than taking a citation with the same number.
+- **Two markers side by side** may be detected as one, whose label is both
+  numbers run together (`21852`); neither note is linked to it.
 - A reference label that is **misread as the number of another note** is
   linked to that other note. Nothing in the page tells the two apart.
 - An unread reference label is linked to the next note in order, which is

@@ -310,6 +310,48 @@ struct LayoutAnalyzerNoteTests {
 @Suite("LayoutAnalyzer notes: false labels and numbering systems")
 struct LayoutAnalyzerNoteLinkingTests {
     @Test(
+        "a document with explanatory notes after each section and sources listed at the end links each reference to its own list"
+    )
+    func twoNumberingSystems() {
+        let layout = layout([
+            page([">Cites{1} and{2} and{3} sources."]),
+            page([
+                ">Cites{4} and explains{1} a term.", ">Cites{2} again and explains{2} another.", "",
+                ">{1} Explanation one.", ">{2} Explanation two.",
+            ]),
+            page([">Cites{5} and explains{3} a third.", "", ">{3} Explanation three."]),
+            page([">Sources", ">{1} Source one.", ">{2} Source two.", ">{3} Source three.", ">{4} Source four.",
+                  ">{5} Source five."]),
+        ])
+        // Explanations are note-1 to note-3, sources note-4 to note-8.
+        #expect(layout.blocks.prefix(3) == [
+            .paragraph(["Cites", .noteReference("note-4"), " and", .noteReference("note-5"), " and",
+                        .noteReference("note-6"), " sources."]),
+            .paragraph(["Cites", .noteReference("note-7"), " and explains", .noteReference("note-1"), " a term."]),
+            .paragraph(["Cites", .noteReference("note-5"), " again and explains", .noteReference("note-2"),
+                        " another."]),
+        ])
+        #expect(layout.blocks[3] == .paragraph([
+            "Cites", .noteReference("note-8"), " and explains", .noteReference("note-3"), " a third.",
+        ]))
+        #expect(layout.unlinkedReferences == 0 && layout.unlinkedNotes == 0)
+    }
+
+    @Test("a note after a later section is not taken by a reference whose own section has no such note")
+    func noteOfLaterSection() {
+        let layout = layout([
+            page([">Cites{2} and explains{1} a term.", "", ">{1} Explanation one."]),
+            // The reference to the second explanation was misread.
+            page([">Explains{9} a second term.", "", ">{2} Explanation two."]),
+            page([">Cites{3} in the next section."]),
+            page([">Sources", ">{1} Source one.", ">{2} Source two.", ">{3} Source three."]),
+        ])
+        #expect(layout.blocks.first == .paragraph([
+            "Cites", .noteReference("note-4"), " and explains", .noteReference("note-1"), " a term.",
+        ]))
+    }
+
+    @Test(
         "a marker that opens a line but is followed by punctuation is a reference, not a note",
         arguments: [".", ",", "•"]
     )

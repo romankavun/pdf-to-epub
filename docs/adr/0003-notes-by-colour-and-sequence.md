@@ -69,5 +69,6 @@ can be trusted as recognized in place.
 - Paper scans have no coloured markers; superscript detection by size and
   position is a separate piece of work.
 - Two numbering systems interleaved in one document (letters for one kind of
-  note, numbers for another, collected in different places) are not told
-  apart; the cursor then links some references to the wrong run.
+  note, numbers for another, collected in different places) were not told
+  apart; the cursor linked some references to the wrong run. Superseded by
+  [ADR 0004](0004-two-numbering-systems.md).
