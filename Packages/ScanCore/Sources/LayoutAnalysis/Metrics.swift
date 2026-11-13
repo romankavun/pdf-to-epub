@@ -21,7 +21,7 @@ struct Metrics {
         guard let lineHeight = Self.median(lines.map { Double($0.box.height) }) else { return nil }
         self.lineHeight = lineHeight
 
-        let steps = pages.flatMap { lines in
+        let steps: [Double] = pages.flatMap { lines in
             zip(lines, lines.dropFirst()).map { Double($1.box.minY - $0.box.minY) }
         }
         // A document of single-line pages has no steps; any positive value works
