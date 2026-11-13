@@ -167,15 +167,22 @@ extension LayoutAnalyzer {
     ///
     /// The OCR engine sometimes reports one visual line as two or more
     /// pieces. Left alone, a right-hand piece looks like an indented line and
-    /// breaks the paragraph. Pieces share most of their height and do not
-    /// overlap horizontally; lines above each other never satisfy both.
+    /// breaks the paragraph. Pieces share most of their height and lie
+    /// side by side; lines above each other never satisfy both.
+    ///
+    /// Side by side allows a slight overlap: the engine often lets the box
+    /// of a right-hand piece that opens with a dash start a fraction of a
+    /// character before the left piece ends. A box reported two lines high
+    /// over an ordinary line overlaps it across most of the width instead.
     private func joiningPieces(_ lines: [TextLine]) -> [TextLine] {
         var rows: [[TextLine]] = []
         for line in lines.sorted(by: { $0.box.minX < $1.box.minX }) {
             let row = rows.firstIndex { row in
                 row.allSatisfy { other in
                     let shared = min(line.box.maxY, other.box.maxY) - max(line.box.minY, other.box.minY)
-                    return shared > 0.5 * min(line.box.height, other.box.height) && other.box.maxX <= line.box.minX
+                    let overlap = other.box.maxX - line.box.minX
+                    return shared > 0.5 * min(line.box.height, other.box.height)
+                        && overlap <= 0.5 * min(line.box.width, other.box.width)
                 }
             }
             if let row {

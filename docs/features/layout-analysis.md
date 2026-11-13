@@ -16,7 +16,7 @@ Pictures and their captions are described in
 | New paragraph | The line starts to the right of the margin (first-line indent), **or** the vertical step from the previous line is more than 1.5 typical steps (a blank line) |
 | Paragraph across pages | A page whose first line is not indented continues the last paragraph of the previous page |
 | Heading | A line at least 1.5 times taller than the median line, whose box does not overlap a line above or below it by more than 10% of its height (a body line that the OCR engine measured two lines high does). Consecutive tall lines directly below each other form one heading. Always level 1 |
-| Line in pieces | Boxes side by side on one row (sharing over half their height, not overlapping horizontally) are joined into one line, left to right |
+| Line in pieces | Boxes side by side on one row (sharing over half their height and overlapping horizontally by at most half the narrower box; the engine often starts a piece that opens with a dash slightly inside the piece before it) are joined into one line, left to right |
 | Text inside a picture | Dropped |
 | Note text in a list | A paragraph that opens with a note marker at the margin has a hanging indent: its indented lines continue it, and an unindented line without a marker ends it |
 | Page number | The last line of a page, if it is in the bottom 15%, at most four characters, digits only. Dropped |

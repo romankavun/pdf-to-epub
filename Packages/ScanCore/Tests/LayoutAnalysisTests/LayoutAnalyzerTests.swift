@@ -118,6 +118,32 @@ struct LayoutAnalyzerTests {
         ])
     }
 
+    @Test("pieces of a line whose boxes overlap slightly are still one line")
+    func lineInOverlappingPieces() {
+        var first = page([">first a", "", "first c", ">second a", "second b"])
+        // As on real pages: the engine breaks the line before a dash, and the
+        // right piece's box starts a little before the left piece's box ends
+        // and a little higher.
+        first.lines.append(line("— right piece", x: 0.1627, y: 0.1 + pitch - 0.001, width: 0.8))
+        first.lines.append(line("left piece", y: 0.1 + pitch, width: 0.1151, height: 0.015))
+        #expect(paragraphs(analyzer.blocks(from: [first])) == [
+            "first a left piece — right piece first c",
+            "second a second b",
+        ])
+    }
+
+    @Test("lines whose boxes overlap for most of their width are not joined side by side")
+    func overlappingLinesStayApart() {
+        // A box reported two lines high over an ordinary line: they share
+        // height but lie on top of each other, not side by side.
+        let first = RecognizedPage(lines: [
+            line("first a", x: indent, y: 0.1, width: 0.87),
+            line("tall b", y: 0.1 + pitch, width: 0.9, height: 0.037),
+            line("first c", y: 0.1 + 2 * pitch, width: 0.85),
+        ])
+        #expect(paragraphs(analyzer.blocks(from: [first])) == ["first a tall b first c"])
+    }
+
     @Test("drops a page number at the bottom but keeps numbers in the text")
     func pageNumber() {
         var first = page([">In the year", "1984", "something happened."])

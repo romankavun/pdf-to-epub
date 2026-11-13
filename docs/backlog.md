@@ -9,11 +9,14 @@ about Ukrainian folk demonology; do not copy its text here.
 
 Found on 2026-11-13 while checking the first manual run, then checked
 against the layout of the whole document (a dump of lines, markers, blocks and
-notes) the same day. Printed page N is page image N + 1. Two other defects
-found then (a paragraph at the top of a page and the first note under the
-rule had no outline) were fixed the same day: review now shows a block on every page it covers and
-the text of linked notes, and notes are linked within their own numbering
-system ([ADR 0004](adr/0004-two-numbering-systems.md)).
+notes) the same day. Printed page N is page image N + 1. Other defects
+found then are fixed: a paragraph at the top of a page and the first note
+under the rule had no outline (review now shows a block on every page it
+covers and the text of linked notes, and notes are linked within their own
+numbering system, [ADR 0004](adr/0004-two-numbering-systems.md)), and a
+paragraph was split in two where the engine reported a line as two pieces
+whose boxes overlap slightly (now joined as one line). Defects 2 and 3 below
+were found while fixing the last one.
 
 1. **A list is not captured** (printed pages 62, 63). *Not reproduced:* in
    the dump the items `1)`, `2)`, `3)` on printed pages 61-63 are separate
@@ -22,12 +25,13 @@ system ([ADR 0004](adr/0004-two-numbering-systems.md)).
    still have no rule of their own (they come out as paragraphs, not
    `<ol>`). If the outlines are still missing on screen, the cause is in the
    view, not the model.
-2. **A paragraph is split in two where a line starts with a dash or is
-   read in pieces** (printed pages 58, 61, 62, 66). Found in the same dump.
-   A line that starts with "—" right after a line that ended short of the
-   margin begins a new paragraph, and a line that the OCR engine reported
-   as two pieces at slightly different heights becomes two overlapping
-   paragraphs instead of one line.
+2. **Part of a line is missing from the OCR output** (printed page 58,
+   second paragraph). The right-hand part of a line, from the dash
+   onwards, is not among the lines the engine returns, so its words are
+   lost from the document. Not yet investigated (engine, erased marker nearby, or a line filter).
+3. **A dash is read twice where a line breaks into pieces** (printed page
+   66): the left piece ends with "-" and the right piece starts with "—",
+   so the joined text has "- —".
 
 ## Improvements
 
