@@ -108,17 +108,19 @@ private struct MetadataForm: View {
                     Text("English").tag("en")
                 }
             }
-            Section {
-                HStack {
-                    Spacer()
-                    Button("Convert", action: model.start)
-                        .buttonStyle(.borderedProminent)
-                        .keyboardShortcut(.defaultAction)
-                        .disabled(!model.canStart)
-                }
-            }
         }
         .formStyle(.grouped)
+        .safeAreaInset(edge: .bottom) {
+            HStack {
+                Spacer()
+                Button("Convert", action: model.start)
+                    .buttonStyle(.borderedProminent)
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(!model.canStart)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+        }
     }
 }
 
@@ -171,7 +173,11 @@ private struct ResultScreen: View {
                     LabeledContent("Notes without a reference", value: summary.unlinkedNotes.formatted())
                 }
             }
-            Section {
+        }
+        .formStyle(.grouped)
+        // Kept outside the scrolling form so saving is always in reach.
+        .safeAreaInset(edge: .bottom) {
+            VStack(spacing: 12) {
                 exportStatus
                 HStack {
                     Button("Choose Another Folder…", action: chooseFolder)
@@ -181,8 +187,9 @@ private struct ResultScreen: View {
                         .keyboardShortcut("s")
                 }
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
         }
-        .formStyle(.grouped)
     }
 
     @ViewBuilder private var exportStatus: some View {
