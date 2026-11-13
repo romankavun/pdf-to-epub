@@ -40,21 +40,7 @@ struct NoteLinker {
     /// - Parameter sources: The origin of each block of `drafts`.
     func layout(of drafts: [DraftBlock], sources: [BlockSource]) -> DocumentLayout {
         var bodies = bodies(in: drafts)
-        let references = drafts.enumerated().flatMap { position, draft in
-            references(in: draft).map { Reference(marker: $0, position: position) }
-        }
-        var cursor = 0
-        var unlinkedReferences = 0
-        // Markers to the index of the note they refer to.
-        var links: [Int: Int] = [:]
-        for index in references.indices {
-            if let target = target(of: index, among: references, in: bodies, cursor: &cursor) {
-                links[references[index].marker] = target
-                bodies[target].isReferenced = true
-            } else {
-                unlinkedReferences += 1
-            }
-        }
+        let (links, unlinkedReferences) = link(drafts, to: &bodies)
 
         var blocks: [Block] = []
         var kept: [BlockSource] = []
@@ -95,6 +81,29 @@ struct NoteLinker {
             unlinkedReferences: unlinkedReferences,
             unlinkedNotes: bodies.count { !$0.isReferenced }
         )
+    }
+
+    /// Links every reference in `drafts` to a note of `bodies`, marking the
+    /// notes that are referred to.
+    ///
+    /// - Returns: Marker indices to the index of the note they refer to, and
+    ///   the number of references that could not be linked.
+    private func link(_ drafts: [DraftBlock], to bodies: inout [Body]) -> (links: [Int: Int], unlinked: Int) {
+        let references = drafts.enumerated().flatMap { position, draft in
+            references(in: draft).map { Reference(marker: $0, position: position) }
+        }
+        var cursor = 0
+        var unlinked = 0
+        var links: [Int: Int] = [:]
+        for index in references.indices {
+            if let target = target(of: index, among: references, in: bodies, cursor: &cursor) {
+                links[references[index].marker] = target
+                bodies[target].isReferenced = true
+            } else {
+                unlinked += 1
+            }
+        }
+        return (links, unlinked)
     }
 
     /// Inline content for `pieces`. A marker becomes a reference to the
