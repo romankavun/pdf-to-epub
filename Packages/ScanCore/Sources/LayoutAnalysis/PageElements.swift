@@ -35,9 +35,20 @@ struct Row {
     /// before it ("12. ") does not count as a word: endnotes are often set
     /// as a numbered list with the note's own label after the number.
     var leadingMarker: Int? {
-        guard let first = markers.first else { return nil }
+        guard let first = markers.first, !isRemainder else { return nil }
         let before = wordsBefore(first.box)
         return before == 0 || (before == 1 && hasListNumber) ? first.index : nil
+    }
+
+    /// Whether the line is the end of the line above, reported as a line of
+    /// its own: it opens with a marker followed by punctuation that closes
+    /// a sentence or clause, which no note text starts with. The engine
+    /// does this now and then right after an erased marker.
+    var isRemainder: Bool {
+        guard let first = markers.first, wordsBefore(first.box) == 0,
+              let next = words.first(where: { $0.box.midX > first.box.midX })
+        else { return false }
+        return next.text.isClosingPunctuation || ["•", "·"].contains(next.text.first)
     }
 
     /// Whether the line opens with a list number followed by a marker.
