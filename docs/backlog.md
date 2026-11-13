@@ -7,27 +7,37 @@ about Ukrainian folk demonology; do not copy its text here.
 
 ## Defects found by hand in the review screen
 
-Found on 2026-11-13 while checking the first manual run. In the review screen
-the area of every recognized block is outlined on the scan; the items below are
-content that is on the page but has no outline, so it is most likely missing
-from the result (to be confirmed against the model, not just the overlay).
+Found on 2026-11-13 while checking the first manual run, then checked
+against the layout of the whole document (a dump of lines, markers, blocks and
+notes) the same day. Printed page N is page image N + 1.
 
-1. **Paragraph at the top of a page is not captured** (printed pages 65, 66).
-   The first lines of the page, a paragraph that continues from the previous
-   page, have no block. Check whether the continuation is merged into the
-   previous page's block (then only the overlay is wrong) or dropped.
-   Merging is the expected behaviour: a page that starts with an unindented
-   line continues the previous paragraph ([layout analysis](features/layout-analysis.md)),
-   and review shows a block only on the page where it starts
-   ([review](features/review.md)). If that is confirmed, the fix belongs in
-   review: list the continued block on every page it covers.
-2. **A list is not captured** (printed pages 62, 63). Items numbered `1)`,
-   `2)`, `3)`, set in a narrower, indented column, have no blocks. Lists are in
-   scope for v1 (`CLAUDE.md`) but layout analysis has no list rule yet.
-3. **The first note under the rule is not captured** (printed page 57, note
-   50). The notes after it on the same page are. Look at what separates the
-   first note from the rule: the marker search, the note-start detection, or
-   the strip of crops that reads the label.
+1. **Paragraph at the top of a page is not outlined** (printed pages 65,
+   66). *Diagnosed:* no text is lost. The continuation is merged into the
+   paragraph from the previous page, as designed, and review shows a block
+   only on the page where it starts. Fix in review: show the block on every
+   page it covers.
+2. **A list is not captured** (printed pages 62, 63). *Not reproduced:* in
+   the dump the items `1)`, `2)`, `3)` on printed pages 61-63 are separate
+   paragraphs with their own areas. Lists still have no rule of their own
+   (they come out as paragraphs, not `<ol>`). Needs the exact page from the
+   user before anything else.
+3. **The first note under the rule is not outlined** (printed page 57, note
+   50). *Diagnosed, two causes:*
+   - Note 50 is recognized and linked. Review does not show the text of a
+     linked note at all, only unlinked note texts (as paragraphs), so the
+     page shows exactly the notes that failed. Fix in review: show note
+     texts on their page.
+   - The document has two numbering systems: footnotes under a rule at the
+     bottom of some pages, and a list of sources at the end of the document.
+     Both use the same numbers, so linking mixes them: on printed page 57
+     notes 52-54, and on page 66 notes 55-58, stay unlinked. This is the
+     known limit "two numbering systems in one document" ([notes](features/notes.md)).
+4. **A paragraph is split in two where a line starts with a dash or is
+   read in pieces** (printed pages 58, 61, 62, 66). Found in the same dump.
+   A line that starts with "—" right after a line that ended short of the
+   margin begins a new paragraph, and a line that the OCR engine reported
+   as two pieces at slightly different heights becomes two overlapping
+   paragraphs instead of one line.
 
 ## Improvements
 
