@@ -178,9 +178,7 @@ public struct LayoutAnalyzer: Sendable {
            isCaption(finished, gapBelow: gapBelow, metrics: metrics)
         {
             assembly.blocks[index] = .figure(imageID: imageID, caption: finished.pieces)
-            if assembly.sources[index].page == source.page {
-                assembly.sources[index].box = assembly.sources[index].box.union(source.box)
-            }
+            assembly.sources[index].add(source)
         } else {
             assembly.blocks.append(finished.block)
             assembly.sources.append(source)

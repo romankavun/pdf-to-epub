@@ -43,7 +43,7 @@ struct Draft {
     /// list are recognized as such.
     let isHanging: Bool
     private(set) var pieces: [Piece] = []
-    /// Where the block starts; `nil` until its first line is added.
+    /// The areas the block covers; `nil` until its first line is added.
     private(set) var source: BlockSource?
 
     init(isHeading: Bool, figureIndex: Int? = nil, noteMarker: Int? = nil, isHanging: Bool = false) {
@@ -63,12 +63,10 @@ struct Draft {
 
     /// Adds the content of the next line, which lies at `box` on `page`.
     mutating func append(_ line: [Piece], page: Int, box: CGRect) {
-        if let source {
-            if source.page == page {
-                self.source?.box = source.box.union(box)
-            }
-        } else {
+        if source == nil {
             source = BlockSource(page: page, box: box)
+        } else {
+            source?.add(box, onPage: page)
         }
         guard let first = line.first else { return }
         switch (pieces.last, first) {
