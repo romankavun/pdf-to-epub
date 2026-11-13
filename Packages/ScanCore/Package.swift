@@ -7,7 +7,16 @@ let package = Package(
     products: [
         .library(
             name: "ScanCore",
-            targets: ["DocumentModel", "EPUBExport", "OCR", "LayoutAnalysis", "Importing", "Conversion", "AppModel"]
+            targets: [
+                "DocumentModel",
+                "EPUBExport",
+                "OCR",
+                "LayoutAnalysis",
+                "Importing",
+                "Conversion",
+                "TextReview",
+                "AppModel",
+            ]
         ),
         .executable(name: "pagescan", targets: ["pagescan"]),
     ],
@@ -18,15 +27,22 @@ let package = Package(
         .target(name: "LayoutAnalysis", dependencies: ["DocumentModel", "OCR"]),
         .target(name: "Importing"),
         .target(name: "Conversion", dependencies: ["DocumentModel", "OCR", "LayoutAnalysis"]),
+        .target(name: "TextReview"),
         .target(
             name: "AppModel",
-            dependencies: ["DocumentModel", "OCR", "Importing", "Conversion", "EPUBExport"]
+            dependencies: [
+                "DocumentModel", "OCR", "Importing", "LayoutAnalysis", "Conversion", "EPUBExport", "TextReview",
+            ]
         ),
         .executableTarget(
             name: "pagescan",
             dependencies: ["DocumentModel", "OCR", "Importing", "Conversion", "EPUBExport"]
         ),
-        .testTarget(name: "AppModelTests", dependencies: ["AppModel", "Conversion", "DocumentModel", "Importing"]),
+        .testTarget(name: "TextReviewTests", dependencies: ["TextReview"]),
+        .testTarget(
+            name: "AppModelTests",
+            dependencies: ["AppModel", "Conversion", "DocumentModel", "Importing", "LayoutAnalysis", "TextReview"]
+        ),
         .testTarget(name: "ImportingTests", dependencies: ["Importing"]),
         .testTarget(name: "ConversionTests", dependencies: ["Conversion", "DocumentModel", "OCR"]),
         .testTarget(name: "OCRTests", dependencies: ["OCR"]),
