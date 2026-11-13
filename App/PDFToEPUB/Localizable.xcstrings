@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%lld" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        }
+      }
+    },
     "%lld of %lld" : {
       "localizations" : {
         "uk" : {
@@ -23,6 +33,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Автор"
+          }
+        }
+      }
+    },
+    "Back to Summary" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "До підсумку"
           }
         }
       }
@@ -117,6 +137,16 @@
         }
       }
     },
+    "Could not load the page image" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося завантажити зображення сторінки"
+          }
+        }
+      }
+    },
     "Could not save the EPUB: %@" : {
       "localizations" : {
         "uk" : {
@@ -157,6 +187,16 @@
         }
       }
     },
+    "Heading %lld" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заголовок %lld"
+          }
+        }
+      }
+    },
     "Headings" : {
       "localizations" : {
         "uk" : {
@@ -167,12 +207,48 @@
         }
       }
     },
+    "Illustration" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ілюстрація"
+          }
+        }
+      }
+    },
     "Illustrations" : {
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ілюстрації"
+          }
+        }
+      }
+    },
+    "Issue %lld of %lld" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проблема %1$lld із %2$lld"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Issue %1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "It is a cover, a blank page, or the end of a paragraph from the page before." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Це обкладинка, порожня сторінка або закінчення абзацу з попередньої сторінки."
           }
         }
       }
@@ -197,6 +273,26 @@
         }
       }
     },
+    "Next Issue" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Наступна проблема"
+          }
+        }
+      }
+    },
+    "Next Page" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Наступна сторінка"
+          }
+        }
+      }
+    },
     "No" : {
       "localizations" : {
         "uk" : {
@@ -213,6 +309,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Документу не відкрито"
+          }
+        }
+      }
+    },
+    "No suspicious words" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Підозрілих слів немає"
+          }
+        }
+      }
+    },
+    "No text starts on this page" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "На цій сторінці не починається жоден блок"
           }
         }
       }
@@ -237,6 +353,22 @@
         }
       }
     },
+    "Page %lld of %lld" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сторінка %1$lld із %2$lld"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Page %1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "Pages" : {
       "localizations" : {
         "uk" : {
@@ -247,12 +379,42 @@
         }
       }
     },
+    "Paragraph" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Абзац"
+          }
+        }
+      }
+    },
     "Paragraphs" : {
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Абзаци"
+          }
+        }
+      }
+    },
+    "Previous Issue" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Попередня проблема"
+          }
+        }
+      }
+    },
+    "Previous Page" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Попередня сторінка"
           }
         }
       }
@@ -273,6 +435,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Посилання без примітки"
+          }
+        }
+      }
+    },
+    "Review…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переглянути…"
           }
         }
       }
@@ -307,12 +479,32 @@
         }
       }
     },
+    "Suspicious words: %lld" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Підозрілих слів: %lld"
+          }
+        }
+      }
+    },
     "Text recognition stopped responding. Try again." : {
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Розпізнавання тексту перестало відповідати. Спробуйте ще раз."
+          }
+        }
+      }
+    },
+    "The document has no pages" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У книзі немає сторінок"
           }
         }
       }

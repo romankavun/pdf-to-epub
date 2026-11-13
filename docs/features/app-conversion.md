@@ -2,7 +2,8 @@
 
 The app's main window takes a folder of page images through the same
 pipeline as [`pagescan`](pagescan-cli.md) and saves the result as an EPUB.
-There is no review step yet: what the pipeline produces is what gets saved.
+The result can be [reviewed](review.md) against the scans before saving,
+but not edited yet: what the pipeline produces is what gets saved.
 
 ## Usage
 
@@ -17,7 +18,8 @@ There is no review step yet: what the pipeline produces is what gets saved.
 4. **Review the numbers**: chapters, headings, paragraphs, illustrations,
    notes and whether a cover was found. *Needs attention* appears when note
    references or note texts could not be linked; see [notes](notes.md).
-5. **Save EPUB…** (⌘S): the save panel suggests `<folder>.epub` next to the
+5. **Review…** (⌘R): see [review](review.md).
+6. **Save EPUB…** (⌘S): the save panel suggests `<folder>.epub` next to the
    folder. The document can be saved more than once.
 
 ## How it is built

@@ -7,6 +7,7 @@
 - Features: [features/](features/) - one page per user-facing feature.
   - [pagescan CLI: folder of page images to EPUB](features/pagescan-cli.md)
   - [App: convert a folder and save the EPUB](features/app-conversion.md)
+  - [Review: the scan next to what was recognized](features/review.md)
   - [Layout analysis](features/layout-analysis.md)
   - [Illustrations, captions and the cover](features/illustrations.md)
   - [Notes: references, note texts and linking](features/notes.md)

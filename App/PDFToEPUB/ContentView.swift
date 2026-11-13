@@ -6,6 +6,8 @@ import UniformTypeIdentifiers
 struct ContentView: View {
     @Bindable var model: ConversionModel
     @State private var isChoosingFolder = false
+    /// The review of the finished conversion, while its screen is open.
+    @State private var review: ReviewModel?
 
     var body: some View {
         Group {
@@ -17,13 +19,23 @@ struct ContentView: View {
             case let .converting(done, total):
                 ProgressScreen(done: done, total: total, cancel: model.cancel)
             case let .finished(conversion):
-                ResultScreen(model: model, summary: ConversionSummary(conversion), chooseFolder: chooseFolder)
+                if let review {
+                    ReviewScreen(model: review) { self.review = nil }
+                } else {
+                    ResultScreen(
+                        model: model, summary: ConversionSummary(conversion), chooseFolder: chooseFolder
+                    ) {
+                        review = ReviewModel(conversion: conversion)
+                    }
+                }
             case let .failed(failure):
                 failureView(failure)
             }
         }
         .padding(24)
         .frame(minWidth: 640, minHeight: 420)
+        // A review belongs to one conversion; any change of phase ends it.
+        .onChange(of: model.phase) { review = nil }
         .fileImporter(isPresented: $isChoosingFolder, allowedContentTypes: [.folder]) { result in
             if case let .success(url) = result {
                 model.open(folder: url)
@@ -154,6 +166,7 @@ private struct ResultScreen: View {
     var model: ConversionModel
     var summary: ConversionSummary
     var chooseFolder: () -> Void
+    var review: () -> Void
 
     var body: some View {
         Form {
@@ -182,6 +195,8 @@ private struct ResultScreen: View {
                 HStack {
                     Button("Choose Another Folder…", action: chooseFolder)
                     Spacer()
+                    Button("Review…", action: review)
+                        .keyboardShortcut("r")
                     Button("Save EPUB…", action: save)
                         .buttonStyle(.borderedProminent)
                         .keyboardShortcut("s")

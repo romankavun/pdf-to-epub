@@ -8,8 +8,9 @@ Status: **first end-to-end pipeline works from the command line**: a folder
 of page images goes through Vision OCR, layout analysis and EPUB export
 (`pagescan` CLI, all in `Packages/ScanCore`), with illustrations, captions,
 the cover and linked notes. The app does the same from a window: choose a
-folder, convert with progress, save the EPUB (`AppModel` + `App/`). Body-size
-headings, PDF input and the review UI are not built; see
+folder, convert with progress, review the result against the scans
+(read-only), save the EPUB (`AppModel` + `App/`). Body-size headings, PDF
+input and corrections in review are not built; see
 `docs/features/` for what each piece does and its limits. Modules listed
 below that do not exist yet are created when a test first needs them.
 
@@ -106,6 +107,7 @@ Packages/ScanCore/          Swift package, no UI imports
     EPUBExport/             EPUB 3 writer
     ProjectStore/           project bundle persistence
     Conversion/             pipeline: pages -> Document
+    TextReview/             suspicious-word rules; no dependencies
     AppModel/               view models (Observation only, no SwiftUI/AppKit)
     pagescan/               CLI for batch conversion and debugging
   Tests/                    one test target per module + Fixtures/
@@ -233,6 +235,6 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
 6. ~~Notes: colour-based markers, note texts, linking~~ (done; ADR 0003).
    Still open from this milestone: bold/body-size headings and running
    header removal.
-7. App UI: ~~import, progress, export~~ (done, no review yet); review
-   screen, corrections.
+7. App UI: ~~import, progress, export, read-only review screen~~ (done);
+   spell-check rule, corrections.
 8. Project persistence and correction propagation.
