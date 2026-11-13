@@ -9,32 +9,20 @@ about Ukrainian folk demonology; do not copy its text here.
 
 Found on 2026-11-13 while checking the first manual run, then checked
 against the layout of the whole document (a dump of lines, markers, blocks and
-notes) the same day. Printed page N is page image N + 1.
+notes) the same day. Printed page N is page image N + 1. Two other defects
+found then (a paragraph at the top of a page and the first note under the
+rule had no outline) were fixed the same day: review now shows a block on every page it covers and
+the text of linked notes, and notes are linked within their own numbering
+system ([ADR 0004](adr/0004-two-numbering-systems.md)).
 
-1. **Paragraph at the top of a page is not outlined** (printed pages 65,
-   66). *Diagnosed:* no text is lost. The continuation is merged into the
-   paragraph from the previous page, as designed, and review shows a block
-   only on the page where it starts. Fix in review: show the block on every
-   page it covers.
-2. **A list is not captured** (printed pages 62, 63). *Not reproduced:* in
+1. **A list is not captured** (printed pages 62, 63). *Not reproduced:* in
    the dump the items `1)`, `2)`, `3)` on printed pages 61-63 are separate
    paragraphs with their own areas, and the review model built from a full
    conversion lists them on review pages 63 and 64 with those areas. Lists
    still have no rule of their own (they come out as paragraphs, not
    `<ol>`). If the outlines are still missing on screen, the cause is in the
    view, not the model.
-3. **The first note under the rule is not outlined** (printed page 57, note
-   50). *Diagnosed, two causes:*
-   - Note 50 is recognized and linked. Review does not show the text of a
-     linked note at all, only unlinked note texts (as paragraphs), so the
-     page shows exactly the notes that failed. Fix in review: show note
-     texts on their page.
-   - The document has two numbering systems: footnotes under a rule at the
-     bottom of some pages, and a list of sources at the end of the document.
-     Both use the same numbers, so linking mixes them: on printed page 57
-     notes 52-54, and on page 66 notes 55-58, stay unlinked. This is the
-     known limit "two numbering systems in one document" ([notes](features/notes.md)).
-4. **A paragraph is split in two where a line starts with a dash or is
+2. **A paragraph is split in two where a line starts with a dash or is
    read in pieces** (printed pages 58, 61, 62, 66). Found in the same dump.
    A line that starts with "—" right after a line that ended short of the
    margin begins a new paragraph, and a line that the OCR engine reported
