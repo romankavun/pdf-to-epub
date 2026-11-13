@@ -2,8 +2,9 @@
 
 Writes a `Document` (the document model) as an EPUB 3 file.
 
-Status: implemented in `ScanCore` (`EPUBExport` module). Not yet reachable
-from the app UI or a CLI; today it is called from code.
+Implemented in `ScanCore` (`EPUBExport` module). It is what *Save EPUB…* in
+the [app](app-conversion.md) and the last step of
+[`pagescan`](pagescan-cli.md) call.
 
 ## Usage
 

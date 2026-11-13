@@ -16,6 +16,11 @@ from the result (to be confirmed against the model, not just the overlay).
    The first lines of the page, a paragraph that continues from the previous
    page, have no block. Check whether the continuation is merged into the
    previous page's block (then only the overlay is wrong) or dropped.
+   Merging is the expected behaviour: a page that starts with an unindented
+   line continues the previous paragraph ([layout analysis](features/layout-analysis.md)),
+   and review shows a block only on the page where it starts
+   ([review](features/review.md)). If that is confirmed, the fix belongs in
+   review: list the continued block on every page it covers.
 2. **A list is not captured** (printed pages 62, 63). Items numbered `1)`,
    `2)`, `3)`, set in a narrower, indented column, have no blocks. Lists are in
    scope for v1 (`CLAUDE.md`) but layout analysis has no list rule yet.

@@ -1,8 +1,8 @@
 # pagescan: convert a folder of page images from the command line
 
 Converts a folder holding one image per page into an EPUB. It runs the same
-pipeline the app will use and exists for batch runs and for checking results
-without the UI.
+pipeline as the [app](app-conversion.md) and exists for batch runs and for
+checking results without the UI.
 
 ## Usage
 
@@ -22,7 +22,7 @@ The first page takes up to a minute while Vision loads its model; after that
 a page takes well under a second. A 380-page sample set converts in about
 100 seconds.
 
-It ends with a summary: chapters, headings, paragraphs, figures, whether a
+Progress is printed every 25 pages. It ends with a summary: chapters, headings, paragraphs, figures, whether a
 cover was found, the notes linked, and the references and note texts that
 could not be linked.
 
@@ -55,4 +55,5 @@ could not be linked.
   comes out as a single chapter.
 - Notes are found only when their markers are drawn as blue links, as the
   sample clean-page source does.
-- No review step: the output is exactly what the heuristics produced.
+- No review step: the output is exactly what the heuristics produced. To
+  look at the result against the scans, use [review](review.md) in the app.

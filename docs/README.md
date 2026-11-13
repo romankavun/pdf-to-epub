@@ -1,5 +1,7 @@
 # Documentation
 
+Build, run and a usage walkthrough are in the [project README](../README.md).
+
 - Architecture decisions: [adr/](adr/)
   - [0001 - What we take from Vision and what we compute ourselves](adr/0001-vision-document-recognition.md)
   - [0002 - Pictures are found from pixel bands, not from OCR output](adr/0002-picture-detection.md)

@@ -72,7 +72,17 @@ the document, illustrations with captions, a cover and a contents page.
 ## Not yet verified
 
 - Italic/bold detection for inline emphasis.
-- Illustration region detection and caption association.
+- Illustration region detection and caption association. *Resolved by
+  [ADR 0002](0002-picture-detection.md).*
 - Whether re-recognising a cropped note reference actually yields correct
-  digits (decision 4 is the plan, not a measured result).
+  digits (decision 4 is the plan, not a measured result). *Resolved by
+  [ADR 0003](0003-notes-by-colour-and-sequence.md): one marker alone is
+  unreliable, all markers of a page in one strip work much better.*
 - Latin-script and mixed-language paragraphs beyond single words.
+
+## Status of the decisions
+
+As of 2026-11-13: decisions 1, 2, 4 and 6 are built. Of decision 3, the
+mixed-script and digit-between-letters rules are built
+([review](../features/review.md)); the spell checker is not. Decision 5 is
+open: headings are found by height only. Decision 7 is unchanged.

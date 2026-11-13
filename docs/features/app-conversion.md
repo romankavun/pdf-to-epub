@@ -20,7 +20,11 @@ but not edited yet: what the pipeline produces is what gets saved.
    references or note texts could not be linked; see [notes](notes.md).
 5. **Review…** (⌘R): see [review](review.md).
 6. **Save EPUB…** (⌘S): the save panel suggests `<folder>.epub` next to the
-   folder. The document can be saved more than once.
+   folder. After saving, *Show in Finder* reveals the file. The document can be
+   saved more than once.
+
+The interface is in English, with a Ukrainian localization
+(`App/PDFToEPUB/Localizable.xcstrings`).
 
 ## How it is built
 

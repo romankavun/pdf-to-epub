@@ -35,6 +35,8 @@ Thresholds live in `LayoutAnalyzer.Options`.
   which do not hyphenate; printed documents with soft hyphenation will get stray
   hyphens.
 - Running headers and footers other than a page number are not removed.
+- Lists are not recognized. Items set in a narrower, indented column may be
+  missing from the result (see [backlog](../backlog.md), defect 2).
 - Single-column pages only. Because pieces on one row are joined, a table
   or two columns of text are read across, row by row.
 - No inline formatting (italic, bold) is recovered.
