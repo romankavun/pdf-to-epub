@@ -55,4 +55,28 @@ public struct PageBitmap: Sendable, Equatable {
             }
         }
     }
+
+    /// The colour of the page itself: the most common colour on its border.
+    /// Black for an empty bitmap.
+    public var backgroundColor: Color {
+        guard width > 0, height > 0 else { return Color(red: 0, green: 0, blue: 0) }
+        var counts: [UInt32: Int] = [:]
+        func count(_ column: Int, _ row: Int) {
+            let offset = (row * width + column) * Self.bytesPerPixel
+            let key = UInt32(pixels[offset]) << 16 | UInt32(pixels[offset + 1]) << 8 | UInt32(pixels[offset + 2])
+            counts[key, default: 0] += 1
+        }
+        for column in 0 ..< width {
+            count(column, 0)
+            count(column, height - 1)
+        }
+        for row in 0 ..< height {
+            count(0, row)
+            count(width - 1, row)
+        }
+        // Ties are broken by value so that the result does not depend on
+        // dictionary order.
+        let key = counts.max { $0.value != $1.value ? $0.value < $1.value : $0.key < $1.key }?.key ?? 0
+        return Color(red: UInt8(key >> 16 & 0xFF), green: UInt8(key >> 8 & 0xFF), blue: UInt8(key & 0xFF))
+    }
 }

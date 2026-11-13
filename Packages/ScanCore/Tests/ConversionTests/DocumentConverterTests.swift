@@ -7,10 +7,40 @@ import Testing
 /// Returns canned pages keyed by file name instead of looking at pixels.
 private struct FakeEngine: OCREngine {
     var pages: [String: RecognizedPage]
+    /// Labels to report for the marker regions of a page, keyed by file name.
+    var labels: [String: [String]] = [:]
+    var erased = Recorder<[CGRect]>()
 
-    func recognize(imageAt url: URL) async throws -> RecognizedPage {
+    func recognize(imageAt url: URL, erasing regions: [CGRect]) async throws -> RecognizedPage {
         guard let page = pages[url.lastPathComponent] else { throw CocoaError(.fileNoSuchFile) }
+        erased.record(regions)
         return page
+    }
+
+    func readLabels(inImageAt url: URL, regions: [CGRect]) async throws -> [String] {
+        labels[url.lastPathComponent] ?? regions.map { _ in "" }
+    }
+}
+
+/// Returns canned marker boxes keyed by file name.
+private struct FakeLocator: NoteMarkerLocator {
+    var markers: [String: [CGRect]] = [:]
+
+    func markers(inImageAt url: URL) throws -> [CGRect] {
+        markers[url.lastPathComponent] ?? []
+    }
+}
+
+private final class Recorder<Value: Sendable>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storage: [Value] = []
+
+    func record(_ value: Value) {
+        lock.withLock { storage.append(value) }
+    }
+
+    var values: [Value] {
+        lock.withLock { storage }
     }
 }
 
@@ -53,7 +83,11 @@ struct DocumentConverterTests {
 
     @Test("recognizes every page in order and splits chapters at level 1 headings")
     func chapters() async throws {
-        let document = try await DocumentConverter(engine: engine, pictureExtractor: FakeExtractor()).convert(
+        let document = try await DocumentConverter(
+            engine: engine,
+            pictureExtractor: FakeExtractor(),
+            markerLocator: FakeLocator()
+        ).convert(
             pageURLs: urls,
             metadata: metadata
         )
@@ -68,7 +102,11 @@ struct DocumentConverterTests {
 
     @Test("a document that starts with a heading has no untitled leading chapter")
     func startsWithHeading() async throws {
-        let document = try await DocumentConverter(engine: engine, pictureExtractor: FakeExtractor()).convert(
+        let document = try await DocumentConverter(
+            engine: engine,
+            pictureExtractor: FakeExtractor(),
+            markerLocator: FakeLocator()
+        ).convert(
             pageURLs: Array(urls.dropFirst()),
             metadata: metadata
         )
@@ -78,19 +116,20 @@ struct DocumentConverterTests {
     @Test("reports progress once per page, in order")
     func progress() async throws {
         let recorder = ProgressRecorder()
-        _ = try await DocumentConverter(engine: engine, pictureExtractor: FakeExtractor()).convert(
-            pageURLs: urls,
-            metadata: metadata
-        ) { done, total in
-            recorder.record(done, total)
-        }
+        _ = try await DocumentConverter(engine: engine, pictureExtractor: FakeExtractor(), markerLocator: FakeLocator())
+            .convert(
+                pageURLs: urls,
+                metadata: metadata
+            ) { done, total in
+                recorder.record(done, total)
+            }
         #expect(recorder.values == ["1/3", "2/3", "3/3"])
     }
 
     @Test("passes an engine failure through")
     func engineFailure() async {
         await #expect(throws: CocoaError.self) {
-            try await DocumentConverter(engine: engine, pictureExtractor: FakeExtractor())
+            try await DocumentConverter(engine: engine, pictureExtractor: FakeExtractor(), markerLocator: FakeLocator())
                 .convert(pageURLs: [URL(fileURLWithPath: "/pages/missing.png")], metadata: metadata)
         }
     }
@@ -105,7 +144,7 @@ struct DocumentConverterTests {
                 ExtractedPicture(box: CGRect(x: 0.05, y: 0.35, width: 0.5, height: 0.2), pngData: Data([2])),
             ],
         ])
-        let document = try await DocumentConverter(engine: engine, pictureExtractor: extractor)
+        let document = try await DocumentConverter(engine: engine, pictureExtractor: extractor, markerLocator: FakeLocator())
             .convert(pageURLs: urls, metadata: metadata)
 
         #expect(document.images == [
@@ -127,7 +166,7 @@ struct DocumentConverterTests {
             "1.png": [ExtractedPicture(box: CGRect(x: 0.2, y: 0.1, width: 0.6, height: 0.8), pngData: Data([9]))],
             "2.png": [ExtractedPicture(box: CGRect(x: 0.05, y: 0.4, width: 0.5, height: 0.3), pngData: Data([1]))],
         ])
-        let document = try await DocumentConverter(engine: engine, pictureExtractor: extractor)
+        let document = try await DocumentConverter(engine: engine, pictureExtractor: extractor, markerLocator: FakeLocator())
             .convert(pageURLs: urls, metadata: metadata)
 
         #expect(document.coverImageID == "cover")
@@ -141,7 +180,7 @@ struct DocumentConverterTests {
         let extractor = FakeExtractor(pictures: [
             "1.png": [ExtractedPicture(box: CGRect(x: 0.3, y: 0.5, width: 0.4, height: 0.3), pngData: Data([9]))],
         ])
-        let document = try await DocumentConverter(engine: engine, pictureExtractor: extractor)
+        let document = try await DocumentConverter(engine: engine, pictureExtractor: extractor, markerLocator: FakeLocator())
             .convert(pageURLs: urls, metadata: metadata)
 
         #expect(document.coverImageID == nil)
@@ -157,7 +196,59 @@ struct DocumentConverterTests {
             }
         }
         await #expect(throws: PictureExtractionError.self) {
-            try await DocumentConverter(engine: engine, pictureExtractor: Failing())
+            try await DocumentConverter(engine: engine, pictureExtractor: Failing(), markerLocator: FakeLocator())
+                .convert(pageURLs: urls, metadata: metadata)
+        }
+    }
+
+    @Test("erases note markers before recognition and links references to notes")
+    func notes() async throws {
+        // A marker after the last word of a line on page 2, and one that
+        // opens an indented paragraph on a fourth page: the note's text.
+        let reference = CGRect(x: 0.985, y: 0.2, width: 0.01, height: 0.012)
+        let label = CGRect(x: 0.08, y: 0.3, width: 0.01, height: 0.012)
+        var engine = engine
+        engine.pages["4.png"] = RecognizedPage(lines: [
+            TextLine(text: "The note.", box: CGRect(x: 0.1, y: 0.3, width: 0.3, height: 0.017)),
+        ])
+        engine.labels = ["2.png": ["I"], "4.png": ["1"]]
+        let locator = FakeLocator(markers: ["2.png": [reference], "4.png": [label]])
+
+        let conversion = try await DocumentConverter(
+            engine: engine, pictureExtractor: FakeExtractor(), markerLocator: locator
+        ).analyze(pageURLs: urls + [URL(fileURLWithPath: "/pages/4.png")], metadata: metadata)
+
+        #expect(engine.erased.values == [[], [reference], [], [label]])
+        #expect(conversion.document.notes == [Note(id: "note-1", label: "1", content: ["The note."])])
+        #expect(conversion.document.chapters[1].blocks.last == .paragraph([
+            "one a", .noteReference("note-1"), " one b one c",
+        ]))
+        #expect(conversion.document.chapters[2].blocks.count == 2)
+        #expect(conversion.unlinkedReferences == 0 && conversion.unlinkedNotes == 0)
+    }
+
+    @Test("reports references and notes that could not be linked")
+    func unlinked() async throws {
+        var engine = engine
+        engine.labels = ["2.png": ["7"]]
+        let locator = FakeLocator(markers: ["2.png": [CGRect(x: 0.985, y: 0.2, width: 0.01, height: 0.012)]])
+        let conversion = try await DocumentConverter(
+            engine: engine, pictureExtractor: FakeExtractor(), markerLocator: locator
+        ).analyze(pageURLs: urls, metadata: metadata)
+        #expect(conversion.unlinkedReferences == 1)
+        #expect(conversion.document.notes.isEmpty)
+        #expect(conversion.document.chapters[1].blocks.last == .paragraph(["one a7 one b one c"]))
+    }
+
+    @Test("passes a marker location failure through")
+    func locatorFailure() async {
+        struct Failing: NoteMarkerLocator {
+            func markers(inImageAt url: URL) throws -> [CGRect] {
+                throw PictureExtractionError.unreadableImage(url)
+            }
+        }
+        await #expect(throws: PictureExtractionError.self) {
+            try await DocumentConverter(engine: engine, pictureExtractor: FakeExtractor(), markerLocator: Failing())
                 .convert(pageURLs: urls, metadata: metadata)
         }
     }
@@ -165,10 +256,11 @@ struct DocumentConverterTests {
     @Test("stops when the task is cancelled")
     func cancellation() async {
         let task = Task {
-            try await DocumentConverter(engine: engine, pictureExtractor: FakeExtractor()).convert(
-                pageURLs: urls,
-                metadata: metadata
-            )
+            try await DocumentConverter(engine: engine, pictureExtractor: FakeExtractor(), markerLocator: FakeLocator())
+                .convert(
+                    pageURLs: urls,
+                    metadata: metadata
+                )
         }
         task.cancel()
         await #expect(throws: CancellationError.self) { try await task.value }

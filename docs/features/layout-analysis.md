@@ -5,7 +5,8 @@ Turns the text lines recognized on each page into headings and paragraphs
 picture positions only, never on pixels, and measures everything relative to
 the document's own typical line, so page size and resolution do not matter.
 Pictures and their captions are described in
-[illustrations](illustrations.md).
+[illustrations](illustrations.md), note references and note texts in
+[notes](notes.md).
 
 ## Rules
 
@@ -17,6 +18,7 @@ Pictures and their captions are described in
 | Heading | A line at least 1.5 times taller than the median line, whose box does not overlap a line above or below it by more than 10% of its height (a body line that the OCR engine measured two lines high does). Consecutive tall lines directly below each other form one heading. Always level 1 |
 | Line in pieces | Boxes side by side on one row (sharing over half their height, not overlapping horizontally) are joined into one line, left to right |
 | Text inside a picture | Dropped |
+| Note text in a list | A paragraph that opens with a note marker at the margin has a hanging indent: its indented lines continue it, and an unindented line without a marker ends it |
 | Page number | The last line of a page, if it is in the bottom 15%, at most four characters, digits only. Dropped |
 | Line joining | Lines are joined with a space; a line ending in a letter plus hyphen is joined without one, keeping the hyphen |
 

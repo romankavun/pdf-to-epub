@@ -22,8 +22,9 @@ The first page takes up to a minute while Vision loads its model; after that
 a page takes well under a second. A 380-page sample set converts in about
 100 seconds.
 
-It ends with a summary: chapters, headings, paragraphs, figures, and whether
-a cover was found.
+It ends with a summary: chapters, headings, paragraphs, figures, whether a
+cover was found, the notes linked, and the references and note texts that
+could not be linked.
 
 ## What it does
 
@@ -35,6 +36,8 @@ a cover was found.
    and the cover is taken from the first page; see
    [illustrations](illustrations.md).
 4. **Layout** (`LayoutAnalysis`): see [layout analysis](layout-analysis.md).
+   Note markers are located by colour, erased before step 2 and linked to
+   the note texts here; see [notes](notes.md).
 5. **Chapters** (`Conversion`): a new chapter starts at every level 1
    heading. Text before the first heading becomes a chapter named after the
    document.
@@ -43,10 +46,13 @@ a cover was found.
 ## Known limits
 
 - Folder input only; PDF input is not implemented.
-- Run one conversion at a time: with several `pagescan` processes running
-  in parallel, a Vision request has been seen to hang.
+- A Vision request occasionally never answers (seen about once per few
+  thousand pages, with and without other conversions running). Each request
+  has a 180-second limit and is started up to three times; if that fails the
+  tool stops with `timedOut` and the page's path instead of hanging. Whether
+  a retry recovers a stuck request has not been observed yet.
 - Headings set at body size are not detected, so a document that uses them
   comes out as a single chapter.
-- Notes are not linked: note references stay in the text as recognized, and
-  note bodies appear as ordinary paragraphs.
+- Notes are found only when their markers are drawn as blue links, as the
+  sample clean-page source does.
 - No review step: the output is exactly what the heuristics produced.

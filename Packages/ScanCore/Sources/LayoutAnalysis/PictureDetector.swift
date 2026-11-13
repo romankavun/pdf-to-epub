@@ -42,7 +42,7 @@ public struct PictureDetector: Sendable {
     ///   tall block of text from a picture.
     public func pictureRegions(in bitmap: PageBitmap, lines: [TextLine] = []) -> [CGRect] {
         guard bitmap.width > 0, bitmap.height > 0 else { return [] }
-        let spans = inkSpans(in: bitmap, background: background(of: bitmap))
+        let spans = inkSpans(in: bitmap, background: bitmap.backgroundColor)
         let minimumRows = Int((options.minimumHeight * Double(bitmap.height)).rounded(.up))
 
         var regions: [CGRect] = []
@@ -74,29 +74,6 @@ public struct PictureDetector: Sendable {
     private struct Band {
         var rows: Range<Int>
         var columns: Range<Int>
-    }
-
-    /// The most common colour on the border of the page.
-    private func background(of bitmap: PageBitmap) -> PageBitmap.Color {
-        var counts: [UInt32: Int] = [:]
-        func count(_ column: Int, _ row: Int) {
-            let offset = (row * bitmap.width + column) * PageBitmap.bytesPerPixel
-            let key = UInt32(bitmap.pixels[offset]) << 16 | UInt32(bitmap.pixels[offset + 1]) << 8
-                | UInt32(bitmap.pixels[offset + 2])
-            counts[key, default: 0] += 1
-        }
-        for column in 0 ..< bitmap.width {
-            count(column, 0)
-            count(column, bitmap.height - 1)
-        }
-        for row in 0 ..< bitmap.height {
-            count(0, row)
-            count(bitmap.width - 1, row)
-        }
-        // Ties are broken by value so that the result does not depend on
-        // dictionary order.
-        let key = counts.max { $0.value != $1.value ? $0.value < $1.value : $0.key < $1.key }?.key ?? 0
-        return PageBitmap.Color(red: UInt8(key >> 16 & 0xFF), green: UInt8(key >> 8 & 0xFF), blue: UInt8(key & 0xFF))
     }
 
     /// For every row, the columns from the first to just past the last
@@ -138,7 +115,7 @@ public struct PictureDetector: Sendable {
         }
         guard !boxes.isEmpty else { return false }
 
-        let background = background(of: bitmap)
+        let background = bitmap.backgroundColor
         var ink = 0, inkInText = 0
         bitmap.pixels.withUnsafeBufferPointer { pixels in
             var covered = [Bool](repeating: false, count: bitmap.width)

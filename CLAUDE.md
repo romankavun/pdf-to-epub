@@ -6,9 +6,9 @@ headings, paragraphs, illustrations with captions, and footnotes.
 
 Status: **first end-to-end pipeline works from the command line**: a folder
 of page images goes through Vision OCR, layout analysis and EPUB export
-(`pagescan` CLI, all in `Packages/ScanCore`), with illustrations, captions
-and the cover. `App/` is still a placeholder shell. Notes, PDF input and the
-review UI are not built; see
+(`pagescan` CLI, all in `Packages/ScanCore`), with illustrations, captions,
+the cover and linked notes. `App/` is still a placeholder shell. Body-size
+headings, PDF input and the review UI are not built; see
 `docs/features/` for what each piece does and its limits. Modules listed
 below that do not exist yet are created when a test first needs them.
 
@@ -63,9 +63,10 @@ Import -> Preprocess -> OCR -> Layout analysis -> Document model -> EPUB export
    - headings: line height relative to body text, centering, surrounding space;
    - paragraphs: built from line geometry (indent, vertical gap), continued
      across pages when a page starts with an unindented line;
-   - notes: references found by link colour in the page image and re-recognised
-     as a cropped region; note bodies are endnotes at the end of the document or
-     footnotes at the page bottom;
+   - notes: markers found by link colour in the page image, erased before
+     OCR, their labels read from a strip of crops and repaired from the
+     numbering sequence; a paragraph opening with a marker is a note text;
+     references are linked by label and order (ADR 0003);
    - running headers/footers and page numbers: repetition across pages, removed;
    - illustrations: tall unbroken bands of non-background rows, cropped out
      as images, text inside them dropped, captions attached (ADR 0002);
@@ -203,7 +204,6 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
 
 ## Open questions
 
-- Does re-recognising a cropped, upscaled note reference give correct digits?
 - Detecting bold/italic for headings at body size and inline emphasis.
 - How chapters are split: by large headings, by the contents page, or both.
 
@@ -215,7 +215,10 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
   placeholder window. `swift test` works.
 - After changing a public signature, an incremental `swift test` build has
   crashed the test process with signal 11; removing `.build/debug` fixed it.
-- Run one `pagescan` at a time: parallel runs made a Vision request hang.
+- A Vision request occasionally never returns (seen twice on the 380-page
+  sample, once with nothing else running). `VisionOCREngine` gives each
+  request 180 s and three attempts, then fails with `OCRError.timedOut`.
+  Still run one `pagescan` at a time when measuring.
 
 ## Suggested milestone order
 
@@ -224,7 +227,8 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
 3. ~~Document model + EPUB export~~ (done; passes `epubcheck` 5.4.0).
 4. ~~Folder import + OCR + paragraphs and headings end to end, CLI~~ (done).
 5. ~~Illustrations, captions, cover~~ (done; ADR 0002).
-6. Notes: colour-based reference detection, endnote bodies, linking.
-   Then bold/body-size headings and running header removal.
+6. ~~Notes: colour-based markers, note texts, linking~~ (done; ADR 0003).
+   Still open from this milestone: bold/body-size headings and running
+   header removal.
 7. App UI: import, progress, review screen, corrections, export.
 8. Project persistence and correction propagation.

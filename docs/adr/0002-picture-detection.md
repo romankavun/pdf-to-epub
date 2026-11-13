@@ -52,5 +52,6 @@ Two OCR quirks surfaced while measuring and are handled in `LayoutAnalyzer`:
   380-page document the whole conversion still takes about 100 seconds.
 - Layouts with text beside a picture, and paper scans with noise in the
   margins, will need more than row bands (column bands, denoising).
-- Running several conversions at once made one Vision request hang;
-  conversions should run one at a time.
+- Running several conversions at once made one Vision request hang. (The
+  same hang was later seen with a single conversion; requests now have a
+  time limit and retries, see ADR 0003.)

@@ -10,9 +10,30 @@ public struct PageContent: Sendable, Equatable {
     /// Illustrations on the page.
     public var pictures: [PagePicture]
 
-    public init(lines: [TextLine], pictures: [PagePicture] = []) {
+    /// Note markers found on the page by their colour. The text of
+    /// ``lines`` is expected not to contain them: they are erased before
+    /// recognition.
+    public var markers: [NoteMarker]
+
+    public init(lines: [TextLine], pictures: [PagePicture] = [], markers: [NoteMarker] = []) {
         self.lines = lines
         self.pictures = pictures
+        self.markers = markers
+    }
+}
+
+/// A note marker located on a page: a reference inside the text, or the
+/// label that opens the text of a note.
+public struct NoteMarker: Sendable, Equatable {
+    /// Position on the page, normalized, origin at the top-left corner.
+    public var box: CGRect
+    /// The marker as read by OCR: possibly empty or with look-alike
+    /// characters. Layout analysis repairs it from the numbering sequence.
+    public var label: String
+
+    public init(box: CGRect, label: String) {
+        self.box = box
+        self.label = label
     }
 }
 
