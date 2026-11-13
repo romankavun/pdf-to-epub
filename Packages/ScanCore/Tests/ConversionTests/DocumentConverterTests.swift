@@ -100,6 +100,17 @@ struct DocumentConverterTests {
         ])
     }
 
+    @Test("keeps the page files and the page each block came from, for review")
+    func sources() async throws {
+        let conversion = try await DocumentConverter(
+            engine: engine, pictureExtractor: FakeExtractor(), markerLocator: FakeLocator()
+        ).analyze(pageURLs: urls, metadata: metadata)
+
+        #expect(conversion.pageURLs == urls)
+        #expect(conversion.document.blocks.count == 5)
+        #expect(conversion.blockSources.map(\.page) == [0, 1, 1, 2, 2])
+    }
+
     @Test("a document that starts with a heading has no untitled leading chapter")
     func startsWithHeading() async throws {
         let document = try await DocumentConverter(

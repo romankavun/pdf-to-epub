@@ -28,7 +28,8 @@ struct NoteLinker {
         var isReferenced = false
     }
 
-    func layout(of drafts: [DraftBlock]) -> DocumentLayout {
+    /// - Parameter sources: The origin of each block of `drafts`.
+    func layout(of drafts: [DraftBlock], sources: [BlockSource]) -> DocumentLayout {
         var bodies = bodies(in: drafts)
         var cursor = 0
         var unlinkedReferences = 0
@@ -44,8 +45,15 @@ struct NoteLinker {
         }
 
         var blocks: [Block] = []
+        var kept: [BlockSource] = []
         var noteIndex = 0
-        for draft in drafts {
+        for (draft, source) in zip(drafts, sources) {
+            defer {
+                // A linked note leaves the flow of blocks, and its source with it.
+                if kept.count < blocks.count {
+                    kept.append(source)
+                }
+            }
             switch draft {
             case let .heading(pieces):
                 blocks.append(.heading(level: 1, content: inlines(pieces, links: links)))
@@ -67,7 +75,7 @@ struct NoteLinker {
             Note(id: Self.noteID(index), label: body.label, content: inlines(body.content))
         }
         return DocumentLayout(
-            blocks: blocks, notes: notes, unlinkedReferences: unlinkedReferences,
+            blocks: blocks, sources: kept, notes: notes, unlinkedReferences: unlinkedReferences,
             unlinkedNotes: bodies.count { !$0.isReferenced }
         )
     }

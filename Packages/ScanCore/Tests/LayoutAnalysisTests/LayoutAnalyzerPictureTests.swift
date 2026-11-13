@@ -161,4 +161,48 @@ struct LayoutAnalyzerPictureTests {
     func pictureOnly() {
         #expect(analyzer.blocks(from: [PageContent(lines: [], pictures: [picture])]) == [figure()])
     }
+
+    @Test("every block records the page it starts on and the area it covers there")
+    func blockSources() {
+        let first = PageContent(lines: lines(top: 0.1, [">one a", "one b", ">two a", "two b"]))
+        let second = PageContent(
+            lines: lines(top: 0.1, ["two c", "two d"]) + lines(top: 0.55, [">three a", "three b"]),
+            pictures: [picture]
+        )
+
+        let layout = analyzer.layout(of: [first, second])
+
+        #expect(layout.blocks == [
+            .paragraph(["one a one b"]), .paragraph(["two a two b two c two d"]), figure(),
+            .paragraph(["three a three b"]),
+        ])
+        #expect(layout.sources.map(\.page) == [0, 0, 1, 1])
+        // First line indented to 0.08, second at the margin: the union.
+        #expect(layout.sources[0].box.isClose(to: CGRect(x: 0.05, y: 0.1, width: 0.9, height: 0.037)))
+        // Only the part on the page where the block starts.
+        #expect(layout.sources[1].box.isClose(to: CGRect(x: 0.05, y: 0.14, width: 0.9, height: 0.037)))
+        #expect(layout.sources[2].box == picture.box)
+    }
+
+    @Test("a caption widens the area of its figure instead of adding a block")
+    func captionSource() {
+        let page = PageContent(
+            lines: before + lines(top: 0.52, ["Fig. 1. A caption"]) + lines(top: 0.6, [">after a", "after b"]),
+            pictures: [picture]
+        )
+
+        let layout = analyzer.layout(of: [page])
+
+        #expect(layout.blocks.count == 3)
+        #expect(layout.sources.count == 3)
+        #expect(layout.sources[1].box.isClose(to: CGRect(x: 0.05, y: 0.2, width: 0.87, height: 0.337)))
+    }
+}
+
+private extension CGRect {
+    /// Equal within floating-point noise from adding up line positions.
+    func isClose(to other: CGRect) -> Bool {
+        abs(minX - other.minX) < 1e-9 && abs(minY - other.minY) < 1e-9
+            && abs(width - other.width) < 1e-9 && abs(height - other.height) < 1e-9
+    }
 }

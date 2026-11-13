@@ -80,13 +80,14 @@ public struct LayoutAnalyzer: Sendable {
             ?? Metrics(lineHeight: 0, lineStep: 0, margin: 0)
 
         var assembly = Assembly()
-        for page in pages {
+        for (pageIndex, page) in pages.enumerated() {
             var previous: TextLine?
             for element in page {
                 switch element {
                 case let .picture(picture):
                     flush(&assembly, metrics: metrics)
                     assembly.blocks.append(.figure(imageID: picture.imageID, caption: []))
+                    assembly.sources.append(BlockSource(page: pageIndex, box: picture.box))
                     // Whatever comes next is judged as a possible caption.
                     assembly.draft = Draft(isHeading: false, figureIndex: assembly.blocks.count - 1)
                     previous = nil
@@ -96,7 +97,9 @@ public struct LayoutAnalyzer: Sendable {
                     let isHeading = Double(line.box.height) >= options.headingHeightFactor * metrics.lineHeight
                         && !overlapsNeighbour(line, among: page)
                     if continues(assembly.draft, with: row, isHeading: isHeading, step: step, metrics: metrics) {
-                        assembly.draft?.append(row.pieces(skippingLeadingMarker: false))
+                        assembly.draft?.append(
+                            row.pieces(skippingLeadingMarker: false), page: pageIndex, box: line.box
+                        )
                     } else {
                         flush(&assembly, gapBelow: step, metrics: metrics)
                         // A block that opens with a marker is the text of a note.
@@ -104,7 +107,7 @@ public struct LayoutAnalyzer: Sendable {
                             isHeading: isHeading, noteMarker: row.leadingMarker,
                             isHanging: row.leadingMarker != nil && !isIndented(line, metrics: metrics)
                         )
-                        draft.append(row.pieces(skippingLeadingMarker: true))
+                        draft.append(row.pieces(skippingLeadingMarker: true), page: pageIndex, box: line.box)
                         assembly.draft = draft
                     }
                     previous = line
@@ -121,7 +124,7 @@ public struct LayoutAnalyzer: Sendable {
             }
         }
         flush(&assembly, metrics: metrics)
-        return NoteLinker(markers: markers).layout(of: assembly.blocks)
+        return NoteLinker(markers: markers).layout(of: assembly.blocks, sources: assembly.sources)
     }
 
     /// Whether `row` belongs to the block being assembled.
@@ -170,13 +173,17 @@ public struct LayoutAnalyzer: Sendable {
         guard let finished = assembly.draft else { return }
         assembly.draft = nil
         // A picture with nothing under it leaves an empty caption draft.
-        guard !finished.isEmpty else { return }
+        guard !finished.isEmpty, let source = finished.source else { return }
         if let index = finished.figureIndex, case let .figure(imageID, _) = assembly.blocks[index],
            isCaption(finished, gapBelow: gapBelow, metrics: metrics)
         {
             assembly.blocks[index] = .figure(imageID: imageID, caption: finished.pieces)
+            if assembly.sources[index].page == source.page {
+                assembly.sources[index].box = assembly.sources[index].box.union(source.box)
+            }
         } else {
             assembly.blocks.append(finished.block)
+            assembly.sources.append(source)
         }
     }
 
@@ -215,5 +222,7 @@ public struct LayoutAnalyzer: Sendable {
 /// The blocks finished so far and the one in progress.
 private struct Assembly {
     var blocks: [DraftBlock] = []
+    /// The origin of each block of `blocks`.
+    var sources: [BlockSource] = []
     var draft: Draft?
 }

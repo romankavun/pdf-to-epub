@@ -1,3 +1,4 @@
+import CoreGraphics
 import DocumentModel
 
 /// A run of inline content before notes are linked.
@@ -42,6 +43,8 @@ struct Draft {
     /// list are recognized as such.
     let isHanging: Bool
     private(set) var pieces: [Piece] = []
+    /// Where the block starts; `nil` until its first line is added.
+    private(set) var source: BlockSource?
 
     init(isHeading: Bool, figureIndex: Int? = nil, noteMarker: Int? = nil, isHanging: Bool = false) {
         self.isHeading = isHeading
@@ -58,8 +61,15 @@ struct Draft {
         pieces.plainText
     }
 
-    /// Adds the content of the next line.
-    mutating func append(_ line: [Piece]) {
+    /// Adds the content of the next line, which lies at `box` on `page`.
+    mutating func append(_ line: [Piece], page: Int, box: CGRect) {
+        if let source {
+            if source.page == page {
+                self.source?.box = source.box.union(box)
+            }
+        } else {
+            source = BlockSource(page: page, box: box)
+        }
         guard let first = line.first else { return }
         switch (pieces.last, first) {
         case let (.text(before), .text(next)):

@@ -13,9 +13,22 @@ public struct Conversion: Sendable, Equatable {
     /// Note texts left in the body as paragraphs because nothing refers to
     /// them.
     public var unlinkedNotes: Int
+    /// The page images the document was converted from, in reading order.
+    public var pageURLs: [URL]
+    /// The origin of each block of ``Document/blocks``, in the same order;
+    /// ``BlockSource/page`` indexes ``pageURLs``.
+    public var blockSources: [BlockSource]
 
-    public init(document: Document, unlinkedReferences: Int = 0, unlinkedNotes: Int = 0) {
+    public init(
+        document: Document,
+        unlinkedReferences: Int = 0,
+        unlinkedNotes: Int = 0,
+        pageURLs: [URL] = [],
+        blockSources: [BlockSource] = []
+    ) {
         self.document = document
+        self.pageURLs = pageURLs
+        self.blockSources = blockSources
         self.unlinkedReferences = unlinkedReferences
         self.unlinkedNotes = unlinkedNotes
     }
@@ -121,7 +134,8 @@ public struct DocumentConverter: Sendable {
             coverImageID: coverImageID
         )
         return Conversion(
-            document: document, unlinkedReferences: layout.unlinkedReferences, unlinkedNotes: layout.unlinkedNotes
+            document: document, unlinkedReferences: layout.unlinkedReferences, unlinkedNotes: layout.unlinkedNotes,
+            pageURLs: pageURLs, blockSources: layout.sources
         )
     }
 

@@ -294,4 +294,15 @@ struct LayoutAnalyzerNoteTests {
         let pages = [page([">Text{1} here.", "", ">{1} Note."])]
         #expect(LayoutAnalyzer().blocks(from: pages) == LayoutAnalyzer().layout(of: pages).blocks)
     }
+
+    @Test("a linked note leaves no source behind; an unlinked one keeps its own")
+    func noteSources() {
+        let layout = LayoutAnalyzer().layout(of: [prose, page([
+            ">Text{1} here.", "", ">{1} Linked note.", ">{7} Orphan note.",
+        ])])
+
+        #expect(layout.blocks.count == 3)
+        #expect(layout.sources.map(\.page) == [0, 1, 1])
+        #expect(abs(layout.sources[2].box.minY - 0.16) < 1e-9)
+    }
 }
