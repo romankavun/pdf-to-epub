@@ -6,6 +6,7 @@
   - [0003 - Notes are located by colour, erased before OCR, and linked by label and order](adr/0003-notes-by-colour-and-sequence.md)
 - Features: [features/](features/) - one page per user-facing feature.
   - [pagescan CLI: folder of page images to EPUB](features/pagescan-cli.md)
+  - [App: convert a folder and save the EPUB](features/app-conversion.md)
   - [Layout analysis](features/layout-analysis.md)
   - [Illustrations, captions and the cover](features/illustrations.md)
   - [Notes: references, note texts and linking](features/notes.md)

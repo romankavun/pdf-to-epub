@@ -1,0 +1,402 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%lld of %lld" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld із %2$lld"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "Author" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автор"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скасувати"
+          }
+        }
+      }
+    },
+    "Change…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Змінити…"
+          }
+        }
+      }
+    },
+    "Chapters" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розділи"
+          }
+        }
+      }
+    },
+    "Choose Another Folder…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вибрати іншу теку…"
+          }
+        }
+      }
+    },
+    "Choose Folder…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вибрати теку…"
+          }
+        }
+      }
+    },
+    "Choose a folder with one image per page, or drop it here." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Виберіть теку, де кожна сторінка — окреме зображення, або перетягніть її сюди."
+          }
+        }
+      }
+    },
+    "Convert" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конвертувати"
+          }
+        }
+      }
+    },
+    "Converted document" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конвертований документ"
+          }
+        }
+      }
+    },
+    "Could not convert the document" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося конвертувати документ"
+          }
+        }
+      }
+    },
+    "Could not save the EPUB: %@" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося зберегти EPUB: %@"
+          }
+        }
+      }
+    },
+    "Cover" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обкладинка"
+          }
+        }
+      }
+    },
+    "English" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Англійська"
+          }
+        }
+      }
+    },
+    "Folder" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тека"
+          }
+        }
+      }
+    },
+    "Headings" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заголовки"
+          }
+        }
+      }
+    },
+    "Illustrations" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ілюстрації"
+          }
+        }
+      }
+    },
+    "Language" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мова"
+          }
+        }
+      }
+    },
+    "Needs attention" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Потребує уваги"
+          }
+        }
+      }
+    },
+    "No" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ні"
+          }
+        }
+      }
+    },
+    "No document open" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Документу не відкрито"
+          }
+        }
+      }
+    },
+    "Notes" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Примітки"
+          }
+        }
+      }
+    },
+    "Notes without a reference" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Примітки без посилання"
+          }
+        }
+      }
+    },
+    "Pages" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сторінки"
+          }
+        }
+      }
+    },
+    "Paragraphs" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Абзаци"
+          }
+        }
+      }
+    },
+    "Recognizing pages…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розпізнавання сторінок…"
+          }
+        }
+      }
+    },
+    "References without a note" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Посилання без примітки"
+          }
+        }
+      }
+    },
+    "Save EPUB…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зберегти EPUB…"
+          }
+        }
+      }
+    },
+    "Saved %@" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Збережено %@"
+          }
+        }
+      }
+    },
+    "Show in Finder" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показати у Finder"
+          }
+        }
+      }
+    },
+    "Text recognition stopped responding. Try again." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розпізнавання тексту перестало відповідати. Спробуйте ще раз."
+          }
+        }
+      }
+    },
+    "The first page can take about a minute while the recognition model loads." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перша сторінка може тривати близько хвилини, доки завантажується модель розпізнавання."
+          }
+        }
+      }
+    },
+    "The folder has no page images (PNG, JPEG, TIFF or HEIC)." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У теці немає зображень сторінок (PNG, JPEG, TIFF або HEIC)."
+          }
+        }
+      }
+    },
+    "This is not a folder." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Це не тека."
+          }
+        }
+      }
+    },
+    "Title" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назва"
+          }
+        }
+      }
+    },
+    "Try Again" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Спробувати ще раз"
+          }
+        }
+      }
+    },
+    "Ukrainian" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Українська"
+          }
+        }
+      }
+    },
+    "Unexpected error: %@" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Неочікувана помилка: %@"
+          }
+        }
+      }
+    },
+    "Yes" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Так"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

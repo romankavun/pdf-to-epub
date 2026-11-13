@@ -7,7 +7,8 @@ headings, paragraphs, illustrations with captions, and footnotes.
 Status: **first end-to-end pipeline works from the command line**: a folder
 of page images goes through Vision OCR, layout analysis and EPUB export
 (`pagescan` CLI, all in `Packages/ScanCore`), with illustrations, captions,
-the cover and linked notes. `App/` is still a placeholder shell. Body-size
+the cover and linked notes. The app does the same from a window: choose a
+folder, convert with progress, save the EPUB (`AppModel` + `App/`). Body-size
 headings, PDF input and the review UI are not built; see
 `docs/features/` for what each piece does and its limits. Modules listed
 below that do not exist yet are created when a test first needs them.
@@ -105,6 +106,7 @@ Packages/ScanCore/          Swift package, no UI imports
     EPUBExport/             EPUB 3 writer
     ProjectStore/           project bundle persistence
     Conversion/             pipeline: pages -> Document
+    AppModel/               view models (Observation only, no SwiftUI/AppKit)
     pagescan/               CLI for batch conversion and debugging
   Tests/                    one test target per module + Fixtures/
 App/                        SwiftUI app (thin: views + view models)
@@ -209,10 +211,11 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
 
 ## Environment notes
 
-- `xcodebuild` works (Xcode 26.3, after the user ran
-  `sudo xcodebuild -runFirstLaunch`). `App/PDFToEPUB.xcodeproj` builds with
-  warnings as errors and links `ScanCore`; the app itself is still a
-  placeholder window. `swift test` works.
+- Xcode is 27.2 (Swift 6.4). After an Xcode update, `swift`, `git` and
+  `xcodebuild` refuse to run until the user accepts the licence
+  (`sudo xcodebuild -license`) and `xcodebuild` also needs
+  `sudo xcodebuild -runFirstLaunch`. `App/PDFToEPUB.xcodeproj` builds with
+  warnings as errors and links `ScanCore`. `swift test` works.
 - After changing a public signature, an incremental `swift test` build has
   crashed the test process with signal 11; removing `.build/debug` fixed it.
 - A Vision request occasionally never returns (seen twice on the 380-page
@@ -230,5 +233,6 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
 6. ~~Notes: colour-based markers, note texts, linking~~ (done; ADR 0003).
    Still open from this milestone: bold/body-size headings and running
    header removal.
-7. App UI: import, progress, review screen, corrections, export.
+7. App UI: ~~import, progress, export~~ (done, no review yet); review
+   screen, corrections.
 8. Project persistence and correction propagation.

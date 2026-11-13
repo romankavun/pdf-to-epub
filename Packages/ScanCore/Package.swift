@@ -7,7 +7,7 @@ let package = Package(
     products: [
         .library(
             name: "ScanCore",
-            targets: ["DocumentModel", "EPUBExport", "OCR", "LayoutAnalysis", "Importing", "Conversion"]
+            targets: ["DocumentModel", "EPUBExport", "OCR", "LayoutAnalysis", "Importing", "Conversion", "AppModel"]
         ),
         .executable(name: "pagescan", targets: ["pagescan"]),
     ],
@@ -18,10 +18,15 @@ let package = Package(
         .target(name: "LayoutAnalysis", dependencies: ["DocumentModel", "OCR"]),
         .target(name: "Importing"),
         .target(name: "Conversion", dependencies: ["DocumentModel", "OCR", "LayoutAnalysis"]),
+        .target(
+            name: "AppModel",
+            dependencies: ["DocumentModel", "OCR", "Importing", "Conversion", "EPUBExport"]
+        ),
         .executableTarget(
             name: "pagescan",
             dependencies: ["DocumentModel", "OCR", "Importing", "Conversion", "EPUBExport"]
         ),
+        .testTarget(name: "AppModelTests", dependencies: ["AppModel", "Conversion", "DocumentModel", "Importing"]),
         .testTarget(name: "ImportingTests", dependencies: ["Importing"]),
         .testTarget(name: "ConversionTests", dependencies: ["Conversion", "DocumentModel", "OCR"]),
         .testTarget(name: "OCRTests", dependencies: ["OCR"]),
