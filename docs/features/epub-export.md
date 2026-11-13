@@ -43,6 +43,12 @@ Export fails with `EPUBExportError` rather than writing a broken file:
 - `missingImage(id:)` - a figure or the cover refers to an image that does not exist.
 - `duplicateImageFilename(_:)` - two images share a file name.
 
+## Text safety
+
+Characters that XML 1.0 forbids (most control characters, U+FFFE, U+FFFF)
+are dropped on export. OCR occasionally produces one, and a single such
+character makes a chapter unreadable for every reading system.
+
 ## Known limits
 
 - The table of contents is flat: one entry per chapter, no sub-headings.
