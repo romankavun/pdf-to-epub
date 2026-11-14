@@ -219,3 +219,80 @@ struct ReviewEditingTests {
         #expect(!model.canUndo)
     }
 }
+
+@MainActor
+@Suite("ReviewModel merging and splitting")
+struct ReviewStructureTests {
+    private let storage = FakeStorage()
+    private let location = URL(fileURLWithPath: "/projects/Document.scanproject")
+
+    private func review() -> ReviewModel {
+        ReviewModel(project: ProjectModel(base: projectConversion(), location: location, storage: storage))
+    }
+
+    private func item(_ id: ReviewModel.ItemID, in model: ReviewModel) -> ReviewModel.Item? {
+        model.pages.flatMap(\.items).first { $0.id == id }
+    }
+
+    @Test("a block can be merged with the next one, which then shows on both pages as one item")
+    func mergeWithNext() {
+        let model = review()
+        model.select(itemID: .block(1))
+        #expect(model.canMergeSelectedWithNext)
+        model.mergeSelectedWithNext()
+        #expect(model.selectedItemID == .block(1))
+        #expect(item(.block(1), in: model)?.runs.map(\.text).joined() == "Body 7 text. Журавeль is here.")
+        #expect(model.pages[1].items.first?.continuesFromPreviousPage == true)
+        #expect(item(.block(4), in: model) == nil)
+        #expect(storage.saved.count == 1)
+        model.undo()
+        #expect(item(.block(4), in: model) != nil)
+    }
+
+    @Test("the last block and a figure have nothing to merge with")
+    func cannotMerge() {
+        let model = review()
+        model.select(itemID: .block(4))
+        #expect(!model.canMergeSelectedWithNext)
+        model.mergeSelectedWithNext()
+        #expect(!model.canUndo)
+    }
+
+    @Test("splitting while editing cuts the block at the cursor, and each part can be typed on its own")
+    func splitAtCursor() {
+        let model = review()
+        model.select(itemID: .block(3))
+        model.beginEditing()
+        #expect(model.canSplitEditing)
+        model.splitEditing(atDraftOffset: 6)
+        #expect(!model.isEditing)
+        #expect(item(.block(3), in: model)?.runs.map(\.text).joined() == "Title")
+        #expect(item(.block(4), in: model)?.runs.map(\.text).joined() == "two")
+        #expect(model.selectedItemID == .block(3))
+        model.select(itemID: .block(4))
+        model.setSelectedType(.heading(level: 2))
+        #expect(item(.block(4), in: model)?.kind == .heading(level: 2))
+    }
+
+    @Test("the cursor offset counts a note reference in the editor as one character")
+    func splitAfterReference() {
+        let model = review()
+        model.select(itemID: .block(1))
+        model.beginEditing()
+        // "Body ⟦7⟧ text." split after the reference.
+        model.splitEditing(atDraftOffset: 8)
+        #expect(item(.block(1), in: model)?.runs.map(\.text).joined() == "Body 7")
+        #expect(item(.block(2), in: model)?.runs.map(\.text).joined() == "text.")
+    }
+
+    @Test("a changed draft cannot be split until it is saved")
+    func splitNeedsSavedText() {
+        let model = review()
+        model.select(itemID: .block(3))
+        model.beginEditing()
+        model.draft = "Title 2"
+        #expect(!model.canSplitEditing)
+        model.splitEditing(atDraftOffset: 3)
+        #expect(!model.canUndo)
+    }
+}

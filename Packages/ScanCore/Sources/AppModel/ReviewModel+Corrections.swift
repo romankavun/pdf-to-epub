@@ -132,10 +132,74 @@ public extension ReviewModel {
         }
     }
 
+    // MARK: Merging and splitting
+
+    /// Whether the selected block and the one after it in the document are both
+    /// headings or paragraphs, so that they can be merged.
+    var canMergeSelectedWithNext: Bool {
+        mergePair() != nil
+    }
+
+    /// Merges the block after the selected one into it: one block with both
+    /// texts and the selected block's type. Undo splits them back as they
+    /// were.
+    func mergeSelectedWithNext() {
+        guard let (first, second) = mergePair() else { return }
+        cancelEditing()
+        proposal = nil
+        project.merge(first, with: second)
+        rebuild()
+    }
+
+    /// Whether the block being edited can be split at a position of the
+    /// text: its text has to be as recognized and unchanged in the editor.
+    var canSplitEditing: Bool {
+        guard let item = editingItem, item.textType != nil else { return false }
+        return draft == item.editableText && project.canSplit(item.anchor, showing: item.canonicalText)
+    }
+
+    /// Cuts the block being edited in two after the first `offset`
+    /// characters of the editor's text, which is where the user put the
+    /// cursor. The spaces at the cut are dropped; each part can then get a
+    /// type of its own. The first part stays selected.
+    func splitEditing(atDraftOffset offset: Int) {
+        guard canSplitEditing, let item = editingItem else { return }
+        let canonicalOffset = String(editorText: String(draft.prefix(offset))).count
+        cancelEditing()
+        proposal = nil
+        guard project.split(item.anchor, at: canonicalOffset, of: item.canonicalText) else { return }
+        rebuild()
+        let sources = project.conversion.blockSources
+        if let index = sources.firstIndex(where: {
+            $0.page == item.anchor.page && abs($0.box.minY - item.anchor.box.minY) < 0.0001
+        }) {
+            select(itemID: .block(index))
+        }
+    }
+
+    private var editingItem: Item? {
+        currentPage?.items.first { $0.id == editingItemID }
+    }
+
+    private func mergePair() -> (BlockAnchor, BlockAnchor)? {
+        guard case let .block(index) = selectedItemID else { return nil }
+        let blocks = project.conversion.document.blocks
+        let sources = project.conversion.blockSources
+        guard blocks.indices.contains(index + 1), sources.count == blocks.count,
+              blocks[index].isText, blocks[index + 1].isText else { return nil }
+        return (BlockAnchor(sources[index]), BlockAnchor(sources[index + 1]))
+    }
+
     internal func candidate(_ anchor: BlockAnchor) -> Candidate {
         let text = pages.indices.contains(anchor.page)
             ? pages[anchor.page].items.first { $0.anchor == anchor }?.runs.map(\.text).joined() ?? ""
             : ""
         return Candidate(anchor: anchor, page: anchor.page, text: String(text.prefix(Self.candidateTextLength)))
+    }
+}
+
+private extension Block {
+    var isText: Bool {
+        if case .figure = self { false } else { true }
     }
 }

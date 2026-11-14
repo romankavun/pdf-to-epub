@@ -121,12 +121,21 @@ public final class ReviewModel {
     private static func pages(showing items: [(item: Item, source: BlockSource)], urls: [URL]) -> [Page] {
         var itemsByPage: [Int: [Item]] = [:]
         for (item, source) in items {
-            let areas = source.areas
-            for (position, area) in areas.enumerated() {
+            // A merged block can have several areas on one page; they are
+            // shown as one, covering them all.
+            var boxes: [(page: Int, box: CGRect)] = []
+            for area in source.areas {
+                if let position = boxes.firstIndex(where: { $0.page == area.page }) {
+                    boxes[position].box = boxes[position].box.union(area.box)
+                } else {
+                    boxes.append((area.page, area.box))
+                }
+            }
+            for (position, area) in boxes.enumerated() {
                 var part = item
                 part.box = area.box
                 part.continuesFromPreviousPage = position > 0
-                part.continuesOnNextPage = position < areas.count - 1
+                part.continuesOnNextPage = position < boxes.count - 1
                 itemsByPage[area.page, default: []].append(part)
             }
         }
