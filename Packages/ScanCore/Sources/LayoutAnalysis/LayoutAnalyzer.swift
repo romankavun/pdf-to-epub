@@ -25,6 +25,20 @@ public struct LayoutAnalyzer: Sendable {
         public var headingOverlapTolerance = 0.1
         /// A numeric last line below this height on the page is a page number.
         public var pageNumberZone = 0.85
+        /// A line whose top is above this fraction of the page height may be
+        /// a running header.
+        public var runningHeaderZone = 0.1
+        /// A line whose top is below this fraction of the page height may be
+        /// a running footer or page number.
+        public var runningFooterZone = 0.88
+        /// A running line must recur on at least this many pages...
+        public var runningLineMinimumPages = 3
+        /// ...and on at least this share of all pages (headers that differ
+        /// on left and right pages recur on about half).
+        public var runningLineMinimumShare = 0.1
+        /// Recurrences must lie within this distance (a fraction of the page
+        /// height) of each other.
+        public var runningLineHeightTolerance = 0.02
         /// A block right under a picture, followed by a vertical step of at
         /// least this many median line steps, is the picture's caption. The
         /// extra space is what sets a caption apart from the paragraph that
@@ -70,10 +84,10 @@ public struct LayoutAnalyzer: Sendable {
     ///   markers within a page may be in any order.
     public func layout(of pages: [PageContent]) -> DocumentLayout {
         var markers: [NoteMarker] = []
-        let pages = pages.map { page in
+        let pages = withoutRunningLines(pages.map { page in
             defer { markers += page.markers }
             return elements(of: page, firstMarkerIndex: markers.count)
-        }
+        })
         // A document of pictures only has no text to measure; the metrics are
         // then never consulted.
         let metrics = Metrics(pages: pages.map { $0.compactMap(\.row?.line) })
