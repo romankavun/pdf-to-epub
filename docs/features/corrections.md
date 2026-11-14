@@ -97,7 +97,10 @@ later if the document is converted again.
   headers still have to be ignored one by one (or are left in).
 - Chapters follow level 1 headings only; there is no way yet to start a
   chapter elsewhere or merge two.
-- Where a block is cut is estimated from the text's share of the block's
-  area, so the second part's outline on the scan can be a little off; it
-  snaps to the join when the cut is near the join of two merged blocks.
+- Where a block is cut on the scan is estimated: each area of the block is
+  given the characters it could hold (lines times width) and the shorter
+  part's text is laid out from its own end. An area of a line or two (a
+  heading) is never cut, and a cut near the edge of an area is moved to
+  it. The outline of a part can still be a little off; undo and redo the
+  split at a slightly different place if it matters.
 - Undo history is not saved; reopening a project starts with an empty one.

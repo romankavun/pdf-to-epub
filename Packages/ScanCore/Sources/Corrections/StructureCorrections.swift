@@ -67,7 +67,7 @@ extension CorrectionSet {
         guard noteSources.count == notes.count, let index = noteSources.firstIndex(where: anchor.matches),
               notes[index].content.canonicalText == text,
               let parts = notes[index].content.splitting(atCanonicalOffset: offset) else { return false }
-        let places = noteSources[index].split(atFraction: Double(offset) / Double(text.count))
+        let places = noteSources[index].split(afterCharacters: offset, of: text.count)
         notes[index].content = parts.first
         noteSources[index] = places.first
         let position = sources.firstIndex { places.second.isBefore($0) } ?? sources.count
@@ -112,8 +112,7 @@ extension CorrectionSet {
                 guard let index = sources.firstIndex(where: anchor.matches),
                       let content = blocks[index].splittableContent, content.canonicalText == text,
                       let parts = content.splitting(atCanonicalOffset: offset) else { continue }
-                let units = Double(text.count)
-                let places = sources[index].split(atFraction: Double(offset) / units)
+                let places = sources[index].split(afterCharacters: offset, of: text.count)
                 blocks.replaceSubrange(index ... index, with: [
                     blocks[index].replacingContent(parts.first), blocks[index].replacingContent(parts.second),
                 ])
@@ -153,54 +152,5 @@ extension BlockSource {
     /// Whether this source starts before `other` in reading order.
     func isBefore(_ other: BlockSource) -> Bool {
         (page, box.minY) < (other.page, other.box.minY)
-    }
-
-    /// A cut closer than this share of an area's height to the boundary
-    /// between two areas is taken to be at that boundary: the position of a
-    /// cut is estimated from the text, which is only roughly proportional to
-    /// the space it takes.
-    private static let boundarySnap = 0.15
-    /// Each part of a cut area keeps at least this share of its height, so
-    /// neither part ends up with no place to click.
-    private static let minimumShare = 0.05
-
-    /// The source cut in two where `fraction` of its height has passed.
-    ///
-    /// Text is not located line by line, so the cut is estimated by assuming
-    /// that the text fills the areas evenly. A cut near the boundary of two
-    /// areas (two pages, or two merged paragraphs) lands on it.
-    func split(atFraction fraction: Double) -> (first: BlockSource, second: BlockSource) {
-        let areas = areas
-        let total = areas.reduce(0) { $0 + $1.box.height }
-        guard total > 0 else { return (self, self) }
-        let target = min(max(fraction, 0), 1) * total
-
-        var start = 0.0
-        for (index, area) in areas.enumerated() {
-            let height = area.box.height
-            let end = start + height
-            defer { start = end }
-            if index > 0, abs(target - start) <= Self.boundarySnap * min(height, areas[index - 1].box.height) {
-                return (Self(areas: Array(areas[..<index])), Self(areas: Array(areas[index...])))
-            }
-            guard target < end || index == areas.count - 1 else { continue }
-            let cut = min(max(target - start, height * Self.minimumShare), height * (1 - Self.minimumShare))
-            let box = area.box
-            let upper = PageArea(page: area.page, box: CGRect(x: box.minX, y: box.minY, width: box.width, height: cut))
-            let lower = PageArea(
-                page: area.page,
-                box: CGRect(x: box.minX, y: box.minY + cut, width: box.width, height: height - cut)
-            )
-            return (
-                Self(areas: Array(areas[..<index]) + [upper]),
-                Self(areas: [lower] + Array(areas[(index + 1)...]))
-            )
-        }
-        return (self, self)
-    }
-
-    private init(areas: [PageArea]) {
-        self.init(page: areas[0].page, box: areas[0].box)
-        continuations = Array(areas.dropFirst())
     }
 }

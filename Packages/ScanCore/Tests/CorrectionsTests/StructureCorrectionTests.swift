@@ -205,6 +205,40 @@ struct StructureCorrectionTests {
         #expect(blocks[1] == .paragraph(["Журавeль."]))
     }
 
+    @Test("a note running over three pages is cut at the page where its tail starts, not inside a heading line")
+    func splitNoteAcrossPages() {
+        let head = String(repeating: "слово ", count: 100)
+        let tail = "ЯЛИНКА Слов'янські традиційні уявлення"
+        let text = head + tail
+        var conversion = base
+        conversion.document.notes[0].content = [.text(text)]
+        var source = BlockSource(page: 0, box: CGRect(x: 0.1, y: 0.7, width: 0.8, height: 0.12))
+        source.continuations = [
+            PageArea(page: 1, box: CGRect(x: 0.1, y: 0.1, width: 0.1, height: 0.03)),
+            PageArea(page: 1, box: CGRect(x: 0.1, y: 0.16, width: 0.3, height: 0.03)),
+        ]
+        conversion.noteSources = [source]
+        var set = CorrectionSet()
+        set.split(BlockAnchor(source), at: head.count, of: text)
+        let result = set.applying(to: conversion).conversion
+        #expect(result.noteSources[0].areas.count == 1)
+        #expect(result.noteSources[0].page == 0)
+        let rest = result.blockSources.first { $0.box.width < 0.2 }
+        #expect(rest?.areas.count == 2)
+    }
+
+    @Test("a cut near a long block's far end keeps the short tail small")
+    func splitTailOnly() {
+        let text = String(repeating: "слово ", count: 40)
+        var conversion = base
+        conversion.document.chapters[0].blocks[1] = .paragraph([.text(text)])
+        var set = CorrectionSet()
+        set.split(anchor(0, 0.3), at: 6 * 39, of: text)
+        let sources = set.applying(to: conversion).conversion.blockSources
+        #expect(sources[1].box.height > 0.09 * 0.85)
+        #expect(sources[2].box.height < 0.02)
+    }
+
     // MARK: - Surviving a new conversion
 
     @Test("merge and split find their blocks again when the boxes shift a little")

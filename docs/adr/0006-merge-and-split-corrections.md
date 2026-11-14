@@ -20,9 +20,12 @@ to blocks, must know the blocks they refer to.
    second block's areas added as further areas. Its anchor stays the first
    block's start area, so earlier types and edits of the first block still
    find it. Areas on one page are drawn as their union by the review.
-3. **Identity after a split**: the cut position in the block's area is
-   estimated by the text's share (line boxes are not kept), snapped to the
-   join of areas when close. The first part keeps the start of the original
+3. **Identity after a split**: the cut position in the block's areas is
+   estimated (line boxes are not kept): areas get a character capacity from
+   their size, the shorter part's text is laid out from its own end of the
+   block, one-line areas are not cut and cuts near an area's edge move to
+   it. A proportional-by-height estimate was tried first and put the tail
+   of a note on the wrong page. The first part keeps the start of the original
    area, the second starts where the cut falls; each part's anchor is its
    own start area, so each can be typed or edited. The same estimate is made
    when converting again, so anchors stay consistent.
