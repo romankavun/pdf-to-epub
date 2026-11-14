@@ -80,6 +80,35 @@ were found while fixing the last one.
 
 ## Improvements
 
+### Review screen and summary (ideas from hands-on use, 2026-11-14)
+
+- **Page context in the "Similar blocks" dialog.** When choosing among the
+  similar blocks, show the scan page with the block outlined in its context,
+  not only the text and the page number, so it is clear whether the block
+  really is the same kind.
+- **Clearer colour coding per block type.** Make the outline and label colour
+  of each block type (headings by level, paragraph, note, illustration,
+  ignored) easier to tell apart.
+- **Split a block in two while editing.** Let the user split a block into two
+  and give each part its own type. Part of "merging and splitting blocks"
+  under Later.
+- **Edit Text keeps the block's size.** The editor of a large block shrinks to
+  a fixed height with its own scroll bar and the text jumps. It should keep
+  the block's height (or grow with the text) so that nothing moves.
+- **Section of manual changes in the review.** An optional section, not always
+  visible (shown and hidden on request), listing every change made by hand
+  (type changes, edited text, ignored blocks, applied fixes).
+- **Suspicious words on the summary screen.** In "Needs attention" show how
+  many suspicious words remain in the project (the review already shows
+  "Issue N of M").
+- **Clickable "Needs attention" items.** A click on an item (suspicious words,
+  references without a note, notes without a reference) opens the review at
+  the page and block where that problem is.
+- **Edit notes and link them by hand.** Edit a note's text and connect a note
+  to a reference, or detach it, by hand. Low priority.
+- **Contents pages.** Detect pages that hold the contents and make them
+  functional (entries become links to the headings). Low priority.
+
 ### Later
 
 - **Preview with outlines.** Extend the page preview on the progress screen
