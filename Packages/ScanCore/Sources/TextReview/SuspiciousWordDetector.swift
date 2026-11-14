@@ -1,6 +1,6 @@
-/// Finds words that OCR has probably misread, by rules that need no
-/// dictionary: the checks are cheap, deterministic and work the same for
-/// Ukrainian and English.
+/// Finds words that OCR has probably misread. Two rules need no dictionary
+/// and work the same for Ukrainian and English; a third asks an injected
+/// ``SpellChecking`` dictionary, and is off when there is none.
 ///
 /// A flagged word is a suggestion to look, not a verdict: "H2O" is flagged
 /// too.
@@ -13,6 +13,11 @@ public struct SuspiciousWordDetector: Sendable {
         /// A digit with letters on both sides: a letter read as a digit
         /// ("сл0во").
         case digitInsideWord
+        /// A word of plain letters that the dictionary of its language does
+        /// not know ("докмент"). The language follows the word's script, so a
+        /// Ukrainian text with English fragments is checked fragment by
+        /// fragment.
+        case misspelled
     }
 
     /// A stretch of text that is either one suspicious word or everything
@@ -28,15 +33,23 @@ public struct SuspiciousWordDetector: Sendable {
         }
     }
 
-    public init() {}
+    private let spellChecker: (any SpellChecking)?
+
+    /// - Parameter spellChecker: the dictionary for the spelling rule; with
+    ///   `nil` only the two dictionary-free rules apply.
+    public init(spellChecker: (any SpellChecking)? = nil) {
+        self.spellChecker = spellChecker
+    }
 
     /// Splits `text` so that every suspicious word is a segment of its own.
     /// The segments joined together give `text` back.
     public func segments(of text: String) -> [Segment] {
         var segments: [Segment] = []
         var plain = ""
+        var atSentenceStart = true
         func add(_ word: Substring) {
-            if let reason = reason(for: word) {
+            defer { atSentenceStart = false }
+            if let reason = reason(for: word, atSentenceStart: atSentenceStart) {
                 if !plain.isEmpty {
                     segments.append(Segment(text: plain))
                     plain = ""
@@ -63,6 +76,9 @@ public struct SuspiciousWordDetector: Sendable {
                     wordStart = nil
                 }
                 plain.append(character)
+                if Self.sentenceEnds.contains(character) {
+                    atSentenceStart = true
+                }
             }
             index = next
         }
@@ -82,7 +98,9 @@ public struct SuspiciousWordDetector: Sendable {
 
     private static let apostrophes: Set<Character> = ["'", "’", "ʼ"]
 
-    private func reason(for word: Substring) -> Reason? {
+    private static let sentenceEnds: Set<Character> = [".", "!", "?", "…"]
+
+    private func reason(for word: Substring, atSentenceStart: Bool) -> Reason? {
         var hasLatin = false, hasCyrillic = false
         for scalar in word.unicodeScalars {
             switch scalar.value {
@@ -97,6 +115,25 @@ public struct SuspiciousWordDetector: Sendable {
         guard let firstLetter = word.firstIndex(where: \.isLetter),
               let lastLetter = word.lastIndex(where: \.isLetter)
         else { return nil }
-        return word[firstLetter ..< lastLetter].contains(where: \.isNumber) ? .digitInsideWord : nil
+        if word[firstLetter ..< lastLetter].contains(where: \.isNumber) {
+            return .digitInsideWord
+        }
+        return isMisspelled(word, isCyrillic: hasCyrillic, atSentenceStart: atSentenceStart) ? .misspelled : nil
+    }
+
+    /// Asks the dictionary only about words it can judge. A capitalized word
+    /// inside a sentence is taken for a name, and an all-capital one for an
+    /// acronym; one- and two-letter words and anything with digits are
+    /// skipped. Every skip trades a missed error for fewer false alarms,
+    /// which would otherwise drown the real ones in a document full of names.
+    private func isMisspelled(_ word: Substring, isCyrillic: Bool, atSentenceStart: Bool) -> Bool {
+        guard let spellChecker, word.count(where: \.isLetter) >= 3,
+              !word.contains(where: \.isNumber),
+              word.allSatisfy({ $0.isLetter || Self.apostrophes.contains($0) })
+        else { return false }
+        if word.first?.isUppercase == true, !atSentenceStart || word == word.uppercased() {
+            return false
+        }
+        return spellChecker.isMisspelled(String(word), language: isCyrillic ? .ukrainian : .english)
     }
 }
