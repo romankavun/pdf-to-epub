@@ -25,6 +25,7 @@ private func conversion() -> Conversion {
             .paragraph(["Ось слово тут."]),
             .paragraph(["Ось докмент тут і wrod."]),
             .figure(Figure(imageID: "f", alternativeText: "", caption: ["the текст"])),
+            .paragraph(["Ось сл0во тут."]),
         ])],
         notes: [Note(id: "n", label: "1", content: ["Ось зламаноо слово."])]
     )
@@ -34,7 +35,7 @@ private func conversion() -> Conversion {
         pageURLs: [URL(fileURLWithPath: "/pages/1.png"), URL(fileURLWithPath: "/pages/2.png")],
         blockSources: [
             BlockSource(page: 0, box: area), BlockSource(page: 0, box: area.offsetBy(dx: 0, dy: 0.3)),
-            BlockSource(page: 1, box: area),
+            BlockSource(page: 1, box: area), BlockSource(page: 1, box: area.offsetBy(dx: 0, dy: 0.5)),
         ],
         noteSources: [BlockSource(page: 1, box: area.offsetBy(dx: 0, dy: 0.3))]
     )
@@ -43,34 +44,54 @@ private func conversion() -> Conversion {
 @MainActor
 @Suite("Review with spell checking")
 struct ReviewSpellingTests {
-    @Test("misspelled words are flagged and counted with the other issues")
-    func countsMisspellings() {
+    @Test("misspelled words are counted apart from OCR suspects")
+    func countsApart() {
         let model = ReviewModel(conversion: conversion(), detector: detector)
 
-        // "докмент", "wrod", the caption's "текст" and the note's "зламаноо".
-        #expect(model.issueCount == 4)
+        // Only the digit in "сл0во" is an OCR suspect; the other four are spelling.
+        #expect(model.issueCount == 1)
+        #expect(model.misspellingCount == 4)
         let second = model.pages[0].items[1]
-        #expect(second.issueCount == 2)
+        #expect(second.issueCount == 0)
+        #expect(second.misspellingCount == 2)
         #expect(second.runs.compactMap(\.reason) == [.misspelled, .misspelled])
     }
 
-    @Test("Next Issue walks through the misspelled words' blocks")
-    func navigation() {
+    @Test("Next Issue visits only OCR suspects")
+    func issueNavigationIgnoresSpelling() {
         let model = ReviewModel(conversion: conversion(), detector: detector)
 
+        #expect(model.flaggedItemCount == 1)
         model.goToNextIssue()
+        #expect(model.selectedItemID == .block(3))
+        model.goToNextIssue()
+        #expect(model.selectedItemID == .block(3))
+    }
+
+    @Test("Next Misspelling walks through the misspelled blocks and wraps")
+    func spellingNavigation() {
+        let model = ReviewModel(conversion: conversion(), detector: detector)
+
+        #expect(model.misspelledItemCount == 3)
+        model.goToNextMisspelling()
         #expect(model.pageIndex == 0 && model.selectedItemID == .block(1))
-        model.goToNextIssue()
-        #expect(model.pageIndex == 1 && model.selectedItemID == .block(2))
-        model.goToNextIssue()
+        #expect(model.misspellingPosition == 1)
+        model.goToNextMisspelling()
+        #expect(model.selectedItemID == .block(2))
+        model.goToNextMisspelling()
+        #expect(model.selectedItemID == .note("n"))
+        model.goToNextMisspelling()
+        #expect(model.selectedItemID == .block(1))
+        model.goToPreviousMisspelling()
         #expect(model.selectedItemID == .note("n"))
     }
 
-    @Test("the summary counts suspicious words with the same detector")
+    @Test("the summary counts the two kinds apart")
     func summary() {
         let summary = ConversionSummary(conversion(), detector: detector)
 
-        #expect(summary.suspiciousWords == 4)
-        #expect(ConversionSummary(conversion()).suspiciousWords == 0)
+        #expect(summary.suspiciousWords == 1)
+        #expect(summary.misspelledWords == 4)
+        #expect(ConversionSummary(conversion()).misspelledWords == 0)
     }
 }

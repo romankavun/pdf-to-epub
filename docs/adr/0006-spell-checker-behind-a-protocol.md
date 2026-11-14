@@ -29,9 +29,13 @@ must not import AppKit, and `TextReview` has no dependencies.
    start a sentence (taken for a name). This misses a misread name or a
    capitalized error mid-sentence; a document full of names would otherwise
    bury the real findings.
-5. **One detector for the review and the summary.** The summary's
-   "Suspicious words" count uses the same detector, counted off the main
-   thread, so the two numbers agree.
+5. **Spelling is kept apart from OCR suspects.** Trying it showed that the
+   dictionary rule is much noisier than mixed-script and digit rules, while
+   OCR suspects are what needs fixing first. `Reason.isOCRSuspect` tells
+   them apart; the review keeps separate counts, separate navigation and a
+   toggle (off by default), and the summary shows them separately.
+6. **One detector for the review and the summary**, counted off the main
+   thread, so the numbers agree.
 
 ## Consequences
 

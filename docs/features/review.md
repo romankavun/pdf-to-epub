@@ -47,14 +47,24 @@ that need no dictionary and a third that uses the system spell checker:
 
 Digits at the edge of a word ("2nd", "3D", "1990-х") are left alone.
 
+The first two rules point to an OCR misreading and have priority: they are
+the **suspicious words**. The spelling rule is kept apart, because it is far
+noisier (names, dialect, archaic words):
+
+- Suspicious words are highlighted in orange, outlined, counted in the
+  toolbar and visited by *Next Issue*; the summary lists them under *Needs
+  attention*.
+- Misspelled words are off by default. The *Spelling* toggle in the toolbar
+  marks them with a blue dotted underline and enables their own counter and
+  *Next / Previous Misspelling* (⌥⌘G, ⇧⌥⌘G). They never change the issue
+  count or the issue navigation. The summary shows their number in a
+  separate *For a second pass* section.
+
 The spelling rule picks the language per word by its script (Cyrillic is
 checked as Ukrainian, Latin as English), so Ukrainian text with English
-fragments works. To keep false alarms down it skips words of one or two
-letters, all-capital words, and a capitalized word that does not begin a
-sentence (taken for a name). Dictionary words flagged this way count as
-issues like the others: they are outlined, counted in the toolbar and
-visited by *Next Issue*. The summary's *Needs attention* section shows the
-same count as *Suspicious words*. See ADR 0006.
+fragments works. It skips words of one or two letters, all-capital words,
+and a capitalized word that does not begin a sentence (taken for a name).
+See ADR 0006.
 
 ## How it is built
 

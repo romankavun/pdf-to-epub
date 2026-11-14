@@ -79,4 +79,18 @@ struct SpellCheckRuleTests {
         _ = detector.segments(of: "він п'ять")
         #expect(checker.asked.contains { $0 == ("п'ять", .ukrainian) })
     }
+
+    @Test("only the dictionary-free reasons are OCR suspects")
+    func ocrSuspects() {
+        #expect(SuspiciousWordDetector.Reason.mixedScript.isOCRSuspect)
+        #expect(SuspiciousWordDetector.Reason.digitInsideWord.isOCRSuspect)
+        #expect(!SuspiciousWordDetector.Reason.misspelled.isOCRSuspect)
+    }
+
+    @Test("counts OCR suspects and misspellings apart")
+    func countsApart() {
+        let text = "він докмент сл0во"
+        #expect(detector.suspiciousWordCount(in: text) == 1)
+        #expect(detector.misspelledWordCount(in: text) == 1)
+    }
 }

@@ -18,6 +18,14 @@ public struct SuspiciousWordDetector: Sendable {
         /// Ukrainian text with English fragments is checked fragment by
         /// fragment.
         case misspelled
+
+        /// Whether the reason points to an OCR misreading (a wrong letter or
+        /// digit) rather than to a spelling the dictionary does not know.
+        /// The review treats these first: a misspelling is far noisier
+        /// (names, dialect, archaic words), so it is kept apart.
+        public var isOCRSuspect: Bool {
+            self != .misspelled
+        }
     }
 
     /// A stretch of text that is either one suspicious word or everything
@@ -91,9 +99,15 @@ public struct SuspiciousWordDetector: Sendable {
         return segments
     }
 
-    /// The number of suspicious words in `text`.
+    /// The number of OCR-suspect words in `text` (see ``Reason/isOCRSuspect``);
+    /// misspellings are counted by ``misspelledWordCount(in:)``.
     public func suspiciousWordCount(in text: String) -> Int {
-        segments(of: text).count { $0.reason != nil }
+        segments(of: text).count { $0.reason?.isOCRSuspect == true }
+    }
+
+    /// The number of words in `text` that the dictionary does not know.
+    public func misspelledWordCount(in text: String) -> Int {
+        segments(of: text).count { $0.reason == .misspelled }
     }
 
     private static let apostrophes: Set<Character> = ["'", "’", "ʼ"]

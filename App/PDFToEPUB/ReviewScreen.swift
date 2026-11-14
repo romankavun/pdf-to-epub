@@ -75,6 +75,26 @@ struct ReviewScreen: View {
             Button("Next Issue", systemImage: "chevron.down", action: model.goToNextIssue)
                 .keyboardShortcut("g")
         }
+        Divider().frame(height: 16)
+        Toggle("Spelling", isOn: $model.showsSpelling)
+            .toggleStyle(.button)
+            .help("Mark words the dictionary does not know. Noisy: names and rare words are marked too.")
+        if model.showsSpelling {
+            if let position = model.misspellingPosition {
+                Text("Misspelling \(position) of \(model.misspelledItemCount)")
+                    .monospacedDigit()
+            } else {
+                Text("Misspelled words: \(model.misspellingCount)")
+            }
+            Button("Previous Misspelling", systemImage: "chevron.up", action: model.goToPreviousMisspelling)
+                .labelStyle(.iconOnly)
+                .keyboardShortcut("g", modifiers: [.command, .shift, .option])
+                .disabled(model.misspelledItemCount == 0)
+            Button("Next Misspelling", systemImage: "chevron.down", action: model.goToNextMisspelling)
+                .labelStyle(.iconOnly)
+                .keyboardShortcut("g", modifiers: [.command, .option])
+                .disabled(model.misspelledItemCount == 0)
+        }
     }
 }
 
@@ -185,6 +205,11 @@ private struct BlockCard: View {
                     Label("\(item.issueCount)", systemImage: "exclamationmark.triangle.fill")
                         .font(.caption)
                         .foregroundStyle(.orange)
+                }
+                if model.showsSpelling, item.misspellingCount > 0 {
+                    Label("\(item.misspellingCount)", systemImage: "textformat.abc.dottedunderline")
+                        .font(.caption)
+                        .foregroundStyle(.blue)
                 }
             }
             if let image {
@@ -314,9 +339,13 @@ private struct BlockCard: View {
                 part.baselineOffset = 5
                 part.foregroundColor = .accentColor
             }
-            if run.reason != nil {
+            if run.reason?.isOCRSuspect == true {
                 part.backgroundColor = .orange.opacity(0.45)
                 part.underlineStyle = .single
+            } else if run.reason != nil, model.showsSpelling {
+                // Spelling is a hint, not a defect: only an underline.
+                part.underlineStyle = .patternDot.union(.single)
+                part.underlineColor = .systemBlue
             }
             result += part
         }

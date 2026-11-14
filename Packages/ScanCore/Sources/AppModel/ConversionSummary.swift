@@ -16,9 +16,13 @@ public struct ConversionSummary: Sendable, Equatable {
     public var unlinkedReferences: Int
     /// Note texts left in the body because nothing refers to them.
     public var unlinkedNotes: Int
-    /// Words in the text, captions and notes that the review would flag.
-    /// Zero unless counted with a detector (see ``init(_:detector:)``).
+    /// Words in the text, captions and notes that look like OCR misreadings
+    /// (mixed alphabets, digits inside words). Zero unless counted with a
+    /// detector (see ``init(_:detector:)``).
     public var suspiciousWords = 0
+    /// Words the spell checker does not know: a noisier signal, kept apart
+    /// from ``suspiciousWords``.
+    public var misspelledWords = 0
 
     public init(
         chapters: Int,
@@ -54,15 +58,16 @@ public struct ConversionSummary: Sendable, Equatable {
             case let .figure(figure): contents.append(figure.caption)
             }
         }
-        suspiciousWords = contents.reduce(0) { total, content in
-            total + content.reduce(0) { count, inline in
+        let texts = contents.flatMap { content in
+            content.compactMap { inline -> String? in
                 switch inline {
-                case let .text(text), let .emphasis(text), let .strong(text):
-                    count + detector.suspiciousWordCount(in: text)
-                case .noteReference: count
+                case let .text(text), let .emphasis(text), let .strong(text): text
+                case .noteReference: nil
                 }
             }
         }
+        suspiciousWords = texts.reduce(0) { $0 + detector.suspiciousWordCount(in: $1) }
+        misspelledWords = texts.reduce(0) { $0 + detector.misspelledWordCount(in: $1) }
     }
 
     public init(_ conversion: Conversion) {
