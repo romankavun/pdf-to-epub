@@ -54,15 +54,11 @@ extension CorrectionSet {
         return removed
     }
 
-    /// Applies the merges and splits in order, giving the blocks, sources
-    /// and the numbers of the corrections that found their blocks.
-    ///
-    /// Without a source for every block nothing can be located and the
-    /// conversion comes back as it was.
+    // swiftlint:disable function_parameter_count
+
     /// Splits the note text at `anchor`: the first part stays the note, the
     /// rest is not a note and goes among the blocks, where its place on the
     /// page puts it. Returns whether there was a note to split.
-    // swiftlint:disable:next function_parameter_count -- works on the four parallel arrays of a conversion
     private func splitNote(
         at anchor: BlockAnchor, offset: Int, of text: String,
         notes: inout [Note], noteSources: inout [BlockSource],
@@ -80,6 +76,13 @@ extension CorrectionSet {
         return true
     }
 
+    // swiftlint:enable function_parameter_count
+
+    /// Applies the merges and splits in order, giving the blocks, sources
+    /// and the numbers of the corrections that found their blocks.
+    ///
+    /// Without a source for every block nothing can be located and the
+    /// conversion comes back as it was.
     func structure(of conversion: Conversion) -> (conversion: Conversion, applied: Set<Int>) {
         var blocks = conversion.document.blocks
         var sources = conversion.blockSources
