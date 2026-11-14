@@ -13,7 +13,7 @@ struct StructureCorrectionTests {
     // MARK: - Merging
 
     @Test("merging joins two neighbouring paragraphs into one block")
-    func merge() throws {
+    func merge() {
         var set = CorrectionSet()
         set.merge(anchor(0, 0.3), with: anchor(1, 0.1), texts: ("", ""))
         let result = set.applying(to: base)
@@ -73,9 +73,19 @@ struct StructureCorrectionTests {
         set.setText(from: "He read \u{FFFC}", to: "x", for: anchor(1, 0.1))
         set.setText(from: "Clean text", to: "Clear text", for: anchor(0, 0.3))
         set.merge(anchor(0, 0.3), with: anchor(1, 0.1), texts: ("Clean text", "He read \u{FFFC}"))
-        #expect(!set.corrections.contains { if case .retype = $0 { true } else { false } })
+        #expect(!set.corrections.contains {
+            if case .retype = $0 {
+                true
+            } else {
+                false
+            }
+        })
         let edits = set.corrections.compactMap { correction -> (String, String)? in
-            if case let .edit(_, from, to) = correction { (from, to) } else { nil }
+            if case let .edit(_, from, to) = correction {
+                (from, to)
+            } else {
+                nil
+            }
         }
         #expect(edits.count == 1)
         #expect(edits.first?.0 == "Clean text He read \u{FFFC}")
@@ -87,7 +97,7 @@ struct StructureCorrectionTests {
     private let text = "Clean text\u{FFFC} goes on."
 
     @Test("splitting cuts a paragraph in two at the offset, trimming the space")
-    func split() throws {
+    func split() {
         var set = CorrectionSet()
         set.split(anchor(0, 0.3), at: 11, of: text)
         let result = set.applying(to: base)

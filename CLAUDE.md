@@ -244,4 +244,4 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
    rule. Defects found in review and the next improvements are in
    `docs/backlog.md`.
 8. ~~Project persistence and correction propagation~~ (done; ADR 0005).
-   Still open: merging and splitting blocks, redrawing regions.
+   Merging and splitting blocks done (ADR 0006). Still open: redrawing regions.

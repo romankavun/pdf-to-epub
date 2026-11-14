@@ -357,6 +357,16 @@
         }
       }
     },
+    "Cuts the block in two at the cursor. Save the text first if you changed it." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ділить блок надвоє за курсором. Якщо ви змінили текст, спершу збережіть його."
+          }
+        }
+      }
+    },
     "Edit Caption" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -536,6 +546,16 @@
         }
       }
     },
+    "Joins the next block into this one." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Додає наступний блок до цього."
+          }
+        }
+      }
+    },
     "Language" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -543,6 +563,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Мова"
+          }
+        }
+      }
+    },
+    "Merge with Next" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Об’єднати з наступним"
           }
         }
       }
@@ -796,6 +826,17 @@
         }
       }
     },
+    "Replace Everywhere" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Замінити всюди"
+          }
+        }
+      }
+    },
     "Replace “%@” with “%@” in %@ other places?" : {
       "localizations" : {
         "en" : {
@@ -813,17 +854,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Замінити «%1$@» на «%2$@» ще в такій кількості місць: %3$lld?"
-          }
-        }
-      }
-    },
-    "Replace Everywhere" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Замінити всюди"
           }
         }
       }
@@ -933,6 +963,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Схожі блоки"
+          }
+        }
+      }
+    },
+    "Split at Cursor" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розділити за курсором"
           }
         }
       }

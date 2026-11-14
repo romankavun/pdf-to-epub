@@ -200,6 +200,10 @@ public extension ReviewModel {
 
 private extension Block {
     var isText: Bool {
-        if case .figure = self { false } else { true }
+        if case .figure = self {
+            false
+        } else {
+            true
+        }
     }
 }

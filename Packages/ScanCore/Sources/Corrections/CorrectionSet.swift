@@ -50,7 +50,11 @@ public struct CorrectionSet: Sendable, Codable, Equatable {
     /// Whether the user changed the text of the block or note at `anchor`.
     public func hasEdit(for anchor: BlockAnchor) -> Bool {
         corrections.contains { correction in
-            if case let .edit(other, _, _) = correction { other.matches(anchor) } else { false }
+            if case let .edit(other, _, _) = correction {
+                other.matches(anchor)
+            } else {
+                false
+            }
         }
     }
 

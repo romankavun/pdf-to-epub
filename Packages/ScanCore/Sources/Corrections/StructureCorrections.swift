@@ -130,7 +130,7 @@ extension BlockSource {
     /// that the text fills the areas evenly. A cut near the boundary of two
     /// areas (two pages, or two merged paragraphs) lands on it.
     func split(atFraction fraction: Double) -> (first: BlockSource, second: BlockSource) {
-        let areas = self.areas
+        let areas = areas
         let total = areas.reduce(0) { $0 + $1.box.height }
         guard total > 0 else { return (self, self) }
         let target = min(max(fraction, 0), 1) * total

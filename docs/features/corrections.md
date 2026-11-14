@@ -22,6 +22,24 @@ Click a block (on the scan or in the list); buttons appear under its card.
 - **Undo** (⌘Z, toolbar) takes back the last correction, one step at a time.
   The history lasts while the document is open.
 
+### Merging and splitting blocks
+
+- **Merge with Next** (paragraphs and headings) joins the next block into
+  the selected one: one block with both texts, a space between, and the type
+  of the selected block. Use it for a paragraph that the pipeline cut in two
+  (a page break it did not recognize, a stray line gap). The next block has
+  to be a paragraph or heading too. Edits made to either block are kept.
+- **Split at Cursor** (in the editor of a paragraph or heading): put the
+  cursor where the block should be cut and press it. The spaces at the cut
+  go, each part keeps its emphasis and note references, and each part can
+  then get its own type. The text has to be unchanged in the editor, and
+  the block must not have been edited or touched by *Replace Everywhere*,
+  because the cursor position is read in the recognized text. Save or undo
+  the edit first.
+- Both are steps of undo. A merged block is shown on all the pages it
+  covers; the review marks it as continued like a paragraph across pages.
+  To take back a merge later, split the block where the join is.
+
 ### Applying a correction to similar blocks
 
 After a paragraph becomes a heading (or the other way round, or the level
@@ -48,6 +66,9 @@ later if the document is converted again.
   a `Conversion`, giving the document to export, the ignored blocks and the
   corrections that found nothing to act on. `SimilarBlocks` finds
   candidates; `WordReplacement` recognizes a one-word fix.
+- `merge` and `split` are corrections too and are applied first, in the
+  order they were made ([ADR 0006](../adr/0006-merge-and-split-corrections.md));
+  edits and types then see the blocks as they are after them.
 - A correction finds its block by where it lies on the scan (`BlockAnchor`,
   [ADR 0005](../adr/0005-corrections-apart-from-recognition.md)).
 - An edit stores the recognized text it was made against and the new text.
@@ -66,9 +87,12 @@ later if the document is converted again.
   dropped; a deleted one is gone until the text is edited back.
 - A note that loses its last reference (the block was ignored or edited) is
   left out of the EPUB.
-- No merging or splitting of blocks, no redrawing of a block's region, no
+- No redrawing of a block's region, no
   changing a note's type, no figure to paragraph. Page numbers and running
   headers still have to be ignored one by one (or are left in).
 - Chapters follow level 1 headings only; there is no way yet to start a
   chapter elsewhere or merge two.
+- Where a block is cut is estimated from the text's share of the block's
+  area, so the second part's outline on the scan can be a little off; it
+  snaps to the join when the cut is near the join of two merged blocks.
 - Undo history is not saved; reopening a project starts with an empty one.
