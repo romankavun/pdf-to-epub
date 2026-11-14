@@ -29,6 +29,9 @@ public final class ReviewModel {
     /// Whether the review marks misspelled words. Off by default: they are
     /// numerous and mostly harmless, and OCR suspects come first.
     public var showsSpelling = false
+    /// Words the user chose to ignore, lowercased. They are no longer
+    /// flagged anywhere. Kept for this review only, not in the project.
+    public internal(set) var ignoredWords: Set<String> = []
     /// The page being viewed.
     public private(set) var pageIndex = 0
     /// The block in focus, always on the page being viewed.
@@ -92,6 +95,10 @@ public final class ReviewModel {
             var runs = Self.runs(of: content, noteLabels: labels, detector: detector)
             if !flagging {
                 runs = runs.map { Run(text: $0.text, style: $0.style) }
+            } else if !ignoredWords.isEmpty {
+                for index in runs.indices where ignoredWords.contains(runs[index].text.lowercased()) {
+                    runs[index].reason = nil
+                }
             }
             let issues = runs.count { $0.reason?.isOCRSuspect == true }
             var item = Item(

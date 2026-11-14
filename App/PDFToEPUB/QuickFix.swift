@@ -24,6 +24,11 @@ struct QuickFix: View {
                 .buttonStyle(.borderless)
             }
             Divider()
+            Button("Ignore This Word", systemImage: "eye.slash") {
+                close()
+                model.ignoreWord(inRunAt: runIndex, of: itemID)
+            }
+            .buttonStyle(.borderless)
             Button("Edit Text…", systemImage: "pencil") {
                 close()
                 model.beginEditing()

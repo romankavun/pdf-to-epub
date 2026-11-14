@@ -36,6 +36,14 @@ public extension ReviewModel {
         }
     }
 
+    /// Stops flagging the word in run `index` of `itemID`, in any case and
+    /// everywhere in the document, for this review. The text is not changed.
+    func ignoreWord(inRunAt index: Int, of itemID: ItemID) {
+        guard let run = run(at: index, in: itemID), run.reason != nil else { return }
+        ignoredWords.insert(run.text.lowercased())
+        rebuild()
+    }
+
     private func run(at index: Int, in itemID: ItemID) -> Run? {
         let item = pages.lazy.compactMap { $0.items.first { $0.id == itemID } }.first
         return item.flatMap { $0.runs.indices.contains(index) ? $0.runs[index] : nil }

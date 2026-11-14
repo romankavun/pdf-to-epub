@@ -139,4 +139,22 @@ struct ReviewSpellingTests {
         model.replaceRun(at: 0, in: .block(0), with: "x")
         #expect(model.project.corrections.corrections.isEmpty)
     }
+
+    @Test("ignoring a flagged word unflags it everywhere, in any case")
+    func ignoreWord() throws {
+        var conversion = conversion()
+        conversion.document.chapters[0].blocks.append(.paragraph(["Докмент знову."]))
+        conversion.blockSources.append(BlockSource(page: 1, box: CGRect(x: 0.05, y: 0.8, width: 0.9, height: 0.1)))
+        let model = ReviewModel(conversion: conversion, detector: detector)
+        let item = try #require(model.pages[0].items.first { $0.id == .block(1) })
+        let index = try #require(item.runs.firstIndex { $0.text == "докмент" })
+        #expect(model.misspellingCount == 6)
+
+        model.ignoreWord(inRunAt: index, of: .block(1))
+
+        // Both "докмент" and "Докмент" are gone; "wrod" and the others stay.
+        #expect(model.misspellingCount == 4)
+        #expect(model.pages[0].items.first { $0.id == .block(1) }?.misspellingCount == 1)
+        #expect(model.project.corrections.corrections.isEmpty)
+    }
 }

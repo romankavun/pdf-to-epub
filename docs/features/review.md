@@ -38,7 +38,9 @@ Linked note references appear as the note's label, raised and coloured.
 A flagged word is a link: clicking it opens a small list of suggestions, and
 choosing one replaces the word as an ordinary text correction (undoable; if
 the same word stands elsewhere, replacing it everywhere is offered). *Edit
-Text…* in the list opens the whole block for editing.
+Text…* in the list opens the whole block for editing, and *Ignore This Word*
+stops flagging that word (in any case) everywhere in the document. Ignored words
+are kept only while the review is open; they are not saved in the project.
 
 - For a mixed-script word the suggestion swaps look-alike letters for the
   word's own alphabet ("Журавeль" with a Latin "o" becomes "Журавель"); for a

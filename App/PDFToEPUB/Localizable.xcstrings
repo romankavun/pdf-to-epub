@@ -1195,6 +1195,16 @@
           }
         }
       }
+    },
+    "Ignore This Word" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ігнорувати це слово"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
