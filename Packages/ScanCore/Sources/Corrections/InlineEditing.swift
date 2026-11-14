@@ -81,6 +81,31 @@ public extension [Inline] {
         return units.regrouped
     }
 
+    /// The content cut in two after `offset` characters of its canonical
+    /// text, with the whitespace at the cut dropped. Each part keeps the
+    /// style of its text and the note references it holds. `nil` when
+    /// `offset` is outside the text or a part would be empty.
+    func splitting(atCanonicalOffset offset: Int) -> (first: [Inline], second: [Inline])? {
+        let units = flattened
+        guard offset > 0, offset < units.count else { return nil }
+        var head = [Unit](units[..<offset])
+        var tail = [Unit](units[offset...])
+        while head.last?.isWhitespace == true {
+            head.removeLast()
+        }
+        while tail.first?.isWhitespace == true {
+            tail.removeFirst()
+        }
+        guard !head.isEmpty, !tail.isEmpty else { return nil }
+        return (head.regrouped, tail.regrouped)
+    }
+
+    /// The two contents joined by one space, as the text of a merged block.
+    /// Formatting does not cross the space.
+    func joined(with other: [Inline]) -> [Inline] {
+        self + [.text(" ")] + other
+    }
+
     private var flattened: [Unit] {
         flatMap { inline -> [Unit] in
             switch inline {
@@ -106,6 +131,10 @@ private enum Unit {
         } else {
             notePlaceholder
         }
+    }
+
+    var isWhitespace: Bool {
+        character.isWhitespace
     }
 
     var style: Style? {

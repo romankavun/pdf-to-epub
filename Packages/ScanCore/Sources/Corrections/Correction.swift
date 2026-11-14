@@ -66,4 +66,15 @@ public enum Correction: Sendable, Codable, Equatable {
     case edit(BlockAnchor, from: String, to: String)
     /// Every whole word `word` in the document's text is `replacement`.
     case replaceWord(String, with: String)
+    /// The block at the first anchor takes in the block that follows it, at
+    /// the second anchor: one block with the text of both, joined by a space,
+    /// and the type of the first. The two are neighbours in the document as it
+    /// stands after the corrections before this one.
+    case merge(BlockAnchor, with: BlockAnchor)
+    /// The block at the anchor, whose text was `of` (canonical form), is cut
+    /// in two after `offset` characters of that text. The spaces around the
+    /// cut are dropped. If the text has changed since, the split is stale and
+    /// not applied. The second part lies where the text says it does: see
+    /// ``Swift/Array/splitting(atCanonicalOffset:)``.
+    case split(BlockAnchor, at: Int, of: String)
 }
