@@ -8,7 +8,12 @@ private final class FakeSpellChecker: SpellChecking, @unchecked Sendable {
         .ukrainian: ["слово", "документ", "читав", "він"],
         .english: ["word", "document", "the", "read", "and"],
     ]
+    var guesses: [String: [String]] = ["докмент": ["документ", "докумет"], "wrod": ["word"]]
     private(set) var asked: [(String, SpellLanguage)] = []
+
+    func suggestions(for word: String, language _: SpellLanguage) -> [String] {
+        guesses[word] ?? []
+    }
 
     func isMisspelled(_ word: String, language: SpellLanguage) -> Bool {
         asked.append((word, language))
@@ -92,5 +97,33 @@ struct SpellCheckRuleTests {
         let text = "він докмент сл0во"
         #expect(detector.suspiciousWordCount(in: text) == 1)
         #expect(detector.misspelledWordCount(in: text) == 1)
+    }
+
+    @Test("a misspelled word gets the dictionary's guesses")
+    func misspelledSuggestions() {
+        #expect(detector.suggestions(for: "докмент", reason: .misspelled) == ["документ", "докумет"])
+        #expect(detector.suggestions(for: "wrod", reason: .misspelled) == ["word"])
+        #expect(detector.suggestions(for: "xyzzy", reason: .misspelled).isEmpty)
+    }
+
+    @Test("a look-alike letter from the wrong alphabet is turned into the word's own")
+    func mixedScriptSuggestion() {
+        // Latin "o" in a Cyrillic word, and Cyrillic "о" in a Latin one.
+        #expect(detector.suggestions(for: "Журавeль", reason: .mixedScript) == ["Журавель"])
+        #expect(detector.suggestions(for: "dоcuments", reason: .mixedScript) == ["documents"])
+    }
+
+    @Test("a digit that looks like a letter is turned into it")
+    func digitSuggestion() {
+        #expect(detector.suggestions(for: "сл0во", reason: .digitInsideWord) == ["слово"])
+        #expect(detector.suggestions(for: "d0cument", reason: .digitInsideWord) == ["document"])
+        // A digit with no look-alike letter offers nothing.
+        #expect(detector.suggestions(for: "сл7во", reason: .digitInsideWord).isEmpty)
+    }
+
+    @Test("without a checker the look-alike fixes still work")
+    func suggestionsWithoutChecker() {
+        #expect(SuspiciousWordDetector().suggestions(for: "сл0во", reason: .digitInsideWord) == ["слово"])
+        #expect(SuspiciousWordDetector().suggestions(for: "докмент", reason: .misspelled).isEmpty)
     }
 }

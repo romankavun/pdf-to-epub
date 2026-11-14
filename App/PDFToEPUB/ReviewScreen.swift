@@ -189,6 +189,9 @@ private struct BlockCard: View {
     var item: ReviewModel.Item
     var image: NSImage?
     var isSelected: Bool
+    /// The run whose quick fixes are open.
+    @State private var fixingRun: Int?
+    @State private var isHovered = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -223,8 +226,25 @@ private struct BlockCard: View {
             } else if !item.runs.isEmpty {
                 Text(attributedText)
                     .font(isHeading ? .title3.bold() : .body)
-                    .textSelection(.enabled)
+                    // Selectable text swallows clicks, so only the selected
+                    // block has it: a click anywhere else selects the block.
+                    .selectable(isSelected)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .environment(\.openURL, OpenURLAction { url in
+                        guard url.scheme == "fix", let index = Int(url.host() ?? "") else { return .discarded }
+                        model.select(itemID: item.id)
+                        fixingRun = index
+                        return .handled
+                    })
+                    .popover(isPresented: Binding(get: { fixingRun != nil }, set: {
+                        if !$0 {
+                            fixingRun = nil
+                        }
+                    })) {
+                        if let index = fixingRun {
+                            QuickFix(model: model, itemID: item.id, runIndex: index) { fixingRun = nil }
+                        }
+                    }
             }
             if item.continuesOnNextPage {
                 Label("Continues on the next page", systemImage: "arrow.turn.right.down")
@@ -238,7 +258,8 @@ private struct BlockCard: View {
         .opacity(item.kind == .ignored ? 0.6 : 1)
         .padding(10)
         .background(
-            isSelected ? AnyShapeStyle(.selection.opacity(0.35)) : AnyShapeStyle(.quinary),
+            isSelected ? AnyShapeStyle(.selection.opacity(0.35))
+                : AnyShapeStyle(isHovered ? .quaternary : .quinary),
             in: RoundedRectangle(cornerRadius: 8)
         )
         .overlay {
@@ -246,6 +267,7 @@ private struct BlockCard: View {
                 .stroke(isSelected ? Color.accentColor : .clear, lineWidth: 1.5)
         }
         .contentShape(RoundedRectangle(cornerRadius: 8))
+        .onHover { isHovered = $0 }
     }
 
     private var isEditing: Bool {
@@ -325,7 +347,7 @@ private struct BlockCard: View {
 
     private var attributedText: AttributedString {
         var result = AttributedString()
-        for run in item.runs {
+        for (index, run) in item.runs.enumerated() {
             var part = AttributedString(run.text)
             switch run.style {
             case .plain:
@@ -347,33 +369,12 @@ private struct BlockCard: View {
                 part.underlineStyle = .patternDot.union(.single)
                 part.underlineColor = .systemBlue
             }
+            if run.reason?.isOCRSuspect == true || (run.reason != nil && model.showsSpelling) {
+                // A click on a flagged word opens its quick fixes.
+                part.link = URL(string: "fix://\(index)")
+            }
             result += part
         }
         return result
-    }
-}
-
-private extension ReviewModel.Kind {
-    var isNote: Bool {
-        if case .note = self {
-            true
-        } else {
-            false
-        }
-    }
-}
-
-private extension ReviewModel.Item {
-    /// Flagged blocks stand out; note texts are told apart from the body.
-    var outlineColor: Color {
-        if issueCount > 0 {
-            .orange
-        } else if kind.isNote {
-            .teal
-        } else if kind == .ignored {
-            .gray
-        } else {
-            .accentColor
-        }
     }
 }

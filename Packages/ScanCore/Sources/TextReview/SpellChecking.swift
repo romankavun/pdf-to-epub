@@ -14,4 +14,14 @@ public protocol SpellChecking: Sendable {
     /// dictionary of `language`. A checker that has no dictionary for
     /// `language` answers `false`: it cannot judge, so it must not flag.
     func isMisspelled(_ word: String, language: SpellLanguage) -> Bool
+
+    /// Likely corrections of `word`, best first; empty when there are none.
+    func suggestions(for word: String, language: SpellLanguage) -> [String]
+}
+
+public extension SpellChecking {
+    /// A checker that cannot suggest offers nothing.
+    func suggestions(for _: String, language _: SpellLanguage) -> [String] {
+        []
+    }
 }

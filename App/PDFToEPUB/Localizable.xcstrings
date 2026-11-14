@@ -1175,6 +1175,26 @@
           }
         }
       }
+    },
+    "No suggestions" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Немає варіантів"
+          }
+        }
+      }
+    },
+    "Edit Text…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редагувати текст…"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

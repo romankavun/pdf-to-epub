@@ -110,6 +110,58 @@ public struct SuspiciousWordDetector: Sendable {
         segments(of: text).count { $0.reason == .misspelled }
     }
 
+    /// Corrections to offer for a flagged `word`, best first, at most five.
+    ///
+    /// An OCR suspect is fixed by swapping the look-alike character for the
+    /// one the rest of the word uses (a Latin "o" in a Cyrillic word, a "0"
+    /// for "о"); that needs no dictionary. A misspelling gets the
+    /// dictionary's own guesses.
+    public func suggestions(for word: String, reason: Reason) -> [String] {
+        var result: [String] = []
+        switch reason {
+        case .misspelled:
+            result = spellChecker?.suggestions(for: word, language: Self.language(of: word)) ?? []
+        case .mixedScript, .digitInsideWord:
+            if let fixed = Self.lookAlikeFix(of: word, reason: reason) {
+                result = [fixed]
+                if let spellChecker, spellChecker.isMisspelled(fixed, language: Self.language(of: fixed)) {
+                    result += spellChecker.suggestions(for: fixed, language: Self.language(of: fixed))
+                }
+            }
+        }
+        var seen: Set<String> = [word]
+        return Array(result.filter { seen.insert($0).inserted }.prefix(5))
+    }
+
+    private static func language(of word: String) -> SpellLanguage {
+        word.unicodeScalars.contains { (0x400 ... 0x52F).contains($0.value) } ? .ukrainian : .english
+    }
+
+    /// Letters that look the same in both alphabets, as (Latin, Cyrillic).
+    private static let lookAlikes: [(Character, Character)] = [
+        ("a", "а"), ("c", "с"), ("e", "е"), ("i", "і"), ("o", "о"), ("p", "р"), ("x", "х"), ("y", "у"),
+        ("A", "А"), ("B", "В"), ("C", "С"), ("E", "Е"), ("H", "Н"), ("I", "І"), ("K", "К"), ("M", "М"),
+        ("O", "О"), ("P", "Р"), ("T", "Т"), ("X", "Х"), ("Y", "У"),
+    ]
+    private static let digitsAsCyrillic: [Character: Character] = ["0": "о", "1": "і", "3": "з", "6": "б"]
+    private static let digitsAsLatin: [Character: Character] = ["0": "o", "1": "l", "5": "s"]
+
+    private static func lookAlikeFix(of word: String, reason: Reason) -> String? {
+        let cyrillic = word.unicodeScalars.count { (0x400 ... 0x52F).contains($0.value) }
+        let latin = word.unicodeScalars.count { $0.properties.isAlphabetic && $0.value < 0x250 }
+        // The script with more letters is taken for the word's own; a tie
+        // goes to Cyrillic, the document's main alphabet.
+        let toCyrillic = cyrillic >= latin
+        let fixed = String(word.map { character -> Character in
+            if reason == .digitInsideWord {
+                return (toCyrillic ? digitsAsCyrillic : digitsAsLatin)[character] ?? character
+            }
+            let pair = lookAlikes.first { toCyrillic ? $0.0 == character : $0.1 == character }
+            return pair.map { toCyrillic ? $0.1 : $0.0 } ?? character
+        })
+        return fixed != word && !(reason == .digitInsideWord && fixed.contains(where: \.isNumber)) ? fixed : nil
+    }
+
     private static let apostrophes: Set<Character> = ["'", "’", "ʼ"]
 
     private static let sentenceEnds: Set<Character> = [".", "!", "?", "…"]

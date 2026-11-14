@@ -45,7 +45,7 @@ public final class ReviewModel {
     private var flagged: [(itemID: ItemID, page: Int)] = []
     /// Like ``flagged``, for blocks with misspelled words.
     private var misspelled: [(itemID: ItemID, page: Int)] = []
-    private let detector: SuspiciousWordDetector
+    let detector: SuspiciousWordDetector
 
     public init(project: ProjectModel, detector: SuspiciousWordDetector = SuspiciousWordDetector()) {
         self.project = project

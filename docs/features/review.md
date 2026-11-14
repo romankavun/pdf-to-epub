@@ -33,6 +33,23 @@ leaving it out.
 
 Linked note references appear as the note's label, raised and coloured.
 
+## Quick fixes
+
+A flagged word is a link: clicking it opens a small list of suggestions, and
+choosing one replaces the word as an ordinary text correction (undoable; if
+the same word stands elsewhere, replacing it everywhere is offered). *Edit
+Text…* in the list opens the whole block for editing.
+
+- For a mixed-script word the suggestion swaps look-alike letters for the
+  word's own alphabet ("Журавeль" with a Latin "o" becomes "Журавель"); for a
+  digit it offers the letter it resembles ("сл0во" becomes "слово"). These
+  need no dictionary.
+- For a misspelling the suggestions come from the system spell checker.
+- Misspelled words are clickable only while *Spelling* is on.
+
+A click anywhere on a block's card selects it. Text can be selected with the
+mouse once the block is selected; a hovered card is lightly highlighted.
+
 ## What counts as suspicious
 
 `SuspiciousWordDetector` (`TextReview` module) flags a word by two rules

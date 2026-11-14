@@ -31,15 +31,34 @@ final class SystemSpellChecker: SpellChecking, Sendable {
         return answer
     }
 
-    @MainActor private static func ask(_ word: String, _ language: SpellLanguage) -> Bool {
-        let checker = NSSpellChecker.shared
+    func suggestions(for word: String, language: SpellLanguage) -> [String] {
+        if Thread.isMainThread {
+            MainActor.assumeIsolated { Self.guesses(word, language) }
+        } else {
+            DispatchQueue.main.sync { MainActor.assumeIsolated { Self.guesses(word, language) } }
+        }
+    }
+
+    @MainActor private static func installedLanguage(_ language: SpellLanguage) -> String? {
         let code = switch language {
         case .ukrainian: "uk"
         case .english: "en"
         }
+        return NSSpellChecker.shared.availableLanguages.first { $0 == code || $0.hasPrefix(code + "_") }
+    }
+
+    @MainActor private static func guesses(_ word: String, _ language: SpellLanguage) -> [String] {
+        guard let installed = installedLanguage(language) else { return [] }
+        return NSSpellChecker.shared.guesses(
+            forWordRange: NSRange(location: 0, length: word.utf16.count), in: word,
+            language: installed, inSpellDocumentWithTag: 0
+        ) ?? []
+    }
+
+    @MainActor private static func ask(_ word: String, _ language: SpellLanguage) -> Bool {
+        let checker = NSSpellChecker.shared
         // No dictionary for the language: cannot judge, so do not flag.
-        guard let installed = checker.availableLanguages.first(where: { $0 == code || $0.hasPrefix(code + "_") })
-        else { return false }
+        guard let installed = installedLanguage(language) else { return false }
         let range = checker.checkSpelling(
             of: word, startingAt: 0, language: installed, wrap: false,
             inSpellDocumentWithTag: 0, wordCount: nil

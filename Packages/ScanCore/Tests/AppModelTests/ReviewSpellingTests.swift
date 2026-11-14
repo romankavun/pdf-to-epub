@@ -13,9 +13,13 @@ private struct FakeSpellChecker: SpellChecking {
     func isMisspelled(_ word: String, language _: SpellLanguage) -> Bool {
         !known.contains(word.lowercased())
     }
+
+    func suggestions(for word: String, language _: SpellLanguage) -> [String] {
+        word == "докмент" ? ["документ"] : []
+    }
 }
 
-private let known: Set<String> = ["слово", "тут", "є", "and", "the", "text", "ось"]
+private let known: Set<String> = ["слово", "тут", "є", "and", "the", "text", "ось", "документ"]
 private let detector = SuspiciousWordDetector(spellChecker: FakeSpellChecker(known: known))
 
 private func conversion() -> Conversion {
@@ -93,5 +97,46 @@ struct ReviewSpellingTests {
         #expect(summary.suspiciousWords == 1)
         #expect(summary.misspelledWords == 4)
         #expect(ConversionSummary(conversion()).misspelledWords == 0)
+    }
+
+    @Test("a flagged word offers suggestions and is replaced through a correction")
+    func quickFix() throws {
+        let model = ReviewModel(conversion: conversion(), detector: detector)
+        let item = try #require(model.pages[0].items.first { $0.id == .block(1) })
+        let index = try #require(item.runs.firstIndex { $0.text == "докмент" })
+
+        #expect(model.suggestions(forRunAt: index, in: .block(1)) == ["документ"])
+        model.replaceRun(at: index, in: .block(1), with: "документ")
+
+        let fixed = try #require(model.pages[0].items.first { $0.id == .block(1) })
+        #expect(fixed.runs.map(\.text).joined() == "Ось документ тут і wrod.")
+        #expect(fixed.misspellingCount == 1)
+        #expect(model.misspellingCount == 3)
+        #expect(model.project.corrections.corrections.count == 1)
+    }
+
+    @Test("an OCR suspect is fixed the same way, and the fix is offered for the whole document")
+    func quickFixOfSuspect() throws {
+        var conversion = conversion()
+        conversion.document.chapters[0].blocks.append(.paragraph(["Знову сл0во."]))
+        conversion.blockSources.append(BlockSource(page: 1, box: CGRect(x: 0.05, y: 0.8, width: 0.9, height: 0.1)))
+        let model = ReviewModel(conversion: conversion, detector: detector)
+        let item = try #require(model.pages[1].items.first { $0.id == .block(3) })
+        let index = try #require(item.runs.firstIndex { $0.reason == .digitInsideWord })
+
+        #expect(model.suggestions(forRunAt: index, in: .block(3)) == ["слово"])
+        model.replaceRun(at: index, in: .block(3), with: "слово")
+
+        #expect(model.issueCount == 1)
+        #expect(model.proposal != nil)
+    }
+
+    @Test("a run that is not flagged has no suggestions and is left alone")
+    func unflaggedRun() {
+        let model = ReviewModel(conversion: conversion(), detector: detector)
+
+        #expect(model.suggestions(forRunAt: 0, in: .block(0)).isEmpty)
+        model.replaceRun(at: 0, in: .block(0), with: "x")
+        #expect(model.project.corrections.corrections.isEmpty)
     }
 }
