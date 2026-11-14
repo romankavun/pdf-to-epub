@@ -122,8 +122,9 @@ were found while fixing the last one.
 - **More corrections.** Redrawing a block's region, splitting a block that
   was edited (the cut position is read in the recognized text), a precise
   cut position (it is estimated from the text, not read from the line
-  boxes), joining a split back exactly, starting a chapter elsewhere, formatting (bold, italic) in the
-  text editor, and a "set this and the following pages" way to drop page
+  boxes), joining a split back exactly, merging a note text with another,
+  starting a chapter elsewhere, formatting (bold, italic) in the text
+  editor, and a "set this and the following pages" way to drop page
   numbers and running headers. See [corrections](features/corrections.md)
   for what exists.
 - **Copy the scans into the project** (or store a reference) so that a
