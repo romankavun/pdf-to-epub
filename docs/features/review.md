@@ -11,8 +11,8 @@ leaving it out.
 - **Pages**: the arrows in the toolbar, or ⌘[ and ⌘].
 - **Blocks**: every block on the page is outlined on the scan and listed
   as a card, top to bottom: heading, paragraph or illustration (with the
-  cropped picture and its caption). Clicking an outline or a card puts that
-  block in focus on both sides.
+  cropped picture and its caption). Clicking an outline or anywhere on a
+  card, text included, puts that block in focus on both sides.
 - **Blocks across pages**: a paragraph that runs onto the next page is
   shown on both pages. Each page outlines its own part; the card carries the
   whole text and says that it continues on the next page or from the
@@ -107,8 +107,8 @@ that state.
   break falls inside the text is not recorded. A suspicious word in the
   second part is reached through the block's stop on its first page.
 - The spelling rule trusts the system dictionaries: dialect, archaic or
-  invented words are flagged, a misread name is not, and there is no ignore
-  list yet. It is off for a language with no installed dictionary.
+  invented words are flagged and a misread name is not. *Ignore This Word*
+  helps with the noise but is not saved in the project. The rule is off for a language with no installed dictionary.
 - False positives are expected for formulas and codes ("H2O").
 - The review itself is rebuilt each time it is opened; the corrections are
   kept in the [project](projects.md).

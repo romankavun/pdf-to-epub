@@ -98,6 +98,9 @@ were found while fixing the last one.
 - **Section of manual changes in the review.** An optional section, not always
   visible (shown and hidden on request), listing every change made by hand
   (type changes, edited text, ignored blocks, applied fixes).
+- **Save ignored words in the project.** *Ignore This Word* in the review's
+  quick fixes lasts only while the review is open; keep the list in the
+  project bundle (apart from the recognized document, like corrections).
 - **Clickable "Needs attention" items.** A click on an item (suspicious words,
   references without a note, notes without a reference) opens the review at
   the page and block where that problem is.

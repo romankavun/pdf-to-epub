@@ -15,6 +15,9 @@ Click a block (on the scan or in the list); buttons appear under its card.
 - **Ignore** leaves the block out of the document (a page decoration, a stray
   scan). It stays in the review, greyed and marked *Ignored*, with
   *Bring Back* to put it in again. A figure can only be ignored.
+- **Quick fix**: clicking a flagged word in the review replaces it with a
+  suggestion; this is recorded as an ordinary text edit (see
+  [review](review.md#quick-fixes)).
 - **Edit Text** (paragraphs, headings, notes) and **Edit Caption**
   (figures) open the text in an editor; *Save Text* is ⌘Return, *Cancel* is
   Esc. A note reference is shown as its label in `⟦ ⟧` brackets: keep the

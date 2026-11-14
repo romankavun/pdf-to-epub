@@ -37,9 +37,16 @@ must not import AppKit, and `TextReview` has no dependencies.
 6. **One detector for the review and the summary**, counted off the main
    thread, so the numbers agree.
 
+7. **Quick fixes share the protocol.** `SpellChecking.suggestions` gives the
+   dictionary's guesses (default: none). OCR suspects are fixed without a
+   dictionary by swapping look-alike letters and digits for the word's own
+   alphabet. A chosen suggestion is an ordinary text correction, so undo and
+   "replace everywhere" work unchanged. *Ignore This Word* is kept in the
+   review model only, to avoid touching the project format.
+
 ## Consequences
 
 - Correct but unusual words (dialect, archaic spelling, coinages) are
-  flagged; there is no per-project ignore list yet.
+  flagged; ignored words are not saved with the project yet.
 - Counting a long document takes time on the first run because every distinct
   word makes a main-thread call; repeats come from the cache.
