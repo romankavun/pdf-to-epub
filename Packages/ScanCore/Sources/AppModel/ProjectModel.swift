@@ -88,6 +88,44 @@ public final class ProjectModel {
         change { $0.replaceWord(word, with: replacement) }
     }
 
+    /// Merges the block at `second`, which must follow the block at `first`,
+    /// into it: one block with the text of both and the type of the first.
+    /// Edits to either are carried over. Returns whether the merge was
+    /// possible; both must be headings or paragraphs and neighbours in the
+    /// document as it stands.
+    @discardableResult
+    public func merge(_ first: BlockAnchor, with second: BlockAnchor) -> Bool {
+        guard let head = structuredText(at: first), let tail = structuredText(at: second) else { return false }
+        var updated = corrections
+        updated.merge(first, with: second, texts: (head, tail))
+        guard !updated.applying(to: base).unapplied.contains(.merge(first, with: second)) else { return false }
+        commit(updated)
+        return true
+    }
+
+    /// Whether the block at `anchor`, which shows `text`, can be split by a
+    /// position in that text: it has to be recognized text as it is, because
+    /// the position is only meaningful there. A block the user edited or
+    /// whose words a replacement rule changed cannot be split.
+    public func canSplit(_ anchor: BlockAnchor, showing text: String) -> Bool {
+        !corrections.hasEdit(for: anchor) && structuredText(at: anchor) == text
+    }
+
+    /// Cuts the block at `anchor`, which shows `text`, in two after `offset`
+    /// characters of it (the split correction). Returns whether
+    /// the block could be split.
+    @discardableResult
+    public func split(_ anchor: BlockAnchor, at offset: Int, of text: String) -> Bool {
+        guard canSplit(anchor, showing: text) else { return false }
+        var updated = corrections
+        updated.split(anchor, at: offset, of: text)
+        guard !updated.applying(to: base).unapplied.contains(.split(anchor, at: offset, of: text)) else {
+            return false
+        }
+        commit(updated)
+        return true
+    }
+
     /// Takes back the last change.
     public func undo() {
         guard let previous = history.popLast() else { return }
@@ -128,12 +166,10 @@ public final class ProjectModel {
 
     /// The text of the block or note at `anchor` before any correction.
     private func automaticText(at anchor: BlockAnchor) -> String? {
-        let document = base.document
-        if base.blockSources.count == document.blocks.count,
-           let index = base.blockSources.firstIndex(where: { anchor.matches($0) })
-        {
-            return document.blocks[index].textContent.canonicalText
+        if let text = structuredText(at: anchor) {
+            return text
         }
+        let document = base.document
         if base.noteSources.count == document.notes.count,
            let index = base.noteSources.firstIndex(where: { anchor.matches($0) })
         {
@@ -142,9 +178,22 @@ public final class ProjectModel {
         return nil
     }
 
+    /// The text of the block at `anchor` after merges and splits but before
+    /// edits and types.
+    private func structuredText(at anchor: BlockAnchor) -> String? {
+        let structured = corrections.structured(from: base)
+        guard structured.blockSources.count == structured.document.blocks.count,
+              let index = structured.blockSources.firstIndex(where: { anchor.matches($0) }) else { return nil }
+        return structured.document.blocks[index].textContent.canonicalText
+    }
+
     private func change(_ edit: (inout CorrectionSet) -> Void) {
         var updated = corrections
         edit(&updated)
+        commit(updated)
+    }
+
+    private func commit(_ updated: CorrectionSet) {
         guard updated != corrections else { return }
         history.append(corrections)
         corrections = updated

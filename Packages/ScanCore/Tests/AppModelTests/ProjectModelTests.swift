@@ -231,3 +231,83 @@ struct ProjectModelTests {
         #expect(model.similarBlocks(like: reference, thatAre: .paragraph).isEmpty)
     }
 }
+
+@MainActor
+@Suite("ProjectModel merging and splitting")
+struct ProjectModelStructureTests {
+    private let storage = FakeStorage()
+    private let location = URL(fileURLWithPath: "/projects/Document.scanproject")
+    private let sources = projectConversion().blockSources
+
+    private func model() -> ProjectModel {
+        ProjectModel(base: projectConversion(), location: location, storage: storage)
+    }
+
+    @Test("merging two blocks changes the document, is saved and can be undone")
+    func merge() {
+        let model = model()
+        #expect(model.merge(BlockAnchor(sources[1]), with: BlockAnchor(sources[2])))
+        #expect(model.conversion.document.blocks.count == 4)
+        #expect(model.conversion.blockSources[1].areas.map(\.page) == [0, 1])
+        #expect(storage.saved.last?.corrections.count == 1)
+        model.undo()
+        #expect(model.conversion == projectConversion())
+        #expect(storage.saved.last?.isEmpty == true)
+    }
+
+    @Test("blocks that are not neighbours are not merged and nothing is recorded")
+    func mergeRefused() {
+        let model = model()
+        #expect(!model.merge(BlockAnchor(sources[0]), with: BlockAnchor(sources[2])))
+        #expect(!model.canUndo)
+    }
+
+    @Test("a split is saved, each part is typed on its own, and undo takes back one step at a time")
+    func split() {
+        let model = model()
+        #expect(model.split(BlockAnchor(sources[3]), at: 6, of: "Title two"))
+        let parts = model.conversion.blockSources
+        #expect(model.conversion.document.blocks[3] == .paragraph(["Title"]))
+        #expect(model.conversion.document.blocks[4] == .paragraph(["two"]))
+        model.setType(.heading(level: 2), for: BlockAnchor(parts[4]))
+        #expect(model.conversion.document.blocks[4] == .heading(level: 2, content: ["two"]))
+        model.undo()
+        #expect(model.conversion.document.blocks[4] == .paragraph(["two"]))
+        model.undo()
+        #expect(model.conversion == projectConversion())
+    }
+
+    @Test("a block whose text was edited or replaced, or a text that differs, is not split")
+    func splitRefused() {
+        let model = model()
+        let anchor = BlockAnchor(sources[3])
+        #expect(!model.split(anchor, at: 3, of: "Something else"))
+        model.setText("Title 2", for: anchor)
+        #expect(!model.split(anchor, at: 3, of: "Title 2"))
+        #expect(!model.split(anchor, at: 3, of: "Title two"))
+    }
+
+    @Test("a text edit after a merge is checked against the merged text and applies")
+    func editAfterMerge() {
+        let model = model()
+        _ = model.merge(BlockAnchor(sources[2]), with: BlockAnchor(sources[3]))
+        model.setText("Sample is here. Title two", for: BlockAnchor(sources[2]))
+        #expect(model.unapplied.isEmpty)
+        #expect(model.conversion.document.blocks[2] == .paragraph(["Sample is here. Title two"]))
+    }
+
+    @Test("merges and splits made before converting again apply to the new conversion")
+    func survivesNewBase() {
+        let model = model()
+        _ = model.merge(BlockAnchor(sources[1]), with: BlockAnchor(sources[2]))
+        var again = projectConversion()
+        again.blockSources = again.blockSources.map { source in
+            var moved = source
+            moved.start.box = moved.start.box.offsetBy(dx: 0.003, dy: 0.004)
+            return moved
+        }
+        model.replaceBase(again)
+        #expect(model.conversion.document.blocks.count == 4)
+        #expect(model.unapplied.isEmpty)
+    }
+}
