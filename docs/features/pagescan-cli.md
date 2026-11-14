@@ -36,6 +36,8 @@ could not be linked.
    and the cover is taken from the first page; see
    [illustrations](illustrations.md).
 4. **Layout** (`LayoutAnalysis`): see [layout analysis](layout-analysis.md).
+   The weight of each line's ink is measured from the page image to tell
+   bold headings from text.
    Note markers are located by colour, erased before step 2 and linked to
    the note texts here; see [notes](notes.md).
 5. **Chapters** (`Conversion`): a new chapter starts at every level 1

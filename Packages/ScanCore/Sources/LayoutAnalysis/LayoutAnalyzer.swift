@@ -49,6 +49,9 @@ public struct LayoutAnalyzer: Sendable {
         public var bodyHeadingMaximumWidth = 0.7
         /// A heading at body size has at most this many characters.
         public var bodyHeadingMaximumLength = 100
+        /// A centered line in body weight is a heading only when it has at
+        /// most this many words; longer ones are dedications and epigraphs.
+        public var centeredHeadingMaximumWords = 8
         /// How far the middle of a centered line may be from the middle of
         /// the page (a fraction of the page width).
         public var bodyHeadingCenterTolerance = 0.04

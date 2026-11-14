@@ -12,8 +12,7 @@ folder, convert with progress, review the result against the scans, correct
 it (block types, text, ignoring, applying a fix to similar blocks, undo),
 save the EPUB (`AppModel` + `App/`). Every conversion is kept as a project
 bundle beside the scans, with the corrections stored apart from the
-recognized document (`Corrections`, `ProjectStore`). Body-size headings and PDF
-input are not built; see
+recognized document (`Corrections`, `ProjectStore`). PDF input is not built; see
 `docs/features/` for what each piece does and its limits. Modules listed
 below that do not exist yet are created when a test first needs them.
 
@@ -212,7 +211,8 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
 
 ## Open questions
 
-- Detecting bold/italic for headings at body size and inline emphasis.
+- Inline emphasis (bold/italic inside paragraphs) and italic-only headings;
+  bold headings are found by ink weight (ADR 0006).
 - How chapters are split: by large headings, by the contents page, or both.
 
 ## Environment notes
@@ -237,8 +237,7 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
 4. ~~Folder import + OCR + paragraphs and headings end to end, CLI~~ (done).
 5. ~~Illustrations, captions, cover~~ (done; ADR 0002).
 6. ~~Notes: colour-based markers, note texts, linking~~ (done; ADR 0003).
-   Still open from this milestone: bold/body-size headings and running
-   header removal.
+   Body-size headings (ADR 0006) and running header removal are done too.
 7. App UI: ~~import, progress, export, review screen with
    mixed-script and digit-in-word rules, corrections~~ (done); spell-check
    rule. Defects found in review and the next improvements are in

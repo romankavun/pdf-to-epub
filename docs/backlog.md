@@ -16,7 +16,10 @@ covers and the text of linked notes, and notes are linked within their own
 numbering system, [ADR 0004](adr/0004-two-numbering-systems.md)), and a
 paragraph was split in two where the engine reported a line as two pieces
 whose boxes overlap slightly (now joined as one line). Defects 2 and 3 below
-were found while fixing the last one.
+were found while fixing the last one. A short bold or centered heading at
+body size that opened a page and was glued to the previous page's paragraph
+is now a heading ([ADR 0006](adr/0006-body-size-headings.md)); checked on the
+page in question. Defects 4 and 5 are not changed by it.
 
 1. **A list is not captured** (printed pages 62, 63). *Not reproduced:* in
    the dump the items `1)`, `2)`, `3)` on printed pages 61-63 are separate
@@ -62,21 +65,6 @@ were found while fixing the last one.
    marker is a note, continued across the page break as one note.
    Reproduce with synthetic pages: four notes under a rule, the last one
    continuing on the next page, followed by a note and a heading.
-
-6. **A short heading is not recognized and is glued to the previous
-   paragraph** (test document `test/weinachten`, review page 26 of 31, printed
-   page 124). The single word that opens the bibliography ("Література") is
-   the first line of the page, set a little larger and bold, with a big gap
-   below it. It is not a heading: the review shows it as the end of the
-   unfinished note from the previous page (the same text shown in defect
-   5), so it is also missing from the contents. The bibliography entries
-   after it are separate paragraphs (their numbers are written as list
-   items, which have no rule yet). Probably the same cause as defect 4: a
-   block at the top of a page is merged into the unfinished block of the
-   previous page before heading detection runs. Expected: a line that is
-   larger than the body text and stands alone is a heading and is never a
-   continuation. Reproduce with a synthetic page that has an unfinished
-   paragraph on the previous page and a one-word heading at the top.
 
 ## Improvements
 

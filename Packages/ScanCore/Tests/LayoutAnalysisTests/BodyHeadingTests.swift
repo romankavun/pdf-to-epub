@@ -79,6 +79,15 @@ struct BodyHeadingTests {
         #expect(blocks[1] == .paragraph(["It was over."]))
     }
 
+    @Test("a long centered line, such as a dedication, is not a heading unless it is bold")
+    func centeredDedication() {
+        let text = "To my first readers, with gratitude and love for all of it"
+        let plain = analyzer.blocks(from: [page(around: short(text, x: 0.2, y: 0.18, width: 0.6))])
+        #expect(plain[1] == .paragraph([Inline.text(text)]))
+        let bold = analyzer.blocks(from: [page(around: short(text, x: 0.2, y: 0.18, width: 0.6, ink: 0.4))])
+        #expect(bold[1] == .heading(level: 1, content: [Inline.text(text)]))
+    }
+
     @Test("a centered line right under a picture is a caption, not a heading")
     func belowPicture() {
         let picture = PagePicture(imageID: "figure-001", box: CGRect(x: 0.2, y: 0.1, width: 0.6, height: 0.3))

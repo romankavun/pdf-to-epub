@@ -47,7 +47,8 @@ extension LayoutAnalyzer {
 
         let isCentered = abs(Double(line.box.midX) - 0.5) <= options.bodyHeadingCenterTolerance
         let isBold = row.ink.flatMap { ink in typicalInk.map { ink >= options.boldInkFactor * $0 } } ?? false
-        return isCentered || isBold
+        let isShort = text.split(separator: " ").count <= options.centeredHeadingMaximumWords
+        return (isCentered && isShort) || isBold
     }
 
     /// Whether the vertical step from `upper` to `lower` is a paragraph gap.
