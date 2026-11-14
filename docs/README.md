@@ -8,6 +8,7 @@ Build, run and a usage walkthrough are in the [project README](../README.md).
   - [0003 - Notes are located by colour, erased before OCR, and linked by label and order](adr/0003-notes-by-colour-and-sequence.md)
   - [0004 - A reference is linked to the notes that follow it, in the right numbering system](adr/0004-two-numbering-systems.md)
   - [0005 - Corrections are kept apart from recognition and find their block by its place on the page](adr/0005-corrections-apart-from-recognition.md)
+  - [0006 - The spell checker sits behind a protocol; the system adapter lives in the app](adr/0006-spell-checker-behind-a-protocol.md)
 - [Backlog: known defects, the next improvement (page preview while converting) and postponed ideas](backlog.md)
 - Features: [features/](features/) - one page per user-facing feature.
   - [pagescan CLI: folder of page images to EPUB](features/pagescan-cli.md)

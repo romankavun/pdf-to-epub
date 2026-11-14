@@ -36,14 +36,25 @@ Linked note references appear as the note's label, raised and coloured.
 ## What counts as suspicious
 
 `SuspiciousWordDetector` (`TextReview` module) flags a word by two rules
-that need no dictionary:
+that need no dictionary and a third that uses the system spell checker:
 
 | Rule | Example | Typical cause |
 |---|---|---|
 | Latin and Cyrillic letters in one word | "Журавeль" with a Latin "o" | a look-alike letter from the wrong alphabet |
 | A digit with letters on both sides | "сл0во" | a letter read as a digit |
 
+| Not in the dictionary | "докмент", "wrod" | a letter lost or misread, with only plausible letters |
+
 Digits at the edge of a word ("2nd", "3D", "1990-х") are left alone.
+
+The spelling rule picks the language per word by its script (Cyrillic is
+checked as Ukrainian, Latin as English), so Ukrainian text with English
+fragments works. To keep false alarms down it skips words of one or two
+letters, all-capital words, and a capitalized word that does not begin a
+sentence (taken for a name). Dictionary words flagged this way count as
+issues like the others: they are outlined, counted in the toolbar and
+visited by *Next Issue*. The summary's *Needs attention* section shows the
+same count as *Suspicious words*. See ADR 0006.
 
 ## How it is built
 
@@ -66,8 +77,9 @@ that state.
 - A block on two pages shows its whole text on both cards: where the page
   break falls inside the text is not recorded. A suspicious word in the
   second part is reached through the block's stop on its first page.
-- No spelling check yet: a misread word made of plausible letters is not
-  flagged. `NSSpellChecker` is planned as a further rule.
+- The spelling rule trusts the system dictionaries: dialect, archaic or
+  invented words are flagged, a misread name is not, and there is no ignore
+  list yet. It is off for a language with no installed dictionary.
 - False positives are expected for formulas and codes ("H2O").
 - The review itself is rebuilt each time it is opened; the corrections are
   kept in the [project](projects.md).

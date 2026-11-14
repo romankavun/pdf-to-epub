@@ -98,9 +98,6 @@ were found while fixing the last one.
 - **Section of manual changes in the review.** An optional section, not always
   visible (shown and hidden on request), listing every change made by hand
   (type changes, edited text, ignored blocks, applied fixes).
-- **Suspicious words on the summary screen.** In "Needs attention" show how
-  many suspicious words remain in the project (the review already shows
-  "Issue N of M").
 - **Clickable "Needs attention" items.** A click on an item (suspicious words,
   references without a note, notes without a reference) opens the review at
   the page and block where that problem is.
