@@ -66,6 +66,25 @@ page in question. Defects 4 and 5 are not changed by it.
    Reproduce with synthetic pages: four notes under a rule, the last one
    continuing on the next page, followed by a note and a heading.
 
+7. **One paragraph comes out as three when the engine splits its first two
+   lines into word fragments** (test document `lang_pow`, `shot_093.png`,
+   printed page 92, the paragraph right under the large initial picture).
+   Found 2026-11-15 by hand in the review screen. The dump of the page shows
+   that the engine returns the first two lines of the paragraph as about
+   sixteen fragments of one to four words each, one of them a box two lines
+   high that spans both rows and is misread; words are also missing from
+   the result. `joiningPieces` cannot rebuild the rows from that: the tall
+   box overlaps pieces of both rows, so it is joined to one and the pieces
+   of the other row stay apart, and the indented first line is no longer
+   at the margin. Not caused by body-size headings or running lines
+   (neither touches these lines). Ideas: when a row's pieces are
+   implausibly many or a box is more than 1.8 times the typical height,
+   crop that band of the page and recognize it again as a single line; or
+   assign pieces to rows by the vertical centre against the rows of the
+   clean lines of the same page. Related to defect 2 (words missing).
+   Reproduce with synthetic lines: two rows of fragments plus one tall box
+   between them, under a normal paragraph.
+
 ## Improvements
 
 ### Review screen and summary (ideas from hands-on use, 2026-11-14)
