@@ -1,5 +1,6 @@
 import Conversion
 import CoreGraphics
+import Corrections
 import DocumentModel
 import Foundation
 import LayoutAnalysis
@@ -7,105 +8,58 @@ import Observation
 import TextReview
 
 /// State behind the review screen: the converted document laid out page by
-/// page next to the scans it was read from, with suspicious words flagged
-/// and a way to step through them.
+/// page next to the scans it was read from, with suspicious words flagged,
+/// a way to step through them, and the user's corrections.
 ///
-/// Read-only for now: it shows what the pipeline produced, corrections come
-/// later.
+/// Every correction goes through the model to the ``ProjectModel``, which
+/// keeps it apart from the recognized text and saves it; the model then
+/// rebuilds the pages from the corrected document.
 @MainActor
 @Observable
 public final class ReviewModel {
-    /// How a run of text is set.
-    public enum Style: Sendable, Equatable {
-        case plain
-        case emphasis
-        case strong
-        /// The label of a linked note.
-        case noteReference
-    }
-
-    /// A stretch of a block's text with one style, flagged or not.
-    public struct Run: Sendable, Equatable {
-        public var text: String
-        public var style: Style
-        /// Why the run, a single word, looks misread; `nil` for ordinary text.
-        public var reason: SuspiciousWordDetector.Reason?
-
-        public init(text: String, style: Style = .plain, reason: SuspiciousWordDetector.Reason? = nil) {
-            self.text = text
-            self.style = style
-            self.reason = reason
-        }
-    }
-
-    /// What a block is.
-    public enum Kind: Sendable, Equatable {
-        case heading(level: Int)
-        case paragraph
-        case figure(imageID: ImageResource.ID)
-        /// The text of a linked note, which the document keeps apart from the
-        /// flow of blocks.
-        case note(label: String)
-    }
-
-    /// Identifies a block or a note text across the pages it is shown on.
-    public enum ItemID: Sendable, Hashable {
-        /// A block, by its index in ``Document/blocks``.
-        case block(Int)
-        /// The text of a note in ``Document/notes``.
-        case note(Note.ID)
-    }
-
-    /// The part of a block or a note text that lies on one page.
-    ///
-    /// A paragraph that runs onto the next page appears on both pages with
-    /// the same ``id`` and text; only ``box`` and the continuation flags
-    /// differ.
-    public struct Item: Sendable, Equatable, Identifiable {
-        public var id: ItemID
-        public var kind: Kind
-        /// The whole text of the block, on every page it is shown on; for a
-        /// figure, its caption.
-        public var runs: [Run]
-        /// The area the block covers on this page, normalized, origin at the
-        /// top-left corner.
-        public var box: CGRect
-        /// The number of flagged words in ``runs``.
-        public var issueCount: Int
-        /// Whether the block starts on an earlier page.
-        public var continuesFromPreviousPage = false
-        /// Whether the block runs on to a later page.
-        public var continuesOnNextPage = false
-    }
-
-    /// One page image with every block and note text that lies on it.
-    public struct Page: Sendable, Equatable, Identifiable {
-        /// The page's index in the document.
-        public var id: Int
-        public var url: URL
-        /// Top to bottom. Empty for a cover or a blank page.
-        public var items: [Item]
-    }
-
-    public let pages: [Page]
+    public let project: ProjectModel
     /// The document's embedded images, for showing figures.
     public let images: [ImageResource.ID: Data]
+    public private(set) var pages: [Page] = []
     /// The total number of flagged words in the document.
-    public let issueCount: Int
+    public private(set) var issueCount = 0
     /// The page being viewed.
     public private(set) var pageIndex = 0
     /// The block in focus, always on the page being viewed.
     public private(set) var selectedItemID: Item.ID?
+    /// The block or note being edited, if any; it is the selected one.
+    public internal(set) var editingItemID: Item.ID?
+    /// The text in the editor while editing; see ``Item/editableText``.
+    public var draft = ""
+    public internal(set) var proposal: Proposal?
 
     /// Blocks and notes with at least one flagged word, in the order of
     /// the pages they start on, top to bottom. A block on two pages is one
     /// stop, on the page it starts on.
-    private let flagged: [(itemID: ItemID, page: Int)]
+    private var flagged: [(itemID: ItemID, page: Int)] = []
+    private let detector: SuspiciousWordDetector
 
-    public init(conversion: Conversion, detector: SuspiciousWordDetector = SuspiciousWordDetector()) {
-        let shown = Self.items(of: conversion, detector: detector)
-        pages = Self.pages(showing: shown, urls: conversion.pageURLs)
-        images = Dictionary(conversion.document.images.map { ($0.id, $0.data) }) { first, _ in first }
+    public init(project: ProjectModel, detector: SuspiciousWordDetector = SuspiciousWordDetector()) {
+        self.project = project
+        self.detector = detector
+        images = Dictionary(project.base.document.images.map { ($0.id, $0.data) }) { first, _ in first }
+        rebuild()
+    }
+
+    /// A review of a document that is not kept anywhere, for a conversion with
+    /// no project behind it.
+    public convenience init(conversion: Conversion, detector: SuspiciousWordDetector = SuspiciousWordDetector()) {
+        self.init(project: ProjectModel(base: conversion), detector: detector)
+    }
+
+    // MARK: - Building the pages
+
+    /// Shows the project's current state, keeping the page and following the
+    /// selected block to where it is now.
+    func rebuild() {
+        let selectedAnchor = selectedItem?.anchor
+        let shown = items()
+        pages = Self.pages(showing: shown, urls: project.conversion.pageURLs)
         issueCount = shown.reduce(0) { $0 + $1.item.issueCount }
         flagged = shown.enumerated()
             .filter { $0.element.item.issueCount > 0 }
@@ -114,21 +68,34 @@ public final class ReviewModel {
                 return (left.page, left.box.minY, $0.offset) < (right.page, right.box.minY, $1.offset)
             }
             .map { ($0.element.item.id, $0.element.source.page) }
+        selectedItemID = selectedAnchor.flatMap { anchor in
+            currentPage?.items.first { $0.anchor == anchor }?.id
+        }
+        if editingItemID != selectedItemID {
+            editingItemID = nil
+        }
     }
 
-    /// Every block, then every linked note, each with its runs and where it
-    /// lies. An item's box is the one on the page it starts on.
-    private static func items(
-        of conversion: Conversion, detector: SuspiciousWordDetector
-    ) -> [(item: Item, source: BlockSource)] {
-        let document = conversion.document
-        let labels = Dictionary(document.notes.map { ($0.id, $0.label) }) { first, _ in first }
-        func item(_ id: ItemID, _ kind: Kind, _ content: [Inline], _ source: BlockSource) -> (Item, BlockSource) {
-            let runs = runs(of: content, noteLabels: labels, detector: detector)
+    /// Every block, then every linked note, then every ignored block, each
+    /// with its runs and where it lies. An item's box is the one on the page
+    /// it starts on.
+    private func items() -> [(item: Item, source: BlockSource)] {
+        let document = project.conversion.document
+        let labels = Dictionary(project.base.document.notes.map { ($0.id, $0.label) }) { first, _ in first }
+        func item(
+            _ id: ItemID, _ kind: Kind, _ content: [Inline], _ source: BlockSource, flagging: Bool = true
+        ) -> (Item, BlockSource) {
+            var runs = Self.runs(of: content, noteLabels: labels, detector: detector)
+            if !flagging {
+                runs = runs.map { Run(text: $0.text, style: $0.style) }
+            }
             let issues = runs.count { $0.reason != nil }
-            return (Item(id: id, kind: kind, runs: runs, box: source.box, issueCount: issues), source)
+            return (
+                Item(id: id, kind: kind, anchor: BlockAnchor(source), runs: runs, box: source.box, issueCount: issues),
+                source
+            )
         }
-        let blocks = zip(document.blocks, conversion.blockSources).enumerated().map { index, pair in
+        let blocks = zip(document.blocks, project.conversion.blockSources).enumerated().map { index, pair in
             let (block, source) = pair
             return switch block {
             case let .heading(level, content): item(.block(index), .heading(level: level), content, source)
@@ -136,10 +103,17 @@ public final class ReviewModel {
             case let .figure(figure): item(.block(index), .figure(imageID: figure.imageID), figure.caption, source)
             }
         }
-        let notes = zip(document.notes, conversion.noteSources).map { note, source in
+        let notes = zip(document.notes, project.conversion.noteSources).map { note, source in
             item(.note(note.id), .note(label: note.label), note.content, source)
         }
-        return blocks + notes
+        let ignored = project.ignored.enumerated().map { index, ignored in
+            let content: [Inline] = switch ignored.block {
+            case let .heading(_, content), let .paragraph(content): content
+            case let .figure(figure): figure.caption
+            }
+            return item(.ignored(index), .ignored, content, ignored.source, flagging: false)
+        }
+        return blocks + notes + ignored
     }
 
     /// The pages at `urls`, each with the part of every item that lies on
@@ -166,9 +140,16 @@ public final class ReviewModel {
         }
     }
 
+    // MARK: - Navigation
+
     /// The page being viewed; `nil` only for a document without pages.
     public var currentPage: Page? {
         pages.indices.contains(pageIndex) ? pages[pageIndex] : nil
+    }
+
+    /// The block in focus.
+    public var selectedItem: Item? {
+        currentPage?.items.first { $0.id == selectedItemID }
     }
 
     /// The number of blocks and note texts that contain flagged words: the stops of
@@ -195,6 +176,7 @@ public final class ReviewModel {
     /// the document.
     public func goToPage(_ index: Int) {
         guard pages.indices.contains(index) else { return }
+        cancelEditing()
         pageIndex = index
         selectedItemID = nil
     }
@@ -210,6 +192,9 @@ public final class ReviewModel {
     /// Puts the block in focus. Stays on the page being viewed when part of
     /// the block lies on it; otherwise shows the page the block starts on.
     public func select(itemID: Item.ID) {
+        if editingItemID != itemID {
+            cancelEditing()
+        }
         if currentPage?.items.contains(where: { $0.id == itemID }) == true {
             selectedItemID = itemID
             return
@@ -244,6 +229,8 @@ public final class ReviewModel {
         }
         select(itemID: flagged[previous].itemID)
     }
+
+    // MARK: - Helpers
 
     private static func runs(
         of content: [Inline], noteLabels: [Note.ID: String], detector: SuspiciousWordDetector

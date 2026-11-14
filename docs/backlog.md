@@ -34,6 +34,50 @@ were found while fixing the last one.
    66): the left piece ends with "-" and the right piece starts with "—",
    so the joined text has "- —".
 
+4. **The heading of the next page is taken into a note** (test document
+   `test/weinachten`, review pages 16-18 of 31). Note XI starts at the bottom
+   of review page 16 and continues on page 17, where the continuation is one
+   word ("померлих."), alone on an otherwise empty page (printed page 18).
+   The next page (18, printed 103) opens with a chapter heading, and the
+   text of Note XI ends with that heading's text, so the heading is missing
+   as a heading and the note is too long. Cause not investigated: probably
+   the continuation of a note runs on into the next page's first block
+   across an almost empty page. Expected: a note ends where its sentence
+   ends; a heading never continues a note. Reproduce with synthetic pages:
+   a note at the bottom of page 1, a page with one short line, then a page
+   starting with a larger heading.
+
+5. **Notes at the bottom of a page are not all recognized, and the rest
+   become paragraphs** (test document `test/weinachten`, review pages 24-25 of
+   31). On page 24 the first note under the rule is a note, but the next two
+   (LXXVI, LXXVII) are paragraphs whose text starts with the marker label
+   ("LXXVI Запис на..."). The last one continues on page 25 as a paragraph,
+   and there the next note (LXXVIII) is a paragraph too, with the label in
+   its text and the word that starts the next section heading ("Література")
+   glued to its end. The markers are in the link colour in the scan, so the
+   marker search missed them or did not link them to the references (the
+   page-24 marker of the third note sits close to the end of the previous
+   note). Not investigated; the same problem as defect 4 may be involved in
+   the glued heading. Expected: every block under the rule that opens with a
+   marker is a note, continued across the page break as one note.
+   Reproduce with synthetic pages: four notes under a rule, the last one
+   continuing on the next page, followed by a note and a heading.
+
+6. **A short heading is not recognized and is glued to the previous
+   paragraph** (test document `test/weinachten`, review page 26 of 31, printed
+   page 124). The single word that opens the bibliography ("Література") is
+   the first line of the page, set a little larger and bold, with a big gap
+   below it. It is not a heading: the review shows it as the end of the
+   unfinished note from the previous page (the same text shown in defect
+   5), so it is also missing from the contents. The bibliography entries
+   after it are separate paragraphs (their numbers are written as list
+   items, which have no rule yet). Probably the same cause as defect 4: a
+   block at the top of a page is merged into the unfinished block of the
+   previous page before heading detection runs. Expected: a line that is
+   larger than the body text and stands alone is a heading and is never a
+   continuation. Reproduce with a synthetic page that has an unfinished
+   paragraph on the previous page and a one-word heading at the top.
+
 ## Improvements
 
 ### Later
@@ -49,5 +93,11 @@ were found while fixing the last one.
   corrections stored apart from OCR and layout output (project persistence,
   milestone 8) first. Postponed together with the next item.
 - **Parallel page recognition.** OCR runs one page at a time. Postponed.
-- **Manual corrections in review.** Postponed; see milestone 7 and 8 in
-  `CLAUDE.md`.
+- **More corrections.** Merging and splitting blocks, redrawing a block's
+  region, starting a chapter elsewhere, formatting (bold, italic) in the
+  text editor, and a "set this and the following pages" way to drop page
+  numbers and running headers. See [corrections](features/corrections.md)
+  for what exists.
+- **Copy the scans into the project** (or store a reference) so that a
+  moved scan folder does not leave the review without page images.
+- **Save the undo history** with the project.

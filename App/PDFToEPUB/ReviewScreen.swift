@@ -1,10 +1,11 @@
 import AppModel
+import Corrections
 import SwiftUI
 
 /// The page scan next to the blocks recognized on it, with suspicious
 /// words highlighted and navigation between them.
 struct ReviewScreen: View {
-    var model: ReviewModel
+    @Bindable var model: ReviewModel
     var done: () -> Void
 
     var body: some View {
@@ -22,13 +23,21 @@ struct ReviewScreen: View {
             } else {
                 ContentUnavailableView("The document has no pages", systemImage: "doc")
             }
+            if model.proposal != nil {
+                ProposalBar(model: model)
+            }
+            if let error = model.project.saveError {
+                Label("Corrections could not be saved: \(error)", systemImage: "xmark.octagon.fill")
+                    .foregroundStyle(.red)
+            }
         }
     }
 
     private var toolbar: some View {
         HStack(spacing: 8) {
             Button("Back to Summary", systemImage: "chevron.backward", action: done)
-                .keyboardShortcut(.cancelAction)
+                // Esc belongs to the text editor while one is open.
+                .keyboardShortcut(model.editingItemID == nil ? .cancelAction : nil)
             Spacer()
             Button("Previous Page", systemImage: "chevron.left", action: model.goToPreviousPage)
                 .labelStyle(.iconOnly)
@@ -41,6 +50,10 @@ struct ReviewScreen: View {
                 .keyboardShortcut("]")
                 .disabled(!model.canGoToNextPage)
             Spacer()
+            Button("Undo", systemImage: "arrow.uturn.backward", action: model.undo)
+                .labelStyle(.iconOnly)
+                .keyboardShortcut("z")
+                .disabled(!model.canUndo || model.isEditing)
             issueNavigation
         }
     }
@@ -124,6 +137,7 @@ private struct BlockList: View {
                     LazyVStack(alignment: .leading, spacing: 8) {
                         ForEach(page.items) { item in
                             BlockCard(
+                                model: model,
                                 item: item,
                                 image: figureImage(for: item),
                                 isSelected: item.id == model.selectedItemID
@@ -151,6 +165,7 @@ private struct BlockList: View {
 /// One block: what it is, its text with flagged words highlighted, and for
 /// a figure the cropped picture.
 private struct BlockCard: View {
+    @Bindable var model: ReviewModel
     var item: ReviewModel.Item
     var image: NSImage?
     var isSelected: Bool
@@ -178,7 +193,9 @@ private struct BlockCard: View {
                     .scaledToFit()
                     .frame(maxHeight: 160)
             }
-            if !item.runs.isEmpty {
+            if isEditing {
+                editor
+            } else if !item.runs.isEmpty {
                 Text(attributedText)
                     .font(isHeading ? .title3.bold() : .body)
                     .textSelection(.enabled)
@@ -189,7 +206,11 @@ private struct BlockCard: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            if isSelected, !isEditing {
+                actions
+            }
         }
+        .opacity(item.kind == .ignored ? 0.6 : 1)
         .padding(10)
         .background(
             isSelected ? AnyShapeStyle(.selection.opacity(0.35)) : AnyShapeStyle(.quinary),
@@ -200,6 +221,63 @@ private struct BlockCard: View {
                 .stroke(isSelected ? Color.accentColor : .clear, lineWidth: 1.5)
         }
         .contentShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private var isEditing: Bool {
+        model.editingItemID == item.id
+    }
+
+    /// The text of the block as plain text: note references are shown in
+    /// brackets and must stay in them to stay in the document.
+    private var editor: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            TextEditor(text: $model.draft)
+                .font(.body)
+                .frame(minHeight: 80)
+                .scrollContentBackground(.hidden)
+                .padding(4)
+                .background(.background, in: RoundedRectangle(cornerRadius: 6))
+            Text("A note reference is shown in ⟦ ⟧ brackets; keep them to keep the note.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            HStack {
+                Button("Cancel", action: model.cancelEditing)
+                    .keyboardShortcut(.cancelAction)
+                Button("Save Text", action: model.commitEditing)
+                    .keyboardShortcut(.return, modifiers: .command)
+            }
+        }
+    }
+
+    /// What can be done to the selected block.
+    private var actions: some View {
+        HStack {
+            switch item.kind {
+            case .ignored:
+                Button("Bring Back", systemImage: "arrow.uturn.backward", action: model.resetSelectedType)
+            case .note:
+                Button("Edit Text", systemImage: "pencil", action: model.beginEditing)
+            case .figure:
+                Button("Edit Caption", systemImage: "pencil", action: model.beginEditing)
+                Button("Ignore", systemImage: "eye.slash") { model.setSelectedType(.ignored) }
+            case .heading, .paragraph:
+                Button("Edit Text", systemImage: "pencil", action: model.beginEditing)
+                typeMenu
+            }
+        }
+        .controlSize(.small)
+    }
+
+    private var typeMenu: some View {
+        Menu("Type", systemImage: "textformat") {
+            Button("Paragraph") { model.setSelectedType(.paragraph) }
+            Button("Heading 1") { model.setSelectedType(.heading(level: 1)) }
+            Button("Heading 2") { model.setSelectedType(.heading(level: 2)) }
+            Button("Heading 3") { model.setSelectedType(.heading(level: 3)) }
+            Divider()
+            Button("Ignore", systemImage: "eye.slash") { model.setSelectedType(.ignored) }
+            Button("Reset to Recognized Type", action: model.resetSelectedType)
+        }
     }
 
     private var isHeading: Bool {
@@ -216,6 +294,7 @@ private struct BlockCard: View {
         case .paragraph: "Paragraph"
         case .figure: "Illustration"
         case let .note(label): "Note \(label)"
+        case .ignored: "Ignored"
         }
     }
 
@@ -262,6 +341,8 @@ private extension ReviewModel.Item {
             .orange
         } else if kind.isNote {
             .teal
+        } else if kind == .ignored {
+            .gray
         } else {
             .accentColor
         }

@@ -52,8 +52,8 @@ previous scan on screen until the next one is ready.
 - Folder input only; PDF import is not built.
 - Cancelling takes effect in the window at once, but Vision finishes the
   page it is on in the background before the pipeline stops.
-- The converted document lives in memory only. Closing the window or opening
-  another folder discards it; project persistence is a later milestone.
+- A finished conversion is saved as a [project](projects.md) beside the
+  folder. Opening another folder or project closes the current one.
 - Pages are shown as they come, about one a second; none is held on screen
   longer so it can be read.
 - A failed conversion can only be retried from the first page.

@@ -1,7 +1,31 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ of %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@"
+          }
+        }
+      }
+    },
+    "%@ similar blocks look like this one. Make them heading %@ too?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ similar blocks look like this one. Make them heading %2$@ too?"
+          }
+        }
+      }
+    },
+    "%@ similar blocks look like this one. Make them paragraphs too?" : {
+
+    },
     "%lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -12,17 +36,72 @@
       }
     },
     "%lld of %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld із %2$lld"
           }
-        },
-        "en" : {
+        }
+      }
+    },
+    "%lld similar blocks look like this one. Make them heading %lld too?" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld of %2$lld"
+            "value" : "Схожих блоків: %1$lld. Зробити їх заголовками %2$lld теж?"
+          }
+        }
+      }
+    },
+    "%lld similar blocks look like this one. Make them paragraphs too?" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Схожих блоків: %lld. Зробити їх абзацами теж?"
+          }
+        }
+      }
+    },
+    "A note reference is shown in ⟦ ⟧ brackets; keep them to keep the note." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Посилання на примітку показано в дужках ⟦ ⟧; залиште їх, щоб примітка збереглася."
+          }
+        }
+      }
+    },
+    "Apply" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Застосувати"
+          }
+        }
+      }
+    },
+    "Apply to All" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Застосувати до всіх"
           }
         }
       }
@@ -38,6 +117,7 @@
       }
     },
     "Author" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -48,6 +128,7 @@
       }
     },
     "Back to Summary" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -57,7 +138,19 @@
         }
       }
     },
+    "Bring Back" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повернути"
+          }
+        }
+      }
+    },
     "Cancel" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -68,6 +161,7 @@
       }
     },
     "Change…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -78,6 +172,7 @@
       }
     },
     "Chapters" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -87,7 +182,18 @@
         }
       }
     },
+    "Choose a folder with one image per page or a saved project, or drop it here." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Виберіть теку з одним зображенням на сторінку або збережений проєкт, або перетягніть її сюди."
+          }
+        }
+      }
+    },
     "Choose Another Folder…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -98,6 +204,7 @@
       }
     },
     "Choose Folder…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -107,17 +214,19 @@
         }
       }
     },
-    "Choose a folder with one image per page, or drop it here." : {
+    "Choose…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Виберіть теку, де кожна сторінка — окреме зображення, або перетягніть її сюди."
+            "value" : "Вибрати…"
           }
         }
       }
     },
     "Continued from the previous page" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -128,6 +237,7 @@
       }
     },
     "Continues on the next page" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -138,6 +248,7 @@
       }
     },
     "Convert" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -147,7 +258,19 @@
         }
       }
     },
+    "Convert Again" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конвертувати знову"
+          }
+        }
+      }
+    },
     "Converted document" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -157,7 +280,41 @@
         }
       }
     },
+    "Corrections" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Виправлення"
+          }
+        }
+      }
+    },
+    "Corrections could not be saved: %@" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося зберегти виправлення: %@"
+          }
+        }
+      }
+    },
+    "Corrections that no longer apply" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Виправлення, які більше не застосовуються"
+          }
+        }
+      }
+    },
     "Could not convert the document" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -168,6 +325,7 @@
       }
     },
     "Could not load the page image" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -178,6 +336,7 @@
       }
     },
     "Could not save the EPUB: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -188,11 +347,34 @@
       }
     },
     "Cover" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Обкладинка"
+          }
+        }
+      }
+    },
+    "Edit Caption" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редагувати підпис"
+          }
+        }
+      }
+    },
+    "Edit Text" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редагувати текст"
           }
         }
       }
@@ -208,6 +390,7 @@
       }
     },
     "Folder" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -218,6 +401,7 @@
       }
     },
     "Heading %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -227,7 +411,41 @@
         }
       }
     },
+    "Heading 1" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заголовок 1"
+          }
+        }
+      }
+    },
+    "Heading 2" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заголовок 2"
+          }
+        }
+      }
+    },
+    "Heading 3" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заголовок 3"
+          }
+        }
+      }
+    },
     "Headings" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -237,7 +455,30 @@
         }
       }
     },
+    "Ignore" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ігнорувати"
+          }
+        }
+      }
+    },
+    "Ignored" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ігнорується"
+          }
+        }
+      }
+    },
     "Illustration" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -248,6 +489,7 @@
       }
     },
     "Illustrations" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -257,18 +499,29 @@
         }
       }
     },
-    "Issue %lld of %lld" : {
+    "Issue %@ of %@" : {
       "localizations" : {
-        "uk" : {
+        "en" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Проблема %1$lld із %2$lld"
+            "state" : "new",
+            "value" : "Issue %1$@ of %2$@"
           }
-        },
+        }
+      }
+    },
+    "Issue %lld of %lld" : {
+      "extractionState" : "stale",
+      "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Issue %1$lld of %2$lld"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проблема %1$lld із %2$lld"
           }
         }
       }
@@ -284,6 +537,7 @@
       }
     },
     "Language" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -294,6 +548,7 @@
       }
     },
     "Needs attention" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -304,6 +559,7 @@
       }
     },
     "Next Issue" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -314,6 +570,7 @@
       }
     },
     "Next Page" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -324,6 +581,7 @@
       }
     },
     "No" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -334,6 +592,7 @@
       }
     },
     "No document open" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -344,6 +603,7 @@
       }
     },
     "No suspicious words" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -354,6 +614,7 @@
       }
     },
     "No text on this page" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -363,7 +624,19 @@
         }
       }
     },
+    "Not Now" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не зараз"
+          }
+        }
+      }
+    },
     "Note %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -374,6 +647,7 @@
       }
     },
     "Notes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -384,6 +658,7 @@
       }
     },
     "Notes without a reference" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -393,23 +668,49 @@
         }
       }
     },
-    "Page %lld of %lld" : {
+    "Page %@" : {
+
+    },
+    "Page %@ of %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Page %1$@ of %2$@"
+          }
+        }
+      }
+    },
+    "Page %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Сторінка %1$lld із %2$lld"
+            "value" : "Сторінка %lld"
           }
-        },
+        }
+      }
+    },
+    "Page %lld of %lld" : {
+      "extractionState" : "stale",
+      "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Page %1$lld of %2$lld"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сторінка %1$lld із %2$lld"
+          }
         }
       }
     },
     "Pages" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -420,6 +721,7 @@
       }
     },
     "Paragraph" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -430,6 +732,7 @@
       }
     },
     "Paragraphs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -440,6 +743,7 @@
       }
     },
     "Previous Issue" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -450,11 +754,23 @@
       }
     },
     "Previous Page" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Попередня сторінка"
+          }
+        }
+      }
+    },
+    "Project" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проєкт"
           }
         }
       }
@@ -470,6 +786,7 @@
       }
     },
     "References without a note" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -479,7 +796,51 @@
         }
       }
     },
+    "Replace “%@” with “%@” in %@ other places?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Replace “%1$@” with “%2$@” in %3$@ other places?"
+          }
+        }
+      }
+    },
+    "Replace “%@” with “%@” in %lld other places?" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Замінити «%1$@» на «%2$@» ще в такій кількості місць: %3$lld?"
+          }
+        }
+      }
+    },
+    "Replace Everywhere" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Замінити всюди"
+          }
+        }
+      }
+    },
+    "Reset to Recognized Type" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повернути розпізнаний тип"
+          }
+        }
+      }
+    },
     "Review…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -490,6 +851,7 @@
       }
     },
     "Save EPUB…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -499,7 +861,19 @@
         }
       }
     },
+    "Save Text" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зберегти текст"
+          }
+        }
+      }
+    },
     "Saved %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -509,7 +883,41 @@
         }
       }
     },
+    "Saved as" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Збережено як"
+          }
+        }
+      }
+    },
+    "Select All" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вибрати все"
+          }
+        }
+      }
+    },
+    "Select None" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зняти вибір"
+          }
+        }
+      }
+    },
     "Show in Finder" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -519,7 +927,21 @@
         }
       }
     },
+    "Similar blocks" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Схожі блоки"
+          }
+        }
+      }
+    },
+    "Suspicious words: %@" : {
+
+    },
     "Suspicious words: %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -530,6 +952,7 @@
       }
     },
     "Text recognition stopped responding. Try again." : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -540,6 +963,7 @@
       }
     },
     "The document has no pages" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -560,6 +984,7 @@
       }
     },
     "The folder has no page images (PNG, JPEG, TIFF or HEIC)." : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -569,7 +994,19 @@
         }
       }
     },
+    "The project could not be saved. Corrections are kept until you close the document." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проєкт не вдалося зберегти. Виправлення збережуться, доки ви не закриєте документ."
+          }
+        }
+      }
+    },
     "This is not a folder." : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -580,6 +1017,7 @@
       }
     },
     "Title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -590,11 +1028,23 @@
       }
     },
     "Try Again" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Спробувати ще раз"
+          }
+        }
+      }
+    },
+    "Type" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тип"
           }
         }
       }
@@ -609,7 +1059,19 @@
         }
       }
     },
+    "Undo" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скасувати"
+          }
+        }
+      }
+    },
     "Unexpected error: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -620,6 +1082,7 @@
       }
     },
     "Yes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {

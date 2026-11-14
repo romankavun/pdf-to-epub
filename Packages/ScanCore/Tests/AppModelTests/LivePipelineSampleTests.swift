@@ -28,7 +28,7 @@ struct LivePipelineSampleTests {
             try files.copyItem(at: page, to: folder.appendingPathComponent(page.lastPathComponent))
         }
 
-        let model = ConversionModel()
+        let model = ConversionModel(storage: FakeStorage())
         model.open(folder: folder)
         #expect(model.pageCount == 6)
         #expect(model.title == "Sample")

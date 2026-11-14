@@ -2,8 +2,9 @@
 
 After a conversion, *Review…* (⌘R) on the summary screen shows the document
 page by page: the page image on the left, the blocks recognized on it on
-the right. It is for checking the result before saving; it does not change
-the document yet.
+the right. It is for checking the result before saving and for
+[correcting](corrections.md) it: changing a block's type, editing its text,
+leaving it out.
 
 ## Usage
 
@@ -25,6 +26,9 @@ the document yet.
 - **Next Issue** (⌘G) and **Previous Issue** (⇧⌘G) jump between blocks
   and note texts with suspicious words, across pages, wrapping around at the
   ends. A block on two pages is one stop, shown on the page it starts on.
+- **Corrections**: select a block to change its type, edit its text or
+  ignore it, and use *Undo* (⌘Z); the bar below offers the same change for
+  similar blocks. See [corrections](corrections.md).
 - **Back to Summary** (Esc) returns to the numbers and *Save EPUB…*.
 
 Linked note references appear as the note's label, raised and coloured.
@@ -50,17 +54,20 @@ holds, for every block, the area it covers on each page it touches
 `Conversion` carries these and the page files to `ReviewModel`
 (`AppModel`), which places every part on its page, splits the text into runs
 with the detector, and owns the page, the selection and the list of stops
-for *Next Issue*. Items are identified by `ItemID` (`.block(index)` or
-`.note(id)`), the same on every page they appear on. The views in `App/`
-render that state.
+for *Next Issue*. Items are identified by `ItemID` (`.block(index)`,
+`.note(id)` or `.ignored(index)`), the same on every page they appear on.
+It takes a `ProjectModel`, which holds the base conversion and the
+corrections, and rebuilds the pages from the corrected document after every
+change, keeping the selection on the same block. The views in `App/` render
+that state.
 
 ## Known limits
 
-- Read-only: no editing of text or block types yet.
 - A block on two pages shows its whole text on both cards: where the page
   break falls inside the text is not recorded. A suspicious word in the
   second part is reached through the block's stop on its first page.
 - No spelling check yet: a misread word made of plausible letters is not
   flagged. `NSSpellChecker` is planned as a further rule.
 - False positives are expected for formulas and codes ("H2O").
-- The review is rebuilt each time it is opened and is not saved.
+- The review itself is rebuilt each time it is opened; the corrections are
+  kept in the [project](projects.md).

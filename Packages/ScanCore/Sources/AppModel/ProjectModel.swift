@@ -1,0 +1,180 @@
+import Conversion
+import Corrections
+import DocumentModel
+import Foundation
+import LayoutAnalysis
+import Observation
+import ProjectStore
+
+/// A document being worked on: the conversion as the pipeline produced it and
+/// the user's corrections on top of it.
+///
+/// The model keeps the two apart on purpose. The corrected conversion is
+/// derived from them after every change, so converting again only replaces
+/// the base and the corrections apply to the new one. Corrections are
+/// written to the project folder after each change, so closing the app
+/// loses nothing.
+@MainActor
+@Observable
+public final class ProjectModel {
+    /// The project folder; `nil` for a document that is not saved anywhere, whose
+    /// corrections live in memory only.
+    public let location: URL?
+    /// What the pipeline produced, without corrections.
+    public private(set) var base: Conversion
+    public private(set) var corrections: CorrectionSet
+    /// The document with the corrections applied: what is reviewed and exported.
+    public private(set) var conversion: Conversion
+    /// Blocks the user left out of the document.
+    public private(set) var ignored: [IgnoredBlock] = []
+    /// Corrections that found nothing to act on in the current base, for the
+    /// user to know about after converting again.
+    public private(set) var unapplied: [Correction] = []
+    /// Why the last write to disk failed, or `nil` when it succeeded.
+    public private(set) var saveError: String?
+
+    /// Earlier states of the corrections, newest last.
+    private var history: [CorrectionSet] = []
+    private let storage: any ProjectPersisting
+
+    public init(
+        base: Conversion,
+        corrections: CorrectionSet = CorrectionSet(),
+        location: URL? = nil,
+        storage: any ProjectPersisting = LiveProjectStorage()
+    ) {
+        self.base = base
+        self.corrections = corrections
+        self.location = location
+        self.storage = storage
+        conversion = base
+        recompute()
+    }
+
+    public var canUndo: Bool {
+        !history.isEmpty
+    }
+
+    // MARK: - Changes
+
+    /// Gives the block at `anchor` a type.
+    public func setType(_ type: BlockType, for anchor: BlockAnchor) {
+        setType(type, for: [anchor])
+    }
+
+    /// Gives every block at `anchors` a type, as one step to undo.
+    public func setType(_ type: BlockType, for anchors: [BlockAnchor]) {
+        change { set in
+            for anchor in anchors {
+                set.setType(type, for: anchor)
+            }
+        }
+    }
+
+    /// Gives the block back the type it was recognized with.
+    public func resetType(for anchor: BlockAnchor) {
+        change { $0.resetType(for: anchor) }
+    }
+
+    /// Sets the text of the block or note at `anchor`. `text` is in the
+    /// canonical form (note references as placeholders).
+    public func setText(_ text: String, for anchor: BlockAnchor) {
+        guard let automatic = automaticText(at: anchor) else { return }
+        change { $0.setText(from: automatic, to: text, for: anchor) }
+    }
+
+    /// Replaces every whole word `word` in the document with `replacement`.
+    public func replaceWord(_ word: String, with replacement: String) {
+        change { $0.replaceWord(word, with: replacement) }
+    }
+
+    /// Takes back the last change.
+    public func undo() {
+        guard let previous = history.popLast() else { return }
+        corrections = previous
+        recompute()
+        persist()
+    }
+
+    /// Puts a newly converted document under the corrections: the same document
+    /// converted again, with the corrections the user made before. What no
+    /// longer applies is listed in ``unapplied``. Undo history starts over,
+    /// because it refers to the old conversion.
+    public func replaceBase(_ conversion: Conversion) {
+        base = conversion
+        history = []
+        recompute()
+        guard let location else { return }
+        do {
+            try storage.replaceConversion(in: location, with: conversion)
+            saveError = nil
+        } catch {
+            saveError = String(describing: error)
+        }
+    }
+
+    // MARK: - Questions
+
+    /// The blocks that look like the one at `anchor` and are currently of
+    /// type `type`, which the user has not decided about themselves. Used to
+    /// offer a correction for them after the user made it for one block.
+    public func similarBlocks(like anchor: BlockAnchor, thatAre type: BlockType) -> [BlockAnchor] {
+        guard let source = conversion.blockSources.first(where: { anchor.matches($0) }) else { return [] }
+        return SimilarBlocks.anchors(like: source, ofType: type, in: conversion)
+            .filter { corrections.type(for: $0) == nil }
+    }
+
+    // MARK: - Internals
+
+    /// The text of the block or note at `anchor` before any correction.
+    private func automaticText(at anchor: BlockAnchor) -> String? {
+        let document = base.document
+        if base.blockSources.count == document.blocks.count,
+           let index = base.blockSources.firstIndex(where: { anchor.matches($0) })
+        {
+            return document.blocks[index].textContent.canonicalText
+        }
+        if base.noteSources.count == document.notes.count,
+           let index = base.noteSources.firstIndex(where: { anchor.matches($0) })
+        {
+            return document.notes[index].content.canonicalText
+        }
+        return nil
+    }
+
+    private func change(_ edit: (inout CorrectionSet) -> Void) {
+        var updated = corrections
+        edit(&updated)
+        guard updated != corrections else { return }
+        history.append(corrections)
+        corrections = updated
+        recompute()
+        persist()
+    }
+
+    private func recompute() {
+        let result = corrections.applying(to: base)
+        conversion = result.conversion
+        ignored = result.ignored
+        unapplied = result.unapplied
+    }
+
+    private func persist() {
+        guard let location else { return }
+        do {
+            try storage.save(corrections, to: location)
+            saveError = nil
+        } catch {
+            saveError = String(describing: error)
+        }
+    }
+}
+
+private extension Block {
+    var textContent: [Inline] {
+        switch self {
+        case let .heading(_, content), let .paragraph(content): content
+        case let .figure(figure): figure.caption
+        }
+    }
+}

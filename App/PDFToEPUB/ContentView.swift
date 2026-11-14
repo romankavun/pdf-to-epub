@@ -1,4 +1,5 @@
 import AppModel
+import Corrections
 import ImageIO
 import SwiftUI
 import UniformTypeIdentifiers
@@ -23,10 +24,14 @@ struct ContentView: View {
                 if let review {
                     ReviewScreen(model: review) { self.review = nil }
                 } else {
+                    // The summary counts the document as it will be exported, with
+                    // the corrections applied.
+                    let corrected = model.project?.conversion ?? conversion
                     ResultScreen(
-                        model: model, summary: ConversionSummary(conversion), chooseFolder: chooseFolder
+                        model: model, summary: ConversionSummary(corrected), chooseFolder: chooseFolder
                     ) {
-                        review = ReviewModel(conversion: conversion)
+                        review = model.project.map { ReviewModel(project: $0) }
+                            ?? ReviewModel(conversion: conversion)
                     }
                 }
             case let .failed(failure):
@@ -37,14 +42,16 @@ struct ContentView: View {
         .frame(minWidth: 640, minHeight: 420)
         // A review belongs to one conversion; any change of phase ends it.
         .onChange(of: model.phase) { review = nil }
+        // A folder of scans and a saved project are both folders; the model
+        // tells them apart.
         .fileImporter(isPresented: $isChoosingFolder, allowedContentTypes: [.folder]) { result in
             if case let .success(url) = result {
-                model.open(folder: url)
+                model.open(url)
             }
         }
         .dropDestination(for: URL.self) { urls, _ in
             guard let url = urls.first, !isConverting else { return false }
-            model.open(folder: url)
+            model.open(url)
             return true
         }
     }
@@ -65,7 +72,7 @@ struct ContentView: View {
         ContentUnavailableView {
             Label("No document open", systemImage: "document.closed")
         } description: {
-            Text("Choose a folder with one image per page, or drop it here.")
+            Text("Choose a folder with one image per page or a saved project, or drop it here.")
         } actions: {
             Button("Choose Folder…", action: chooseFolder)
                 .keyboardShortcut("o")
@@ -239,6 +246,7 @@ private struct ResultScreen: View {
                     LabeledContent("Notes without a reference", value: summary.unlinkedNotes.formatted())
                 }
             }
+            projectSection
         }
         .formStyle(.grouped)
         // Kept outside the scrolling form so saving is always in reach.
@@ -248,6 +256,8 @@ private struct ResultScreen: View {
                 HStack {
                     Button("Choose Another Folder…", action: chooseFolder)
                     Spacer()
+                    Button("Convert Again", action: model.start)
+                        .disabled(!model.canStart)
                     Button("Review…", action: review)
                         .keyboardShortcut("r")
                     Button("Save EPUB…", action: save)
@@ -257,6 +267,44 @@ private struct ResultScreen: View {
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
+        }
+    }
+
+    /// Where the project is saved, what its corrections amount to, and what
+    /// could not be kept.
+    @ViewBuilder private var projectSection: some View {
+        if let project = model.project {
+            Section("Project") {
+                if let location = project.location {
+                    LabeledContent("Saved as") {
+                        HStack {
+                            Text(location.lastPathComponent)
+                            Button("Show in Finder") {
+                                NSWorkspace.shared.activateFileViewerSelecting([location])
+                            }
+                        }
+                    }
+                } else {
+                    Label(
+                        "The project could not be saved. Corrections are kept until you close the document.",
+                        systemImage: "exclamationmark.triangle.fill"
+                    )
+                    .foregroundStyle(.orange)
+                    if let error = model.projectError {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                LabeledContent("Corrections", value: project.corrections.corrections.count.formatted())
+                if !project.unapplied.isEmpty {
+                    LabeledContent("Corrections that no longer apply", value: project.unapplied.count.formatted())
+                }
+                if let error = project.saveError {
+                    Label("Corrections could not be saved: \(error)", systemImage: "xmark.octagon.fill")
+                        .foregroundStyle(.red)
+                }
+            }
         }
     }
 

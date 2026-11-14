@@ -148,22 +148,8 @@ public struct DocumentConverter: Sendable {
         ImageResource(id: id, filename: id + ".png", mediaType: "image/png", data: data)
     }
 
-    /// Splits blocks into chapters at every level 1 heading.
-    ///
-    /// Content before the first heading (title page, preface without a
-    /// heading) becomes a chapter named after the document, because every
-    /// chapter needs a title for the table of contents.
+    /// Splits blocks into chapters; see ``Chapter/chapters(from:fallbackTitle:)``.
     static func chapters(from blocks: [Block], fallbackTitle: String) -> [Chapter] {
-        var chapters: [Chapter] = []
-        for block in blocks {
-            if case let .heading(level, content) = block, level == 1 {
-                chapters.append(Chapter(title: content.plainText, blocks: [block]))
-            } else if chapters.isEmpty {
-                chapters.append(Chapter(title: fallbackTitle, blocks: [block]))
-            } else {
-                chapters[chapters.count - 1].blocks.append(block)
-            }
-        }
-        return chapters
+        Chapter.chapters(from: blocks, fallbackTitle: fallbackTitle)
     }
 }

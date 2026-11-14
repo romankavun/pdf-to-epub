@@ -1,15 +1,18 @@
 @testable import AppModel
 import Conversion
+import Corrections
 import DocumentModel
 import EPUBExport
 import Foundation
 import Importing
+import LayoutAnalysis
+import ProjectStore
 import Testing
 
-private let folder = URL(fileURLWithPath: "/documents/Sample")
-private let threePages = ["1.png", "2.png", "3.png"].map { folder.appendingPathComponent($0) }
+let folder = URL(fileURLWithPath: "/documents/Sample")
+let threePages = ["1.png", "2.png", "3.png"].map { folder.appendingPathComponent($0) }
 
-private func sampleConversion(title: String = "Sample") -> Conversion {
+func fakeConversion(title: String = "Sample") -> Conversion {
     let document = Document(
         metadata: DocumentMetadata(identifier: "urn:test", title: title, author: nil, language: "uk"),
         chapters: [Chapter(title: title, blocks: [.paragraph(["Text."])])]
@@ -17,14 +20,14 @@ private func sampleConversion(title: String = "Sample") -> Conversion {
     return Conversion(document: document, unlinkedReferences: 2, unlinkedNotes: 1)
 }
 
-private struct FakeFailure: Error, CustomStringConvertible {
+struct FakeFailure: Error, CustomStringConvertible {
     var description: String {
         "disk on fire"
     }
 }
 
 /// Lets a test hold the fake conversion in the middle of a document.
-private final class Gate: Sendable {
+final class Gate: Sendable {
     private let stream: AsyncStream<Void>
     private let continuation: AsyncStream<Void>.Continuation
 
@@ -43,7 +46,7 @@ private final class Gate: Sendable {
     }
 }
 
-private final class Recorder<Value: Sendable>: @unchecked Sendable {
+final class Recorder<Value: Sendable>: @unchecked Sendable {
     private let lock = NSLock()
     private var storage: [Value] = []
 
@@ -56,7 +59,7 @@ private final class Recorder<Value: Sendable>: @unchecked Sendable {
     }
 }
 
-private struct FakePipeline: ConversionPipeline {
+struct FakePipeline: ConversionPipeline {
     var pages: Result<[URL], ImportError> = .success(threePages)
     var failure: FakeFailure?
     var exportFailure: EPUBExportError?
@@ -65,6 +68,7 @@ private struct FakePipeline: ConversionPipeline {
     var pauseAfter = 1
     let metadata = Recorder<DocumentMetadata>()
     let exports = Recorder<URL>()
+    let documents = Recorder<Document>()
 
     func pageURLs(in _: URL) throws -> [URL] {
         try pages.get()
@@ -86,20 +90,21 @@ private struct FakePipeline: ConversionPipeline {
                 try Task.checkCancellation()
             }
         }
-        return sampleConversion(title: metadata.title)
+        return fakeConversion(title: metadata.title)
     }
 
-    func export(_: Document, to url: URL) async throws {
+    func export(_ document: Document, to url: URL) async throws {
         if let exportFailure {
             throw exportFailure
         }
+        documents.record(document)
         exports.record(url)
     }
 }
 
 /// Waits for main-actor work queued by background callbacks to land.
 @MainActor
-private func eventually(_ condition: () -> Bool) async -> Bool {
+func eventually(_ condition: () -> Bool) async -> Bool {
     for _ in 0 ..< 2000 {
         if condition() {
             return true
@@ -114,7 +119,7 @@ private func eventually(_ condition: () -> Bool) async -> Bool {
 struct ConversionModelTests {
     @Test("starts with no folder and nothing to convert")
     func startsEmpty() {
-        let model = ConversionModel(pipeline: FakePipeline())
+        let model = ConversionModel(pipeline: FakePipeline(), storage: FakeStorage())
 
         #expect(model.phase == .empty)
         #expect(!model.canStart)
@@ -122,12 +127,12 @@ struct ConversionModelTests {
 
     @Test("opening a folder counts its pages and names the document after it")
     func opensFolder() {
-        let model = ConversionModel(pipeline: FakePipeline())
+        let model = ConversionModel(pipeline: FakePipeline(), storage: FakeStorage())
 
         model.open(folder: folder)
 
         #expect(model.phase == .ready)
-        #expect(model.folder == folder)
+        #expect(model.folder?.path == folder.path)
         #expect(model.pageCount == 3)
         #expect(model.title == "Sample")
         #expect(model.canStart)
@@ -135,7 +140,7 @@ struct ConversionModelTests {
 
     @Test("a folder without page images is reported, not opened")
     func rejectsFolderWithoutImages() {
-        let model = ConversionModel(pipeline: FakePipeline(pages: .failure(.noImages(folder))))
+        let model = ConversionModel(pipeline: FakePipeline(pages: .failure(.noImages(folder))), storage: FakeStorage())
 
         model.open(folder: folder)
 
@@ -146,7 +151,7 @@ struct ConversionModelTests {
 
     @Test("a blank title blocks the conversion: EPUB requires one")
     func blankTitleBlocksStart() {
-        let model = ConversionModel(pipeline: FakePipeline())
+        let model = ConversionModel(pipeline: FakePipeline(), storage: FakeStorage())
         model.open(folder: folder)
 
         model.title = "  "
@@ -157,7 +162,7 @@ struct ConversionModelTests {
     @Test("converts with the metadata the user entered")
     func convertsWithMetadata() async {
         let pipeline = FakePipeline()
-        let model = ConversionModel(pipeline: pipeline)
+        let model = ConversionModel(pipeline: pipeline, storage: FakeStorage())
         model.open(folder: folder)
         model.title = " Sample, 1840 "
         model.author = "  "
@@ -166,7 +171,7 @@ struct ConversionModelTests {
         model.start()
         await model.conversionTask?.value
 
-        #expect(model.phase == .finished(sampleConversion(title: "Sample, 1840")))
+        #expect(model.phase == .finished(fakeConversion(title: "Sample, 1840")))
         let metadata = pipeline.metadata.values.first
         #expect(metadata?.title == "Sample, 1840")
         #expect(metadata?.author == nil)
@@ -176,7 +181,7 @@ struct ConversionModelTests {
     @Test("shows how many pages are done while converting")
     func reportsProgress() async {
         let gate = Gate()
-        let model = ConversionModel(pipeline: FakePipeline(gate: gate))
+        let model = ConversionModel(pipeline: FakePipeline(gate: gate), storage: FakeStorage())
         model.open(folder: folder)
 
         model.start()
@@ -186,13 +191,13 @@ struct ConversionModelTests {
 
         gate.open()
         await model.conversionTask?.value
-        #expect(model.phase == .finished(sampleConversion()))
+        #expect(model.phase == .finished(fakeConversion()))
     }
 
     @Test("names the page being recognized, which is the one after the pages done")
     func pageInProgress() async {
         let gate = Gate()
-        let model = ConversionModel(pipeline: FakePipeline(gate: gate))
+        let model = ConversionModel(pipeline: FakePipeline(gate: gate), storage: FakeStorage())
         model.open(folder: folder)
         #expect(model.pageInProgress == nil)
 
@@ -208,7 +213,7 @@ struct ConversionModelTests {
     @Test("once every page is recognized no page is in progress while the document is assembled")
     func noPageWhileAssembling() async {
         let gate = Gate()
-        let model = ConversionModel(pipeline: FakePipeline(gate: gate, pauseAfter: 3))
+        let model = ConversionModel(pipeline: FakePipeline(gate: gate, pauseAfter: 3), storage: FakeStorage())
         model.open(folder: folder)
 
         model.start()
@@ -221,7 +226,7 @@ struct ConversionModelTests {
 
     @Test("a failed conversion shows the reason")
     func reportsFailure() async {
-        let model = ConversionModel(pipeline: FakePipeline(failure: FakeFailure()))
+        let model = ConversionModel(pipeline: FakePipeline(failure: FakeFailure()), storage: FakeStorage())
         model.open(folder: folder)
 
         model.start()
@@ -233,7 +238,7 @@ struct ConversionModelTests {
     @Test("cancelling returns to the ready state at once and drops the late result")
     func cancels() async {
         let gate = Gate()
-        let model = ConversionModel(pipeline: FakePipeline(gate: gate))
+        let model = ConversionModel(pipeline: FakePipeline(gate: gate), storage: FakeStorage())
         model.open(folder: folder)
         model.start()
         #expect(await eventually { model.phase == .converting(done: 1, total: 3) })
@@ -251,7 +256,7 @@ struct ConversionModelTests {
     @Test("exports the converted document to the chosen file")
     func exports() async {
         let pipeline = FakePipeline()
-        let model = ConversionModel(pipeline: pipeline)
+        let model = ConversionModel(pipeline: pipeline, storage: FakeStorage())
         model.open(folder: folder)
         model.start()
         await model.conversionTask?.value
@@ -265,7 +270,7 @@ struct ConversionModelTests {
 
     @Test("a failed export is reported and the document stays available")
     func reportsExportFailure() async {
-        let model = ConversionModel(pipeline: FakePipeline(exportFailure: .noChapters))
+        let model = ConversionModel(pipeline: FakePipeline(exportFailure: .noChapters), storage: FakeStorage())
         model.open(folder: folder)
         model.start()
         await model.conversionTask?.value
@@ -273,12 +278,12 @@ struct ConversionModelTests {
         await model.export(to: URL(fileURLWithPath: "/tmp/Sample.epub"))
 
         #expect(model.exportResult == .failed("noChapters"))
-        #expect(model.phase == .finished(sampleConversion()))
+        #expect(model.phase == .finished(fakeConversion()))
     }
 
     @Test("suggests saving the EPUB next to the folder, named after it")
     func suggestsExportName() {
-        let model = ConversionModel(pipeline: FakePipeline())
+        let model = ConversionModel(pipeline: FakePipeline(), storage: FakeStorage())
         model.open(folder: folder)
 
         #expect(model.suggestedExportURL == URL(fileURLWithPath: "/documents/Sample.epub"))
@@ -286,7 +291,7 @@ struct ConversionModelTests {
 
     @Test("opening another folder forgets the previous result")
     func reopening() async {
-        let model = ConversionModel(pipeline: FakePipeline())
+        let model = ConversionModel(pipeline: FakePipeline(), storage: FakeStorage())
         model.open(folder: folder)
         model.start()
         await model.conversionTask?.value

@@ -6,8 +6,7 @@ linked notes. Recognition runs on device with Apple Vision; nothing is sent
 over the network.
 
 Today the input is a **folder of page images** (one image per page). PDF
-input, corrections in the review screen and saved projects are not built
-yet; see [docs/backlog.md](docs/backlog.md) and the milestone list in
+input is not built yet; see [docs/backlog.md](docs/backlog.md) and the milestone list in
 [CLAUDE.md](CLAUDE.md).
 
 ## Requirements
@@ -59,8 +58,12 @@ sample sets.
    references and note texts that could not be linked.
 5. *Review…* (⌘R) shows each page scan next to what was recognized on it,
    with suspicious words highlighted; *Next Issue* (⌘G) jumps between them.
-   The review is read-only for now.
-6. *Save EPUB…* (⌘S) writes the document.
+   Select a block to change its type, edit its text or ignore it (⌘Z
+   undoes); the app offers the same change for similar blocks and for a
+   word fixed once. See [docs/features/corrections.md](docs/features/corrections.md).
+6. The document and every correction are saved as `<folder>.scanproject` beside
+   the scans. Choose that folder (⌘O) later to continue where you left off.
+7. *Save EPUB…* (⌘S) writes the document with the corrections applied.
 
 ## Documentation
 

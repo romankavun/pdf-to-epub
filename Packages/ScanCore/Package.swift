@@ -15,6 +15,8 @@ let package = Package(
                 "Importing",
                 "Conversion",
                 "TextReview",
+                "Corrections",
+                "ProjectStore",
                 "AppModel",
             ]
         ),
@@ -28,10 +30,13 @@ let package = Package(
         .target(name: "Importing"),
         .target(name: "Conversion", dependencies: ["DocumentModel", "OCR", "LayoutAnalysis"]),
         .target(name: "TextReview"),
+        .target(name: "Corrections", dependencies: ["DocumentModel", "LayoutAnalysis", "Conversion"]),
+        .target(name: "ProjectStore", dependencies: ["DocumentModel", "LayoutAnalysis", "Conversion", "Corrections"]),
         .target(
             name: "AppModel",
             dependencies: [
                 "DocumentModel", "OCR", "Importing", "LayoutAnalysis", "Conversion", "EPUBExport", "TextReview",
+                "Corrections", "ProjectStore",
             ]
         ),
         .executableTarget(
@@ -40,8 +45,19 @@ let package = Package(
         ),
         .testTarget(name: "TextReviewTests", dependencies: ["TextReview"]),
         .testTarget(
+            name: "CorrectionsTests",
+            dependencies: ["Corrections", "Conversion", "DocumentModel", "LayoutAnalysis"]
+        ),
+        .testTarget(
+            name: "ProjectStoreTests",
+            dependencies: ["ProjectStore", "Corrections", "Conversion", "DocumentModel", "LayoutAnalysis"]
+        ),
+        .testTarget(
             name: "AppModelTests",
-            dependencies: ["AppModel", "Conversion", "DocumentModel", "Importing", "LayoutAnalysis", "TextReview"]
+            dependencies: [
+                "AppModel", "Conversion", "DocumentModel", "Importing", "LayoutAnalysis", "TextReview",
+                "Corrections", "ProjectStore",
+            ]
         ),
         .testTarget(name: "ImportingTests", dependencies: ["Importing"]),
         .testTarget(name: "ConversionTests", dependencies: ["Conversion", "DocumentModel", "OCR"]),

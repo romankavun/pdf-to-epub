@@ -83,3 +83,25 @@ struct InlineTests {
         #expect(blocks.flatMap(\.referencedNoteIDs) == ["b", "a", "b", "c"])
     }
 }
+
+@Suite("Chapter splitting")
+struct ChapterSplittingTests {
+    @Test("splits at level 1 headings and names leading content after the fallback title")
+    func splitsAtTopHeadings() {
+        let blocks: [Block] = [
+            .paragraph(["Preface"]),
+            .heading(level: 1, content: ["One"]),
+            .heading(level: 2, content: ["Part"]),
+            .paragraph(["Text"]),
+            .heading(level: 1, content: ["Two"]),
+        ]
+        let chapters = Chapter.chapters(from: blocks, fallbackTitle: "Document")
+        #expect(chapters.map(\.title) == ["Document", "One", "Two"])
+        #expect(chapters.map(\.blocks.count) == [1, 3, 1])
+    }
+
+    @Test("no blocks, no chapters")
+    func empty() {
+        #expect(Chapter.chapters(from: [], fallbackTitle: "Document").isEmpty)
+    }
+}

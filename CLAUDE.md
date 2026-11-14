@@ -8,9 +8,12 @@ Status: **first end-to-end pipeline works from the command line**: a folder
 of page images goes through Vision OCR, layout analysis and EPUB export
 (`pagescan` CLI, all in `Packages/ScanCore`), with illustrations, captions,
 the cover and linked notes. The app does the same from a window: choose a
-folder, convert with progress, review the result against the scans
-(read-only), save the EPUB (`AppModel` + `App/`). Body-size headings, PDF
-input and corrections in review are not built; see
+folder, convert with progress, review the result against the scans, correct
+it (block types, text, ignoring, applying a fix to similar blocks, undo),
+save the EPUB (`AppModel` + `App/`). Every conversion is kept as a project
+bundle beside the scans, with the corrections stored apart from the
+recognized document (`Corrections`, `ProjectStore`). Body-size headings and PDF
+input are not built; see
 `docs/features/` for what each piece does and its limits. Modules listed
 below that do not exist yet are created when a test first needs them.
 
@@ -105,6 +108,7 @@ Packages/ScanCore/          Swift package, no UI imports
     OCR/                    Vision adapter behind OCREngine protocol
     LayoutAnalysis/         block classification heuristics
     EPUBExport/             EPUB 3 writer
+    Corrections/            user corrections applied over a conversion; no UI
     ProjectStore/           project bundle persistence
     Conversion/             pipeline: pages -> Document
     TextReview/             suspicious-word rules; no dependencies
@@ -235,8 +239,9 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
 6. ~~Notes: colour-based markers, note texts, linking~~ (done; ADR 0003).
    Still open from this milestone: bold/body-size headings and running
    header removal.
-7. App UI: ~~import, progress, export, read-only review screen with
-   mixed-script and digit-in-word rules~~ (done); spell-check rule,
-   corrections. Defects found in review and the next improvements are in
+7. App UI: ~~import, progress, export, review screen with
+   mixed-script and digit-in-word rules, corrections~~ (done); spell-check
+   rule. Defects found in review and the next improvements are in
    `docs/backlog.md`.
-8. Project persistence and correction propagation.
+8. ~~Project persistence and correction propagation~~ (done; ADR 0005).
+   Still open: merging and splitting blocks, redrawing regions.

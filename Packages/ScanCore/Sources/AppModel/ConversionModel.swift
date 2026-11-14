@@ -1,4 +1,5 @@
 import Conversion
+import Corrections
 import DocumentModel
 import Foundation
 import Importing
@@ -52,6 +53,13 @@ public final class ConversionModel {
 
     public private(set) var exportResult: ExportResult?
 
+    /// The document being worked on, with the user's corrections, once a
+    /// conversion has finished or a project was opened; `nil` before that.
+    public private(set) var project: ProjectModel?
+    /// Why the project could not be written beside the folder; the document is
+    /// still there, but its corrections are kept in memory only.
+    public private(set) var projectError: String?
+
     public var title = ""
     public var author = ""
     /// BCP 47 tag of the document's main language.
@@ -61,13 +69,18 @@ public final class ConversionModel {
     private(set) var conversionTask: Task<Void, Never>?
 
     private let pipeline: any ConversionPipeline
+    private let storage: any ProjectPersisting
     private var pages: [URL] = []
     /// Identifies the current run, so that progress and results arriving
     /// from a cancelled run are dropped.
     private var run = 0
 
-    public init(pipeline: any ConversionPipeline = LivePipeline()) {
+    public init(
+        pipeline: any ConversionPipeline = LivePipeline(),
+        storage: any ProjectPersisting = LiveProjectStorage()
+    ) {
         self.pipeline = pipeline
+        self.storage = storage
     }
 
     /// A page image being recognized, for the progress screen to show.
@@ -107,6 +120,44 @@ public final class ConversionModel {
         folder.map { $0.deletingLastPathComponent().appendingPathComponent($0.lastPathComponent + ".epub") }
     }
 
+    /// Opens `url`, which is either a project folder saved earlier or a
+    /// folder of page images, whichever it turns out to be.
+    public func open(_ url: URL) {
+        if storage.isProject(at: url) {
+            openProject(at: url)
+        } else {
+            open(folder: url)
+        }
+    }
+
+    /// Opens a project saved earlier: its document and corrections come from
+    /// disk, nothing is converted. The scans are expected where they were,
+    /// and ``start()`` converts them again under the same corrections.
+    public func openProject(at url: URL) {
+        cancelRun()
+        exportResult = nil
+        projectError = nil
+        do {
+            let loaded = try storage.load(from: url)
+            let conversion = loaded.conversion
+            let metadata = conversion.document.metadata
+            pages = conversion.pageURLs
+            folder = conversion.pageURLs.first?.deletingLastPathComponent()
+            title = metadata.title
+            author = metadata.author ?? ""
+            language = metadata.language
+            project = ProjectModel(
+                base: conversion, corrections: loaded.corrections, location: url, storage: storage
+            )
+            phase = .finished(conversion)
+        } catch {
+            pages = []
+            folder = nil
+            project = nil
+            phase = .failed(Self.failure(for: error))
+        }
+    }
+
     /// Opens `folder` as the document to convert, replacing whatever was open.
     ///
     /// The title is preset to the folder's name. A folder that cannot be
@@ -114,6 +165,8 @@ public final class ConversionModel {
     public func open(folder: URL) {
         cancelRun()
         exportResult = nil
+        project = nil
+        projectError = nil
         do {
             pages = try pipeline.pageURLs(in: folder)
             self.folder = folder
@@ -151,6 +204,9 @@ public final class ConversionModel {
             }
             guard run == self.run else { return }
             phase = outcome
+            if case let .finished(conversion) = outcome {
+                adopt(conversion)
+            }
         }
     }
 
@@ -164,16 +220,37 @@ public final class ConversionModel {
         phase = .ready
     }
 
-    /// Writes the converted document to `url`; the outcome lands in
-    /// ``exportResult``. Does nothing unless a conversion has finished.
+    /// Writes the converted document, with the user's corrections applied, to
+    /// `url`; the outcome lands in ``exportResult``. Does nothing unless a
+    /// conversion has finished.
     public func export(to url: URL) async {
         guard case let .finished(conversion) = phase else { return }
         do {
-            try await pipeline.export(conversion.document, to: url)
+            try await pipeline.export(project?.conversion.document ?? conversion.document, to: url)
             exportResult = .saved(url)
         } catch {
             exportResult = .failed(String(describing: error))
         }
+    }
+
+    /// Puts a conversion that just finished under the corrections: into the
+    /// project that is open, which keeps them, or into a new project written
+    /// beside the folder of scans.
+    private func adopt(_ conversion: Conversion) {
+        if let project {
+            project.replaceBase(conversion)
+            return
+        }
+        var location: URL?
+        if let folder {
+            do {
+                location = try storage.createProject(for: conversion, nextTo: folder)
+                projectError = nil
+            } catch {
+                projectError = String(describing: error)
+            }
+        }
+        project = ProjectModel(base: conversion, location: location, storage: storage)
     }
 
     private func cancelRun() {
