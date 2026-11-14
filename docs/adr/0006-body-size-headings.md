@@ -23,13 +23,15 @@ Vision returns text and boxes only.
    line, the average difference from the page background over the line's
    box (`PageBitmap.inkDensity(in:)`). Bold has thicker strokes, so its
    density is clearly higher at the same typeface. The number is compared
-   only with the document's own typical line (lower median, `1.3 x` or more is
-   bold), never against a fixed value, because backgrounds, colours and
+   only with the document's own typical line (lower median, `1.15 x` or more is
+   bold; measured headings were 1.2 to 1.6 x, body lines up to 1.15 x, because
+   a box that hugs the letters closely reads denser), never against a fixed value, because backgrounds, colours and
    anti-aliasing differ between documents. `PageContent.lineInk` carries it;
    `Conversion` measures it (`LineInkMeasurer`). Without measurements no
    line is bold and the rule falls back to centering.
-2. **A body-size heading is a single line set apart** (blank line above and
-   below, or the page edge or a picture on that side), short (at most 70 %
+2. **A body-size heading is a single line set apart** (blank line above, or
+   the page edge, and for a centered one also below; a bold heading may be
+   followed closely by its text), short (at most 70 %
    of the page width, 100 characters, not ending with `. , ; : …`), which
    is either **bold** or **centered** (middle within 4 % of the page's
    middle) and then at most 8 words. The word limit keeps dedications and

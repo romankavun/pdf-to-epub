@@ -57,7 +57,7 @@ public struct LayoutAnalyzer: Sendable {
         public var bodyHeadingCenterTolerance = 0.04
         /// A line is bold when its ink density is at least this many times
         /// the document's typical density.
-        public var boldInkFactor = 1.3
+        public var boldInkFactor = 1.15
 
         public init() {}
     }

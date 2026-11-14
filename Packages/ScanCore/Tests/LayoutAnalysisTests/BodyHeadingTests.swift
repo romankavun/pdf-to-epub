@@ -57,6 +57,28 @@ struct BodyHeadingTests {
         #expect(blocks[1] == .heading(level: 1, content: ["The Garden"]))
     }
 
+    @Test("a bold heading needs space above it only: the text may follow it closely")
+    func boldWithTightSpaceBelow() {
+        let first = content([body("one a", y: 0.1), body("one b", y: 0.12), body("one c", y: 0.14)])
+        let second = content([
+            short("Afterword", x: 0.05, y: 0.1, ink: 0.4), body("two a", y: 0.12), body("two b", y: 0.14),
+        ])
+        #expect(analyzer.blocks(from: [first, second]) == [
+            .paragraph(["one a one b one c"]),
+            .heading(level: 1, content: ["Afterword"]),
+            .paragraph(["two a two b"]),
+        ])
+    }
+
+    @Test("a centered line still needs space on both sides")
+    func centeredNeedsBothSides() {
+        let lines = [
+            body("one a", y: 0.1), body("one b", y: 0.12), body("one c", y: 0.14),
+            short("The Garden", y: 0.18), body("two a", y: 0.2), body("two b", y: 0.22),
+        ]
+        #expect(!analyzer.blocks(from: [content(lines)]).contains(.heading(level: 1, content: ["The Garden"])))
+    }
+
     @Test("a bold line that is not set apart is not a heading")
     func boldInsideParagraph() {
         let lines = [

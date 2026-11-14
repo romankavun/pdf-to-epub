@@ -43,12 +43,18 @@ extension LayoutAnalyzer {
         } else {
             true
         }
-        guard spaceAbove, spaceBelow else { return false }
+        guard spaceAbove else { return false }
 
-        let isCentered = abs(Double(line.box.midX) - 0.5) <= options.bodyHeadingCenterTolerance
         let isBold = row.ink.flatMap { ink in typicalInk.map { ink >= options.boldInkFactor * $0 } } ?? false
+        // Bold is evidence enough that the text below may follow closely: a
+        // heading is often set tight above its first paragraph. A centered
+        // line in body weight needs space on both sides.
+        if isBold {
+            return true
+        }
+        let isCentered = abs(Double(line.box.midX) - 0.5) <= options.bodyHeadingCenterTolerance
         let isShort = text.split(separator: " ").count <= options.centeredHeadingMaximumWords
-        return (isCentered && isShort) || isBold
+        return isCentered && isShort && spaceBelow
     }
 
     /// Whether the vertical step from `upper` to `lower` is a paragraph gap.
