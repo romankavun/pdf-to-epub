@@ -111,7 +111,11 @@ struct BodyHeadingTests {
             short("The Garden", y: 0.3), body("two a", y: 0.38), body("two b", y: 0.4),
         ])
         let headings = analyzer.blocks(from: [first]).compactMap { block -> Int? in
-            if case let .heading(level, _) = block { level } else { nil }
+            if case let .heading(level, _) = block {
+                level
+            } else {
+                nil
+            }
         }
         #expect(headings == [1, 2])
     }

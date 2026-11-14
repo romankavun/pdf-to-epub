@@ -48,17 +48,20 @@ public struct DocumentConverter: Sendable {
     private let engine: any OCREngine
     private let pictureExtractor: any PictureExtractor
     private let markerLocator: any NoteMarkerLocator
+    private let inkMeasurer: any LineInkMeasurer
     private let analyzer: LayoutAnalyzer
 
     public init(
         engine: any OCREngine,
         pictureExtractor: any PictureExtractor = ImagePictureExtractor(),
         markerLocator: any NoteMarkerLocator = ImageNoteMarkerLocator(),
+        inkMeasurer: any LineInkMeasurer = ImageLineInkMeasurer(),
         analyzer: LayoutAnalyzer = LayoutAnalyzer()
     ) {
         self.engine = engine
         self.pictureExtractor = pictureExtractor
         self.markerLocator = markerLocator
+        self.inkMeasurer = inkMeasurer
         self.analyzer = analyzer
     }
 
@@ -106,6 +109,7 @@ public struct DocumentConverter: Sendable {
             let markers = markerBoxes.enumerated().map { index, box in
                 NoteMarker(box: box, label: index < labels.count ? labels[index] : "")
             }
+            let lineInk = try inkMeasurer.ink(inImageAt: url, lines: lines)
             let extracted = try pictureExtractor.pictures(inImageAt: url, lines: lines)
                 .sorted { $0.box.minY < $1.box.minY }
 
@@ -126,7 +130,7 @@ public struct DocumentConverter: Sendable {
                     images.append(Self.image(id: id, data: picture.pngData))
                     pictures.append(PagePicture(imageID: id, box: picture.box))
                 }
-                pages.append(PageContent(lines: lines, pictures: pictures, markers: markers))
+                pages.append(PageContent(lines: lines, pictures: pictures, markers: markers, lineInk: lineInk))
             }
             progress(pages.count, pageURLs.count)
         }

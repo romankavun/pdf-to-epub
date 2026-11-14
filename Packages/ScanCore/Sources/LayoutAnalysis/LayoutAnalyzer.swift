@@ -120,17 +120,9 @@ public struct LayoutAnalyzer: Sendable {
                 case let .row(row):
                     let line = row.line
                     let step = previous.map { Double(line.box.minY - $0.box.minY) }
-                    let headingStyle: HeadingStyle? = if Double(line.box.height)
-                        >= options.headingHeightFactor * metrics.lineHeight
-                    {
-                        overlapsNeighbour(line, among: page) ? nil : .larger
-                    } else if isBodySizeHeading(
+                    let headingStyle = headingStyle(
                         at: elementIndex, in: page, metrics: metrics, typicalInk: typicalInk
-                    ) {
-                        .bodySize
-                    } else {
-                        nil
-                    }
+                    )
                     let isHeading = headingStyle != nil
                     if continues(assembly.draft, with: row, isHeading: isHeading, step: step, metrics: metrics) {
                         assembly.draft?.append(
@@ -149,28 +141,52 @@ public struct LayoutAnalyzer: Sendable {
                     previous = line
                 }
             }
-            // A caption never runs onto the next page, but an ordinary
-            // paragraph under a picture may.
-            if let pending = assembly.draft, pending.figureIndex != nil {
-                if isCaption(pending, gapBelow: nil, metrics: metrics) {
-                    flush(&assembly, metrics: metrics)
-                } else {
-                    assembly.draft?.figureIndex = nil
-                }
-            }
+            endPage(&assembly, metrics: metrics)
         }
         flush(&assembly, metrics: metrics)
         promoteBodySizeHeadings(in: &assembly.blocks)
         return NoteLinker(markers: markers).layout(of: assembly.blocks, sources: assembly.sources)
     }
 
+    /// A caption never runs onto the next page, but an ordinary paragraph
+    /// under a picture may.
+    private func endPage(_ assembly: inout Assembly, metrics: Metrics) {
+        guard let pending = assembly.draft, pending.figureIndex != nil else { return }
+        if isCaption(pending, gapBelow: nil, metrics: metrics) {
+            flush(&assembly, metrics: metrics)
+        } else {
+            assembly.draft?.figureIndex = nil
+        }
+    }
+
+    /// How the line at `index` of `page` stands out as a heading, if it does.
+    private func headingStyle(
+        at index: Int, in page: [PageElement], metrics: Metrics, typicalInk: Double?
+    ) -> HeadingStyle? {
+        guard let line = page[index].row?.line else { return nil }
+        if Double(line.box.height) >= options.headingHeightFactor * metrics.lineHeight {
+            return overlapsNeighbour(line, among: page) ? nil : .larger
+        }
+        return isBodySizeHeading(at: index, in: page, metrics: metrics, typicalInk: typicalInk) ? .bodySize : nil
+    }
+
     /// A document whose only headings are set at body size has no use for a
     /// second level: they become level 1.
     private func promoteBodySizeHeadings(in blocks: inout [DraftBlock]) {
-        let hasLarger = blocks.contains { if case .heading(1, _) = $0 { true } else { false } }
+        let hasLarger = blocks.contains {
+            if case .heading(1, _) = $0 {
+                true
+            } else {
+                false
+            }
+        }
         guard !hasLarger else { return }
         blocks = blocks.map { block in
-            if case let .heading(_, pieces) = block { .heading(level: 1, pieces) } else { block }
+            if case let .heading(_, pieces) = block {
+                .heading(level: 1, pieces)
+            } else {
+                block
+            }
         }
     }
 

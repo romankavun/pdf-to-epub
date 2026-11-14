@@ -36,13 +36,12 @@ extension LayoutAnalyzer {
             return false // under a picture
         }
         // And below: the last thing on the page, a picture, or a blank line.
-        let spaceBelow: Bool
-        if index == page.count - 1 {
-            spaceBelow = true
+        let spaceBelow: Bool = if index == page.count - 1 {
+            true
         } else if let below = page[index + 1].row {
-            spaceBelow = isBlankLine(between: line, and: below.line, metrics: metrics)
+            isBlankLine(between: line, and: below.line, metrics: metrics)
         } else {
-            spaceBelow = true
+            true
         }
         guard spaceAbove, spaceBelow else { return false }
 

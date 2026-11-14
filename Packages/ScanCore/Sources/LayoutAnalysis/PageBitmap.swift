@@ -1,3 +1,5 @@
+import CoreGraphics
+
 /// The pixels of a page image as plain values, so that pixel-based heuristics
 /// can be tested on pages built in code and do not depend on an image
 /// framework.
@@ -78,5 +80,37 @@ public struct PageBitmap: Sendable, Equatable {
         // dictionary order.
         let key = counts.max { $0.value != $1.value ? $0.value < $1.value : $0.key < $1.key }?.key ?? 0
         return Color(red: UInt8(key >> 16 & 0xFF), green: UInt8(key >> 8 & 0xFF), blue: UInt8(key & 0xFF))
+    }
+}
+
+public extension PageBitmap {
+    /// How much of an area is covered by ink, 0...1: the average difference
+    /// from the page's background colour, so that the soft edges of
+    /// anti-aliased strokes count in proportion to their coverage.
+    ///
+    /// Used to tell bold from regular text, whose only difference at the
+    /// same typeface is stroke thickness. The number means something only
+    /// next to the same measure of other lines of the document.
+    ///
+    /// - Parameter region: Normalized, origin at the top-left corner;
+    ///   clipped to the page. Zero when nothing of it lies on the page.
+    func inkDensity(in region: CGRect) -> Double {
+        let left = max(0, Int((region.minX * Double(width)).rounded(.down)))
+        let right = min(width, Int((region.maxX * Double(width)).rounded(.up)))
+        let top = max(0, Int((region.minY * Double(height)).rounded(.down)))
+        let bottom = min(height, Int((region.maxY * Double(height)).rounded(.up)))
+        guard left < right, top < bottom else { return 0 }
+
+        let background = backgroundColor
+        var total = 0
+        for row in top ..< bottom {
+            for column in left ..< right {
+                let offset = (row * width + column) * Self.bytesPerPixel
+                total += abs(Int(pixels[offset]) - Int(background.red))
+                    + abs(Int(pixels[offset + 1]) - Int(background.green))
+                    + abs(Int(pixels[offset + 2]) - Int(background.blue))
+            }
+        }
+        return Double(total) / Double((right - left) * (bottom - top) * 3 * 255)
     }
 }
