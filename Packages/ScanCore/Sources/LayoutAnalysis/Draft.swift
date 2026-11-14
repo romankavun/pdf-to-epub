@@ -23,16 +23,29 @@ extension [Piece] {
 
 /// A block before notes are linked.
 enum DraftBlock: Equatable {
-    case heading([Piece])
+    /// A heading of the given level; 1 is the largest (see ``HeadingStyle``).
+    case heading(level: Int, [Piece])
     case paragraph([Piece])
     case figure(imageID: ImageResource.ID, caption: [Piece])
     /// The text of a note, opened by the marker with the given index.
     case note(marker: Int, [Piece])
 }
 
+/// What sets a heading apart. The raw value is the heading level before
+/// levels are made contiguous.
+enum HeadingStyle: Int {
+    /// Set in larger type than the body text.
+    case larger = 1
+    /// Set in the body size and recognized by weight, centering and the
+    /// space around it.
+    case bodySize = 2
+}
+
 /// A block being assembled from consecutive lines.
 struct Draft {
-    let isHeading: Bool
+    /// Whether the block is a heading, and how it stands out from the body
+    /// text; `nil` for any other block.
+    let headingStyle: HeadingStyle?
     /// Index of the figure block this draft directly follows, while it is
     /// still a candidate for that figure's caption.
     var figureIndex: Int?
@@ -46,8 +59,12 @@ struct Draft {
     /// The areas the block covers; `nil` until its first line is added.
     private(set) var source: BlockSource?
 
-    init(isHeading: Bool, figureIndex: Int? = nil, noteMarker: Int? = nil, isHanging: Bool = false) {
-        self.isHeading = isHeading
+    var isHeading: Bool {
+        headingStyle != nil
+    }
+
+    init(headingStyle: HeadingStyle?, figureIndex: Int? = nil, noteMarker: Int? = nil, isHanging: Bool = false) {
+        self.headingStyle = headingStyle
         self.figureIndex = figureIndex
         self.noteMarker = noteMarker
         self.isHanging = isHanging
@@ -90,8 +107,8 @@ struct Draft {
     var block: DraftBlock {
         if let noteMarker {
             .note(marker: noteMarker, pieces)
-        } else if isHeading {
-            .heading(pieces)
+        } else if let headingStyle {
+            .heading(level: headingStyle.rawValue, pieces)
         } else {
             .paragraph(pieces)
         }

@@ -44,6 +44,17 @@ public struct LayoutAnalyzer: Sendable {
         /// extra space is what sets a caption apart from the paragraph that
         /// simply follows a picture.
         public var captionGapFactor = 2.75
+        /// A heading at body size is at most this wide (a fraction of the
+        /// page width); wider lines are paragraphs.
+        public var bodyHeadingMaximumWidth = 0.7
+        /// A heading at body size has at most this many characters.
+        public var bodyHeadingMaximumLength = 100
+        /// How far the middle of a centered line may be from the middle of
+        /// the page (a fraction of the page width).
+        public var bodyHeadingCenterTolerance = 0.04
+        /// A line is bold when its ink density is at least this many times
+        /// the document's typical density.
+        public var boldInkFactor = 1.3
 
         public init() {}
     }
@@ -93,23 +104,34 @@ public struct LayoutAnalyzer: Sendable {
         let metrics = Metrics(pages: pages.map { $0.compactMap(\.row?.line) })
             ?? Metrics(lineHeight: 0, lineStep: 0, margin: 0)
 
+        let typicalInk = typicalInk(of: pages)
         var assembly = Assembly()
         for (pageIndex, page) in pages.enumerated() {
             var previous: TextLine?
-            for element in page {
+            for (elementIndex, element) in page.enumerated() {
                 switch element {
                 case let .picture(picture):
                     flush(&assembly, metrics: metrics)
                     assembly.blocks.append(.figure(imageID: picture.imageID, caption: []))
                     assembly.sources.append(BlockSource(page: pageIndex, box: picture.box))
                     // Whatever comes next is judged as a possible caption.
-                    assembly.draft = Draft(isHeading: false, figureIndex: assembly.blocks.count - 1)
+                    assembly.draft = Draft(headingStyle: nil, figureIndex: assembly.blocks.count - 1)
                     previous = nil
                 case let .row(row):
                     let line = row.line
                     let step = previous.map { Double(line.box.minY - $0.box.minY) }
-                    let isHeading = Double(line.box.height) >= options.headingHeightFactor * metrics.lineHeight
-                        && !overlapsNeighbour(line, among: page)
+                    let headingStyle: HeadingStyle? = if Double(line.box.height)
+                        >= options.headingHeightFactor * metrics.lineHeight
+                    {
+                        overlapsNeighbour(line, among: page) ? nil : .larger
+                    } else if isBodySizeHeading(
+                        at: elementIndex, in: page, metrics: metrics, typicalInk: typicalInk
+                    ) {
+                        .bodySize
+                    } else {
+                        nil
+                    }
+                    let isHeading = headingStyle != nil
                     if continues(assembly.draft, with: row, isHeading: isHeading, step: step, metrics: metrics) {
                         assembly.draft?.append(
                             row.pieces(skippingLeadingMarker: false), page: pageIndex, box: line.box
@@ -118,7 +140,7 @@ public struct LayoutAnalyzer: Sendable {
                         flush(&assembly, gapBelow: step, metrics: metrics)
                         // A block that opens with a marker is the text of a note.
                         var draft = Draft(
-                            isHeading: isHeading, noteMarker: row.leadingMarker,
+                            headingStyle: headingStyle, noteMarker: row.leadingMarker,
                             isHanging: row.leadingMarker != nil && !isIndented(line, metrics: metrics)
                         )
                         draft.append(row.pieces(skippingLeadingMarker: true), page: pageIndex, box: line.box)
@@ -138,7 +160,18 @@ public struct LayoutAnalyzer: Sendable {
             }
         }
         flush(&assembly, metrics: metrics)
+        promoteBodySizeHeadings(in: &assembly.blocks)
         return NoteLinker(markers: markers).layout(of: assembly.blocks, sources: assembly.sources)
+    }
+
+    /// A document whose only headings are set at body size has no use for a
+    /// second level: they become level 1.
+    private func promoteBodySizeHeadings(in blocks: inout [DraftBlock]) {
+        let hasLarger = blocks.contains { if case .heading(1, _) = $0 { true } else { false } }
+        guard !hasLarger else { return }
+        blocks = blocks.map { block in
+            if case let .heading(_, pieces) = block { .heading(level: 1, pieces) } else { block }
+        }
     }
 
     /// Whether `row` belongs to the block being assembled.
