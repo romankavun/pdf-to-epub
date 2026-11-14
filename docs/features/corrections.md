@@ -36,6 +36,11 @@ Click a block (on the scan or in the list); buttons appear under its card.
   the block must not have been edited or touched by *Replace Everywhere*,
   because the cursor position is read in the recognized text. Save or undo
   the edit first.
+- **Splitting a note text** works the same way (a note's *Edit Text* has
+  *Split at Cursor*). The first part stays the note; the rest becomes a
+  paragraph of the document, placed among the blocks by where it lies on the
+  page, so it can be made a heading. Use it when the end of the notes ran
+  into the text that follows them.
 - Both are steps of undo. A merged block is shown on all the pages it
   covers; the review marks it as continued like a paragraph across pages.
   To take back a merge later, split the block where the join is.

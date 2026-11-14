@@ -154,7 +154,7 @@ public extension ReviewModel {
     /// Whether the block being edited can be split at a position of the
     /// text: its text has to be as recognized and unchanged in the editor.
     var canSplitEditing: Bool {
-        guard let item = editingItem, item.textType != nil else { return false }
+        guard let item = editingItem, item.textType != nil || item.kind.isNote else { return false }
         return draft == item.editableText && project.canSplit(item.anchor, showing: item.canonicalText)
     }
 
@@ -169,6 +169,10 @@ public extension ReviewModel {
         proposal = nil
         guard project.split(item.anchor, at: canonicalOffset, of: item.canonicalText) else { return }
         rebuild()
+        if item.kind.isNote {
+            select(itemID: item.id)
+            return
+        }
         let sources = project.conversion.blockSources
         if let index = sources.firstIndex(where: {
             $0.page == item.anchor.page && abs($0.box.minY - item.anchor.box.minY) < 0.0001

@@ -247,7 +247,7 @@ private struct BlockCard: View {
                     .keyboardShortcut(.cancelAction)
                 Button("Save Text", action: model.commitEditing)
                     .keyboardShortcut(.return, modifiers: .command)
-                if isHeading || item.kind == .paragraph {
+                if isHeading || item.kind == .paragraph || item.kind.isNote {
                     Button("Split at Cursor", systemImage: "scissors", action: splitAtCursor)
                         .disabled(cursorOffset == nil || !model.canSplitEditing)
                         .help("Cuts the block in two at the cursor. Save the text first if you changed it.")

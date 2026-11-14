@@ -38,6 +38,10 @@ to blocks, must know the blocks they refer to.
 7. Text edits made after a merge or split are checked against the structured
    text, which is what `ProjectModel` uses as the automatic text.
 
+8. **A note text can be split**: the first part stays the note, the rest
+   becomes a paragraph block inserted by its place on the page (page, then
+   top edge). Notes themselves are not merged.
+
 ## Consequences
 
 - Undo is keeping the earlier set, as before; the project file only gains

@@ -62,6 +62,8 @@ extension CorrectionSet {
     func structure(of conversion: Conversion) -> (conversion: Conversion, applied: Set<Int>) {
         var blocks = conversion.document.blocks
         var sources = conversion.blockSources
+        var notes = conversion.document.notes
+        var noteSources = conversion.noteSources
         var applied = Set<Int>()
         guard sources.count == blocks.count else { return (conversion, applied) }
         for (number, correction) in corrections.enumerated() {
@@ -76,6 +78,22 @@ extension CorrectionSet {
                 sources.replaceSubrange(index ... index + 1, with: [source])
                 applied.insert(number)
             case let .split(anchor, offset, text):
+                if !sources.contains(where: anchor.matches), noteSources.count == notes.count,
+                   let index = noteSources.firstIndex(where: anchor.matches),
+                   notes[index].content.canonicalText == text,
+                   let parts = notes[index].content.splitting(atCanonicalOffset: offset)
+                {
+                    // The rest of a note text is not a note: it goes among the
+                    // blocks, where its place on the page puts it.
+                    let places = noteSources[index].split(atFraction: Double(offset) / Double(text.count))
+                    notes[index].content = parts.first
+                    noteSources[index] = places.first
+                    let position = sources.firstIndex { places.second.isBefore($0) } ?? sources.count
+                    blocks.insert(.paragraph(parts.second), at: position)
+                    sources.insert(places.second, at: position)
+                    applied.insert(number)
+                    continue
+                }
                 guard let index = sources.firstIndex(where: anchor.matches),
                       let content = blocks[index].splittableContent, content.canonicalText == text,
                       let parts = content.splitting(atCanonicalOffset: offset) else { continue }
@@ -93,6 +111,8 @@ extension CorrectionSet {
         var result = conversion
         result.document.chapters = Chapter.chapters(from: blocks, fallbackTitle: conversion.document.metadata.title)
         result.blockSources = sources
+        result.document.notes = notes
+        result.noteSources = noteSources
         return (result, applied)
     }
 }
@@ -115,6 +135,11 @@ private extension Block {
 }
 
 extension BlockSource {
+    /// Whether this source starts before `other` in reading order.
+    func isBefore(_ other: BlockSource) -> Bool {
+        (page, box.minY) < (other.page, other.box.minY)
+    }
+
     /// A cut closer than this share of an area's height to the boundary
     /// between two areas is taken to be at that boundary: the position of a
     /// cut is estimated from the text, which is only roughly proportional to

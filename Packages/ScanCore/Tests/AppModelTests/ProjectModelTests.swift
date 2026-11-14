@@ -30,7 +30,7 @@ func projectConversion() -> Conversion {
     let document = Document(
         metadata: DocumentMetadata(identifier: "urn:test", title: "T", author: nil, language: "uk"),
         chapters: [Chapter(title: "T", blocks: blocks)],
-        notes: [Note(id: "note-1", label: "7", content: ["Note."])]
+        notes: [Note(id: "note-1", label: "7", content: ["Note text."])]
     )
     func line(_ page: Int, _ y: Double) -> BlockSource {
         BlockSource(page: page, box: CGRect(x: 0.1, y: y, width: 0.3, height: 0.04))

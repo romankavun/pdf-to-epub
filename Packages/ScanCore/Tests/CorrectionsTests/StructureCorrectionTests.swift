@@ -180,6 +180,31 @@ struct StructureCorrectionTests {
         #expect(set.corrections.count == 1)
     }
 
+    @Test("a note text split in two keeps the first part as the note, the rest becomes a paragraph in reading order")
+    func splitNote() {
+        var set = CorrectionSet()
+        set.split(BlockAnchor(base.noteSources[0]), at: 11, of: "Note about Журавeль.")
+        let result = set.applying(to: base)
+        let conversion = result.conversion
+        #expect(conversion.document.notes[0].content == ["Note about"])
+        #expect(conversion.noteSources.count == 1)
+        #expect(conversion.document.blocks.count == 6)
+        #expect(conversion.document.blocks[5] == .paragraph(["Журавeль."]))
+        #expect(conversion.blockSources.count == 6)
+        #expect(conversion.blockSources[5].page == 1)
+        #expect(result.unapplied.isEmpty)
+    }
+
+    @Test("the rest of a split note goes among the blocks by its place on the page")
+    func splitNoteOrder() {
+        var moved = base
+        moved.noteSources[0] = BlockSource(page: 0, box: box(0.2, height: 0.05))
+        var set = CorrectionSet()
+        set.split(BlockAnchor(moved.noteSources[0]), at: 11, of: "Note about Журавeль.")
+        let blocks = set.applying(to: moved).conversion.document.blocks
+        #expect(blocks[1] == .paragraph(["Журавeль."]))
+    }
+
     // MARK: - Surviving a new conversion
 
     @Test("merge and split find their blocks again when the boxes shift a little")

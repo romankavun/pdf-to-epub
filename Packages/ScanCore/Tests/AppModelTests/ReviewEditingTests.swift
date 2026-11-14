@@ -285,6 +285,18 @@ struct ReviewStructureTests {
         #expect(item(.block(2), in: model)?.runs.map(\.text).joined() == "text.")
     }
 
+    @Test("a note text can be split: the rest becomes a paragraph and the note stays selected")
+    func splitNote() {
+        let model = review()
+        model.select(itemID: .note("note-1"))
+        model.beginEditing()
+        #expect(model.canSplitEditing)
+        model.splitEditing(atDraftOffset: 5)
+        #expect(item(.note("note-1"), in: model)?.runs.map(\.text).joined() == "Note")
+        #expect(model.selectedItemID == .note("note-1"))
+        #expect(item(.block(5), in: model)?.runs.map(\.text).joined() == "text.")
+    }
+
     @Test("a changed draft cannot be split until it is saved")
     func splitNeedsSavedText() {
         let model = review()

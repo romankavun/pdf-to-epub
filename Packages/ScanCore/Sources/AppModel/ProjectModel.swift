@@ -166,25 +166,24 @@ public final class ProjectModel {
 
     /// The text of the block or note at `anchor` before any correction.
     private func automaticText(at anchor: BlockAnchor) -> String? {
-        if let text = structuredText(at: anchor) {
-            return text
-        }
-        let document = base.document
-        if base.noteSources.count == document.notes.count,
-           let index = base.noteSources.firstIndex(where: { anchor.matches($0) })
-        {
-            return document.notes[index].content.canonicalText
-        }
-        return nil
+        structuredText(at: anchor)
     }
 
     /// The text of the block at `anchor` after merges and splits but before
     /// edits and types.
     private func structuredText(at anchor: BlockAnchor) -> String? {
         let structured = corrections.structured(from: base)
-        guard structured.blockSources.count == structured.document.blocks.count,
-              let index = structured.blockSources.firstIndex(where: { anchor.matches($0) }) else { return nil }
-        return structured.document.blocks[index].textContent.canonicalText
+        if structured.blockSources.count == structured.document.blocks.count,
+           let index = structured.blockSources.firstIndex(where: { anchor.matches($0) })
+        {
+            return structured.document.blocks[index].textContent.canonicalText
+        }
+        if structured.noteSources.count == structured.document.notes.count,
+           let index = structured.noteSources.firstIndex(where: { anchor.matches($0) })
+        {
+            return structured.document.notes[index].content.canonicalText
+        }
+        return nil
     }
 
     private func change(_ edit: (inout CorrectionSet) -> Void) {
