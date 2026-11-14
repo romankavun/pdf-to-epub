@@ -59,6 +59,26 @@ extension CorrectionSet {
     ///
     /// Without a source for every block nothing can be located and the
     /// conversion comes back as it was.
+    /// Splits the note text at `anchor`: the first part stays the note, the
+    /// rest is not a note and goes among the blocks, where its place on the
+    /// page puts it. Returns whether there was a note to split.
+    private func splitNote(
+        at anchor: BlockAnchor, offset: Int, of text: String,
+        notes: inout [Note], noteSources: inout [BlockSource],
+        blocks: inout [Block], sources: inout [BlockSource]
+    ) -> Bool {
+        guard noteSources.count == notes.count, let index = noteSources.firstIndex(where: anchor.matches),
+              notes[index].content.canonicalText == text,
+              let parts = notes[index].content.splitting(atCanonicalOffset: offset) else { return false }
+        let places = noteSources[index].split(atFraction: Double(offset) / Double(text.count))
+        notes[index].content = parts.first
+        noteSources[index] = places.first
+        let position = sources.firstIndex { places.second.isBefore($0) } ?? sources.count
+        blocks.insert(.paragraph(parts.second), at: position)
+        sources.insert(places.second, at: position)
+        return true
+    }
+
     func structure(of conversion: Conversion) -> (conversion: Conversion, applied: Set<Int>) {
         var blocks = conversion.document.blocks
         var sources = conversion.blockSources
@@ -78,19 +98,10 @@ extension CorrectionSet {
                 sources.replaceSubrange(index ... index + 1, with: [source])
                 applied.insert(number)
             case let .split(anchor, offset, text):
-                if !sources.contains(where: anchor.matches), noteSources.count == notes.count,
-                   let index = noteSources.firstIndex(where: anchor.matches),
-                   notes[index].content.canonicalText == text,
-                   let parts = notes[index].content.splitting(atCanonicalOffset: offset)
+                if !sources.contains(where: anchor.matches),
+                   splitNote(at: anchor, offset: offset, of: text, notes: &notes, noteSources: &noteSources,
+                             blocks: &blocks, sources: &sources)
                 {
-                    // The rest of a note text is not a note: it goes among the
-                    // blocks, where its place on the page puts it.
-                    let places = noteSources[index].split(atFraction: Double(offset) / Double(text.count))
-                    notes[index].content = parts.first
-                    noteSources[index] = places.first
-                    let position = sources.firstIndex { places.second.isBefore($0) } ?? sources.count
-                    blocks.insert(.paragraph(parts.second), at: position)
-                    sources.insert(places.second, at: position)
                     applied.insert(number)
                     continue
                 }
