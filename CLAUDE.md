@@ -240,7 +240,7 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
    Body-size headings (ADR 0006) and running header removal are done too.
 7. App UI: ~~import, progress, export, review screen with
    mixed-script, digit-in-word and spell-check rules, corrections~~ (done;
-   ADR 0006). Defects found in review and the next improvements are in
+   ADR 0007). Defects found in review and the next improvements are in
    `docs/backlog.md`.
 8. ~~Project persistence and correction propagation~~ (done; ADR 0005).
    Still open: merging and splitting blocks, redrawing regions.
