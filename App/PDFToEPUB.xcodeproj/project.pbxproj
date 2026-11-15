@@ -12,6 +12,7 @@
 
 /* Begin PBXFileReference section */
 		A10000000000000000000002 /* PDFToEPUB.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PDFToEPUB.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000102 /* PDFToEPUBUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PDFToEPUBUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -20,9 +21,32 @@
 			path = PDFToEPUB;
 			sourceTree = "<group>";
 		};
+		A10000000000000000000103 /* PDFToEPUBUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PDFToEPUBUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
+/* Begin PBXContainerItemProxy section */
+		A10000000000000000000108 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A10000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A10000000000000000000007;
+			remoteInfo = PDFToEPUB;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFrameworksBuildPhase section */
+		A10000000000000000000104 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+
 		A10000000000000000000004 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -38,6 +62,7 @@
 			isa = PBXGroup;
 			children = (
 				A10000000000000000000003 /* PDFToEPUB */,
+				A10000000000000000000103 /* PDFToEPUBUITests */,
 				A10000000000000000000006 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -46,6 +71,7 @@
 			isa = PBXGroup;
 			children = (
 				A10000000000000000000002 /* PDFToEPUB.app */,
+				A10000000000000000000102 /* PDFToEPUBUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -76,6 +102,27 @@
 			productReference = A10000000000000000000002 /* PDFToEPUB.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A10000000000000000000101 /* PDFToEPUBUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1000000000000000000010C /* Build configuration list for PBXNativeTarget "PDFToEPUBUITests" */;
+			buildPhases = (
+				A10000000000000000000105 /* Sources */,
+				A10000000000000000000104 /* Frameworks */,
+				A10000000000000000000106 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A10000000000000000000109 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A10000000000000000000103 /* PDFToEPUBUITests */,
+			);
+			name = PDFToEPUBUITests;
+			productName = PDFToEPUBUITests;
+			productReference = A10000000000000000000102 /* PDFToEPUBUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -85,6 +132,11 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					A10000000000000000000101 = {
+						TestTargetID = A10000000000000000000007;
+					};
+				};
 			};
 			buildConfigurationList = A1000000000000000000000D /* Build configuration list for PBXProject "PDFToEPUB" */;
 			developmentRegion = en;
@@ -105,12 +157,20 @@
 			projectRoot = "";
 			targets = (
 				A10000000000000000000007 /* PDFToEPUB */,
+				A10000000000000000000101 /* PDFToEPUBUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		A10000000000000000000009 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000106 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -127,7 +187,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A10000000000000000000105 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A10000000000000000000109 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A10000000000000000000007 /* PDFToEPUB */;
+			targetProxy = A10000000000000000000108 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A10000000000000000000020 /* Debug */ = {
@@ -202,6 +277,34 @@
 			};
 			name = Release;
 		};
+		A10000000000000000000122 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = local.pdftoepub.PDFToEPUBUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = PDFToEPUB;
+			};
+			name = Debug;
+		};
+		A10000000000000000000123 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = local.pdftoepub.PDFToEPUBUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = PDFToEPUB;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -219,6 +322,15 @@
 			buildConfigurations = (
 				A10000000000000000000020 /* Debug */,
 				A10000000000000000000021 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1000000000000000000010C /* Build configuration list for PBXNativeTarget "PDFToEPUBUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000000000000000000122 /* Debug */,
+				A10000000000000000000123 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
