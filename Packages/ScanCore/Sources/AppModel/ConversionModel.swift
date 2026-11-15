@@ -15,42 +15,6 @@ import OCR
 @MainActor
 @Observable
 public final class ConversionModel {
-    /// Where the window is in the import-convert-export flow.
-    public enum Phase: Sendable, Equatable {
-        /// No folder chosen yet.
-        case empty
-        /// A folder or PDF is open and can be converted.
-        case ready
-        /// The pages of a PDF are being drawn as images, the step before
-        /// recognition.
-        case rendering(done: Int, total: Int)
-        case converting(done: Int, total: Int)
-        case finished(Conversion)
-        case failed(Failure)
-    }
-
-    /// Why opening a folder or converting it failed. Kept as cases rather
-    /// than text so the view can show a localized message.
-    public enum Failure: Sendable, Equatable {
-        case notAFolder
-        case noImages
-        /// The file is not a PDF the system can read.
-        case pdfUnreadable
-        /// The PDF is protected by a password.
-        case pdfPasswordRequired
-        case pdfNoPages
-        /// Vision stopped answering on a page, after the engine's retries.
-        case recognitionTimedOut
-        /// Anything else, with the error's own description.
-        case other(String)
-    }
-
-    /// The outcome of the last export of the current document.
-    public enum ExportResult: Sendable, Equatable {
-        case saved(URL)
-        case failed(String)
-    }
-
     public private(set) var phase: Phase = .empty
     /// The open folder of scans, PDF or project; `nil` until one was opened
     /// successfully.
@@ -97,18 +61,6 @@ public final class ConversionModel {
     ) {
         self.pipeline = pipeline
         self.storage = storage
-    }
-
-    /// A page image being recognized, for the progress screen to show.
-    public struct PageInProgress: Sendable, Equatable {
-        /// One-based position of the page in the document.
-        public var number: Int
-        public var url: URL
-
-        public init(number: Int, url: URL) {
-            self.number = number
-            self.url = url
-        }
     }
 
     /// The page the pipeline is working on while converting; `nil` in other
@@ -263,7 +215,9 @@ public final class ConversionModel {
                 phase = .finished(adopt(conversion))
             } else {
                 // A PDF that failed is drawn again on the next try.
-                if pdf != nil { pages = [] }
+                if pdf != nil {
+                    pages = []
+                }
                 discardStaging()
                 phase = outcome
             }
@@ -296,7 +250,9 @@ public final class ConversionModel {
         }
         cancelRun()
         // A PDF that was only partly drawn starts over next time.
-        if pdf != nil, stagingFolder != nil, projectLocation == nil { pages = [] }
+        if pdf != nil, stagingFolder != nil, projectLocation == nil {
+            pages = []
+        }
         discardStaging()
         phase = .ready
     }

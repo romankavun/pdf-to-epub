@@ -73,7 +73,9 @@ enum PageImagePlacement {
         }
 
         func restore() {
-            if let last = saved.popLast() { transform = last }
+            if let last = saved.popLast() {
+                transform = last
+            }
         }
 
         func concatenate(_ matrix: CGAffineTransform) {

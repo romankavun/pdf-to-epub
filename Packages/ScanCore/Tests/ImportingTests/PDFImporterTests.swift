@@ -45,7 +45,8 @@ struct PDFImporterTests {
     @Test("renders one numbered PNG per page, in page order")
     func order() async throws {
         // Each page has a different width, so the order shows in the output.
-        let pdf = try SyntheticPDF.write((0 ..< 11).map { .init(size: CGSize(width: 72 * CGFloat(2 + $0), height: 72)) })
+        let pdf = try SyntheticPDF
+            .write((0 ..< 11).map { .init(size: CGSize(width: 72 * CGFloat(2 + $0), height: 72)) })
         let folder = try scratchFolder()
         defer { try? FileManager.default.removeItem(at: pdf)
             try? FileManager.default.removeItem(at: folder)
@@ -58,7 +59,8 @@ struct PDFImporterTests {
         let widths = try urls.map { try pixelSize(of: $0).width }
         #expect(widths == (0 ..< 11).map { 72 * (2 + $0) })
         // Sorting by name the way the folder importer does keeps the order.
-        #expect(try ImageFolderImporter().pageURLs(in: folder).map(\.lastPathComponent) == urls.map(\.lastPathComponent))
+        #expect(try ImageFolderImporter().pageURLs(in: folder).map(\.lastPathComponent) == urls
+            .map(\.lastPathComponent))
     }
 
     @Test("renders a page without images at the requested resolution")
@@ -144,7 +146,7 @@ struct PDFImporterTests {
         defer { try? FileManager.default.removeItem(at: pdf)
             try? FileManager.default.removeItem(at: folder)
         }
-        let importer = self.importer
+        let importer = importer
         let task = Task { try await importer.renderPages(of: pdf, into: folder) }
         task.cancel()
         await #expect(throws: CancellationError.self) { try await task.value }

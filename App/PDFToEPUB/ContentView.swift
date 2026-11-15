@@ -24,6 +24,8 @@ struct ContentView: View {
                 emptyView
             case .ready:
                 MetadataForm(model: model, chooseFolder: chooseFolder)
+            case let .rendering(done, total):
+                ProgressScreen(done: done, total: total, page: nil, isDrawing: true, cancel: model.cancel)
             case let .converting(done, total):
                 ProgressScreen(done: done, total: total, page: model.pageInProgress, cancel: model.cancel)
             case let .finished(conversion):
@@ -59,7 +61,9 @@ struct ContentView: View {
                     }
                 }
             case let .failed(failure):
-                failureView(failure)
+                FailureScreen(
+                    failure: failure, canRetry: model.input != nil, retry: model.start, chooseFolder: chooseFolder
+                )
             }
         }
         .padding(24)
@@ -67,8 +71,8 @@ struct ContentView: View {
         // A review belongs to one conversion; any change of phase ends it.
         .onChange(of: model.phase) { review = nil }
         // A folder of scans and a saved project are both folders; the model
-        // tells them apart.
-        .fileImporter(isPresented: $isChoosingFolder, allowedContentTypes: [.folder]) { result in
+        // tells them apart from each other and from a PDF.
+        .fileImporter(isPresented: $isChoosingFolder, allowedContentTypes: [.folder, .pdf]) { result in
             if case let .success(url) = result {
                 model.open(url)
             }
@@ -81,10 +85,9 @@ struct ContentView: View {
     }
 
     private var isConverting: Bool {
-        if case .converting = model.phase {
-            true
-        } else {
-            false
+        switch model.phase {
+        case .converting, .rendering: true
+        default: false
         }
     }
 
@@ -96,32 +99,10 @@ struct ContentView: View {
         ContentUnavailableView {
             Label("No document open", systemImage: "document.closed")
         } description: {
-            Text("Choose a folder with one image per page or a saved project, or drop it here.")
+            Text("Choose a folder with one image per page, a PDF or a saved project, or drop it here.")
         } actions: {
-            Button("Choose Folder…", action: chooseFolder)
+            Button("Choose Folder or PDF…", action: chooseFolder)
                 .keyboardShortcut("o")
-        }
-    }
-
-    private func failureView(_ failure: ConversionModel.Failure) -> some View {
-        ContentUnavailableView {
-            Label("Could not convert the document", systemImage: "exclamationmark.triangle")
-        } description: {
-            Text(message(for: failure))
-        } actions: {
-            if model.folder != nil {
-                Button("Try Again", action: model.start)
-            }
-            Button("Choose Folder…", action: chooseFolder)
-        }
-    }
-
-    private func message(for failure: ConversionModel.Failure) -> LocalizedStringKey {
-        switch failure {
-        case .notAFolder: "This is not a folder."
-        case .noImages: "The folder has no page images (PNG, JPEG, TIFF or HEIC)."
-        case .recognitionTimedOut: "Text recognition stopped responding. Try again."
-        case let .other(description): "Unexpected error: \(description)"
         }
     }
 }
@@ -134,9 +115,9 @@ private struct MetadataForm: View {
     var body: some View {
         Form {
             Section {
-                LabeledContent("Folder") {
+                LabeledContent("Source") {
                     HStack {
-                        Text(model.folder?.path(percentEncoded: false) ?? "")
+                        Text(model.input?.path(percentEncoded: false) ?? "")
                             .lineLimit(1)
                             .truncationMode(.head)
                         Button("Change…", action: chooseFolder)
@@ -175,6 +156,8 @@ private struct ProgressScreen: View {
     var done: Int
     var total: Int
     var page: ConversionModel.PageInProgress?
+    /// Whether the pages of a PDF are being drawn rather than recognized.
+    var isDrawing = false
     var cancel: () -> Void
 
     var body: some View {
@@ -184,7 +167,9 @@ private struct ProgressScreen: View {
             ProgressView(value: Double(done), total: Double(max(total, 1))) {
                 // Once every page is recognized, layout analysis runs with
                 // no page in progress.
-                if page == nil {
+                if isDrawing {
+                    Text("Drawing the pages…")
+                } else if page == nil {
                     Text("Assembling the document…")
                 } else {
                     Text("Recognizing pages…")
@@ -193,7 +178,7 @@ private struct ProgressScreen: View {
                 Text("\(done) of \(total)")
             }
             .frame(maxWidth: 420)
-            if done == 0 {
+            if done == 0, !isDrawing {
                 Text("The first page can take about a minute while the recognition model loads.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
@@ -303,7 +288,7 @@ private struct ResultScreen: View {
             VStack(spacing: 12) {
                 exportStatus
                 HStack {
-                    Button("Choose Another Folder…", action: chooseFolder)
+                    Button("Choose Another Folder or PDF…", action: chooseFolder)
                     Spacer()
                     Button("Convert Again", action: model.start)
                         .disabled(!model.canStart)

@@ -22,7 +22,10 @@ enum SyntheticPDF {
         else { throw CocoaError(.fileWriteUnknown) }
         for page in pages {
             var box = CGRect(origin: .zero, size: page.size)
-            context.beginPDFPage([kCGPDFContextMediaBox: Data(bytes: &box, count: MemoryLayout<CGRect>.size)] as CFDictionary)
+            context.beginPDFPage([kCGPDFContextMediaBox: Data(
+                bytes: &box,
+                count: MemoryLayout<CGRect>.size
+            )] as CFDictionary)
             page.draw(context)
             context.endPDFPage()
         }

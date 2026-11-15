@@ -1,6 +1,86 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Choose Folder or PDF…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вибрати теку чи PDF…"
+          }
+        }
+      }
+    },
+    "Choose Another Folder or PDF…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вибрати іншу теку чи PDF…"
+          }
+        }
+      }
+    },
+    "Choose a folder with one image per page, a PDF or a saved project, or drop it here." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Виберіть теку з одним зображенням на сторінку, PDF або збережений проєкт, або перетягніть сюди."
+          }
+        }
+      }
+    },
+    "Source" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Джерело"
+          }
+        }
+      }
+    },
+    "Drawing the pages…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Створення зображень сторінок…"
+          }
+        }
+      }
+    },
+    "This file is not a PDF that can be read." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цей файл не є PDF, який можна прочитати."
+          }
+        }
+      }
+    },
+    "The PDF is protected by a password. Remove the password and try again." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PDF захищено паролем. Зніміть пароль і спробуйте ще раз."
+          }
+        }
+      }
+    },
+    "The PDF has no pages." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У PDF немає сторінок."
+          }
+        }
+      }
+    },
     "%@ of %@" : {
       "localizations" : {
         "en" : {
