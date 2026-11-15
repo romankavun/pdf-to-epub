@@ -44,7 +44,18 @@ let package = Package(
             dependencies: ["DocumentModel", "OCR", "Importing", "Conversion", "EPUBExport"]
         ),
         // Test-only helpers: synthetic page rendering and golden-file comparison.
-        .target(name: "TestSupport", dependencies: ["DocumentModel"], path: "Tests/TestSupport"),
+        .target(
+            name: "TestSupport",
+            dependencies: ["DocumentModel", "LayoutAnalysis", "Conversion"],
+            path: "Tests/TestSupport"
+        ),
+        .testTarget(
+            name: "InvariantTests",
+            dependencies: [
+                "TestSupport", "AppModel", "ProjectStore", "Corrections", "Conversion", "DocumentModel",
+                "EPUBExport", "LayoutAnalysis", "OCR",
+            ]
+        ),
         .testTarget(
             name: "GoldenPagesTests",
             dependencies: ["TestSupport", "Conversion", "DocumentModel", "LayoutAnalysis", "OCR"]
