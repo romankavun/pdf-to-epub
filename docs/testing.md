@@ -124,13 +124,33 @@ naming the `docs/backlog.md` item, and fix the bug later.
 - The generators do not run Vision or the pixel analysis, so nothing here
   says the *recognized* document is right, only that what is done with it is
   consistent.
-- Corrections are replayed against a re-run of layout analysis that is
-  simulated (moved boxes, new labels), not a real second OCR run.
+- The property tests above replay corrections against a re-run of layout
+  analysis that is simulated (moved boxes, new labels). A real second run
+  is covered only by the small `RealOCRInvariantTests` suite (below), which
+  draws plain headings and paragraphs, so notes, illustrations, merges and
+  splits are still only checked against the simulated re-run.
 - A split that cuts off a sliver of a block (under a quarter of its
   height) is not generated: its area is so small that moving it by a few
   thousandths of the page height means it is no longer found.
 - `epubcheck` is the validator of the format; these tests only check that
   the package is internally consistent.
+
+### Properties with real OCR
+
+`RealOCRInvariantTests` (tag `realOCR`, serial, **skipped by
+`scripts/check.sh`** like the golden pages) draws a seeded document of English
+paragraphs and a heading with `SyntheticPage`, converts it with the real
+pipeline (Vision) twice, and applies random corrections made on the first
+run (retype, ignore, text edit) to the second. It checks that the text is at
+least 0.9 like what was drawn, that no correction is left unapplied, that
+retypes, ignores and edits are in force, and that the corrected document is the
+same after the second run. Three cases by default (the first Vision request
+of a process can take a minute); `PROPERTY_CASES=n` runs more and
+`PROPERTY_SEED=n` reproduces a failure.
+
+```bash
+swift test --package-path Packages/ScanCore --filter RealOCRInvariantTests
+```
 
 ## epubcheck
 

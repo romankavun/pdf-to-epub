@@ -8,6 +8,6 @@ echo "== swiftformat --lint"
 swiftformat --lint .
 echo "== swiftlint"
 swiftlint --strict
-echo "== swift test (without golden pages)"
-swift test --package-path Packages/ScanCore --skip GoldenPageTests
+echo "== swift test (without Vision suites)"
+swift test --package-path Packages/ScanCore --skip GoldenPageTests --skip RealOCRInvariantTests
 echo "OK"
