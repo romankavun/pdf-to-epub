@@ -323,3 +323,22 @@ struct ReviewStructureTests {
         #expect(!model.canUndo)
     }
 }
+
+@MainActor
+@Suite("ReviewModel apply to all")
+struct ReviewApplyToAllTests {
+    @Test("applying to all changes every candidate as one undo step")
+    func applyToAll() {
+        let model = ReviewModel(project: ProjectModel(
+            base: projectConversion(), location: URL(fileURLWithPath: "/projects/Document.scanproject"),
+            storage: FakeStorage()
+        ))
+        model.select(itemID: .block(0))
+        model.setSelectedType(.heading(level: 2))
+        model.acceptTypeProposalForAll()
+        #expect(model.pages.flatMap(\.items).first { $0.id == .block(3) }?.kind == .heading(level: 2))
+        #expect(model.proposal == nil)
+        model.undo()
+        #expect(model.pages.flatMap(\.items).first { $0.id == .block(3) }?.kind == .paragraph)
+    }
+}

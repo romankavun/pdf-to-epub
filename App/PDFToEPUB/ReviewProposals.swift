@@ -16,7 +16,7 @@ struct ProposalBar: View {
             switch model.proposal {
             case .type:
                 Button("Choose…") { isChoosing = true }
-                Button("Apply to All", action: applyToAll)
+                Button("Apply to All", action: model.acceptTypeProposalForAll)
             case .word:
                 Button("Replace Everywhere", action: model.acceptWordProposal)
             case nil:
@@ -44,10 +44,6 @@ struct ProposalBar: View {
         case nil:
             EmptyView()
         }
-    }
-
-    private func applyToAll() {
-        model.acceptTypeProposal(for: Set(model.proposalCandidates.map(\.anchor)))
     }
 }
 

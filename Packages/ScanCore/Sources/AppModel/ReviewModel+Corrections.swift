@@ -90,6 +90,11 @@ public extension ReviewModel {
         rebuild()
     }
 
+    /// Applies the proposed type to every candidate.
+    func acceptTypeProposalForAll() {
+        acceptTypeProposal(for: Set(proposalCandidates.map(\.anchor)))
+    }
+
     /// Replaces the proposed word everywhere, as one step to undo, and ends
     /// the proposal.
     func acceptWordProposal() {

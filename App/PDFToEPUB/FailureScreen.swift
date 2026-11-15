@@ -20,6 +20,7 @@ struct FailureScreen: View {
             }
             Button("Choose Folder or PDF…", action: chooseFolder)
         }
+        .accessibilityIdentifier("failureScreen")
     }
 
     private var message: LocalizedStringKey {

@@ -167,13 +167,38 @@ There is no CI: checks run locally (`scripts/check.sh`, and the golden pages by 
 
 ## Not yet covered
 
-UI tests are a separate step of the testing plan.
+Not covered by any test: the layout and look of the views (colours, spacing,
+the scan overlay in `PageScan`), the text selection and cursor handling in the
+editor (`TextSelection` in `BlockCard`), the file panels, and the position of
+the quick-fix row (a known defect, `docs/backlog.md`). The sheet that picks
+which similar blocks to change (`CandidateSheet`) has no UI test either: it
+needs similar blocks, which the synthetic pages do not reliably give.
 
-## UI test (XCUITest)
+## What covers the views
 
-One end-to-end scenario in `App/PDFToEPUBUITests`: open a folder of pages,
+Views stay thin on purpose, so most of what they decide is unit tested in
+`AppModel`: which buttons a selected block shows (`Item.actions`), whether the
+editor offers a split (`offersSplit`), how a frame is outlined (`outline`),
+apply-to-all (`acceptTypeProposalForAll`), plus merge, split, undo, proposals
+and editing (`ReviewItemPresentationTests`, `ReviewEditingTests`). The views
+map those values to buttons and colours one to one. What is left is checked
+by the UI tests below: that the buttons exist, are wired to the model and the
+screens change.
+
+## UI tests (XCUITest)
+
+`ConvertReviewSaveTests` is the end-to-end scenario in `App/PDFToEPUBUITests`: open a folder of pages,
 convert, open the review, make the first block a level 3 heading, save the
 EPUB, and check that the file exists and contains `<h3`.
+
+`ReviewScenarioTests` are short, independent scenarios, each launching the app
+on its own folder: an empty folder shows the failure screen (no Vision, a few
+seconds); ignore a block and undo; open the text editor of a block and cancel it; merge with the next block and undo; make a block a heading and
+dismiss the offer to repeat it. Vision decides which blocks exist, so these
+assert on what a click does, not on recognized text. The merge and offer
+scenarios are **skipped** (not failed) when the synthetic pages give no second
+block or no similar block. Each converting scenario pays the conversion again
+(with a warm model about 20 s).
 
 ```bash
 xcodebuild -project App/PDFToEPUB.xcodeproj -scheme PDFToEPUB test
@@ -189,7 +214,8 @@ arguments (`UITestHooks.swift`): `-UITestFolder <path>` opens that folder when
 the window appears, `-UITestOutput <path>` makes "Save EPUB…" write there
 without asking. Release builds ignore them. The views the test drives carry
 accessibility identifiers (`convertButton`, `reviewButton`, `blockCard`,
-`typeMenu`, `typeHeading3`, `saveButton`, `exportSaved`).
+`typeMenu`, `typeHeading3`, `typeIgnore`, `blockEditor`, `failureScreen`,
+`saveButton`, `exportSaved`).
 
 The pages are drawn by the test itself (`PageFolder.swift`, invented text):
 the package's `TestSupport` belongs to another package's test target and cannot
@@ -227,5 +253,10 @@ run: the unchanged test passed in 82 s. What was learned:
   (the same document) were in the review step ("no blocks", "no type menu"), not
   in OCR. Not investigated: a possible flake or a real defect on that document.
 
-The test does not assert on the position of the quick-fix popover (a known
+Typing into the editor is not tested: synthesized key events did not reach
+the `TextEditor` (its accessibility value stayed unchanged after `typeText`, a
+long string timed out). Not known whether this is a runner limit or a real
+focus problem; saving edited text is covered by `ReviewEditingTests`.
+
+The tests do not assert on the position of the quick-fix popover (a known
 defect, `docs/backlog.md`).

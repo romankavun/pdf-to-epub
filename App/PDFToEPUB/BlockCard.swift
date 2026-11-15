@@ -104,6 +104,7 @@ struct BlockCard: View {
                 .scrollContentBackground(.hidden)
                 .padding(4)
                 .background(.background, in: RoundedRectangle(cornerRadius: 6))
+                .accessibilityIdentifier("blockEditor")
             Text("A note reference is shown in ⟦ ⟧ brackets; keep them to keep the note.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -112,7 +113,7 @@ struct BlockCard: View {
                     .keyboardShortcut(.cancelAction)
                 Button("Save Text", action: model.commitEditing)
                     .keyboardShortcut(.return, modifiers: .command)
-                if isHeading || item.kind == .paragraph || item.kind.isNote {
+                if item.offersSplit {
                     Button("Split at Cursor", systemImage: "scissors", action: splitAtCursor)
                         .disabled(cursorOffset == nil || !model.canSplitEditing)
                         .help("Cuts the block in two at the cursor. Save the text first if you changed it.")
@@ -136,23 +137,28 @@ struct BlockCard: View {
     /// What can be done to the selected block.
     private var actions: some View {
         HStack {
-            switch item.kind {
-            case .ignored:
-                Button("Bring Back", systemImage: "arrow.uturn.backward", action: model.resetSelectedType)
-            case .note:
-                Button("Edit Text", systemImage: "pencil", action: model.beginEditing)
-            case .figure:
-                Button("Edit Caption", systemImage: "pencil", action: model.beginEditing)
-                Button("Ignore", systemImage: "eye.slash") { model.setSelectedType(.ignored) }
-            case .heading, .paragraph:
-                Button("Edit Text", systemImage: "pencil", action: model.beginEditing)
-                typeMenu
-                Button("Merge with Next", systemImage: "arrow.triangle.merge", action: model.mergeSelectedWithNext)
-                    .disabled(!model.canMergeSelectedWithNext)
-                    .help("Joins the next block into this one.")
-            }
+            ForEach(item.actions, id: \.self, content: actionButton)
         }
         .controlSize(.small)
+    }
+
+    @ViewBuilder private func actionButton(_ action: ReviewModel.ItemAction) -> some View {
+        switch action {
+        case .bringBack:
+            Button("Bring Back", systemImage: "arrow.uturn.backward", action: model.resetSelectedType)
+        case .editText:
+            Button("Edit Text", systemImage: "pencil", action: model.beginEditing)
+        case .editCaption:
+            Button("Edit Caption", systemImage: "pencil", action: model.beginEditing)
+        case .ignore:
+            Button("Ignore", systemImage: "eye.slash") { model.setSelectedType(.ignored) }
+        case .changeType:
+            typeMenu
+        case .mergeWithNext:
+            Button("Merge with Next", systemImage: "arrow.triangle.merge", action: model.mergeSelectedWithNext)
+                .disabled(!model.canMergeSelectedWithNext)
+                .help("Joins the next block into this one.")
+        }
     }
 
     private var typeMenu: some View {
@@ -164,6 +170,7 @@ struct BlockCard: View {
                 .accessibilityIdentifier("typeHeading3")
             Divider()
             Button("Ignore", systemImage: "eye.slash") { model.setSelectedType(.ignored) }
+                .accessibilityIdentifier("typeIgnore")
             Button("Reset to Recognized Type", action: model.resetSelectedType)
         }
         .accessibilityIdentifier("typeMenu")
