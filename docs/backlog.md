@@ -96,9 +96,6 @@ page in question. Defects 4 and 5 are not changed by it.
 - **Clearer colour coding per block type.** Make the outline and label colour
   of each block type (headings by level, paragraph, note, illustration,
   ignored) easier to tell apart.
-- **Split a block in two while editing.** Let the user split a block into two
-  and give each part its own type. Part of "merging and splitting blocks"
-  under Later.
 - **Edit Text keeps the block's size.** The editor of a large block shrinks to
   a fixed height with its own scroll bar and the text jumps. It should keep
   the block's height (or grow with the text) so that nothing moves.
@@ -129,9 +126,12 @@ page in question. Defects 4 and 5 are not changed by it.
   corrections stored apart from OCR and layout output (project persistence,
   milestone 8) first. Postponed together with the next item.
 - **Parallel page recognition.** OCR runs one page at a time. Postponed.
-- **More corrections.** Merging and splitting blocks, redrawing a block's
-  region, starting a chapter elsewhere, formatting (bold, italic) in the
-  text editor, and a "set this and the following pages" way to drop page
+- **More corrections.** Redrawing a block's region, splitting a block that
+  was edited (the cut position is read in the recognized text), a precise
+  cut position (it is estimated from the text, not read from the line
+  boxes), joining a split back exactly, merging a note text with another,
+  starting a chapter elsewhere, formatting (bold, italic) in the text
+  editor, and a "set this and the following pages" way to drop page
   numbers and running headers. See [corrections](features/corrections.md)
   for what exists.
 - **Copy the scans into the project** (or store a reference) so that a

@@ -10,6 +10,7 @@ Build, run and a usage walkthrough are in the [project README](../README.md).
   - [0005 - Corrections are kept apart from recognition and find their block by its place on the page](adr/0005-corrections-apart-from-recognition.md)
   - [0006 - Headings at body size are found by what surrounds them and by ink weight](adr/0006-body-size-headings.md)
   - [0007 - The spell checker sits behind a protocol; the system adapter lives in the app](adr/0007-spell-checker-behind-a-protocol.md)
+  - [0008 - Merging and splitting blocks are corrections applied before edits](adr/0008-merge-and-split-corrections.md)
 - [Backlog: known defects, the next improvement (page preview while converting) and postponed ideas](backlog.md)
 - Features: [features/](features/) - one page per user-facing feature.
   - [pagescan CLI: folder of page images to EPUB](features/pagescan-cli.md)

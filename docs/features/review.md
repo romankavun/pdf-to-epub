@@ -112,3 +112,10 @@ that state.
 - False positives are expected for formulas and codes ("H2O").
 - The review itself is rebuilt each time it is opened; the corrections are
   kept in the [project](projects.md).
+
+## Merging and splitting
+
+A selected paragraph or heading offers *Merge with Next*; the editor offers
+*Split at Cursor*. See [corrections](corrections.md) for what they do and
+their limits. A merged block that covers several places is outlined in each
+of them (areas on one page are drawn as one).

@@ -41,6 +41,12 @@ private func sampleCorrections() -> CorrectionSet {
     var set = CorrectionSet()
     set.setType(.heading(level: 2), for: BlockAnchor(page: 0, box: CGRect(x: 0.1, y: 0.2, width: 0.8, height: 0.1)))
     set.replaceWord("a", with: "b")
+    set.merge(
+        BlockAnchor(page: 0, box: CGRect(x: 0.1, y: 0.4, width: 0.8, height: 0.1)),
+        with: BlockAnchor(page: 1, box: CGRect(x: 0.1, y: 0.1, width: 0.8, height: 0.1)),
+        texts: ("", "")
+    )
+    set.split(BlockAnchor(page: 1, box: CGRect(x: 0.1, y: 0.5, width: 0.8, height: 0.1)), at: 4, of: "One two three.")
     return set
 }
 
@@ -80,7 +86,7 @@ struct ProjectStoreTests {
         }
     }
 
-    @Test("saved corrections come back with the project")
+    @Test("saved corrections, merges and splits come back with the project")
     func savesCorrections() throws {
         try withFolder { folder in
             let url = folder.appendingPathComponent("Document.scanproject")

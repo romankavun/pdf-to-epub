@@ -28,7 +28,7 @@ public struct CorrectedConversion: Sendable, Equatable {
 /// type and one edit per block, and one replacement per word, so the set
 /// always describes the latest decision.
 public struct CorrectionSet: Sendable, Codable, Equatable {
-    public private(set) var corrections: [Correction]
+    public internal(set) var corrections: [Correction]
 
     public init(corrections: [Correction] = []) {
         self.corrections = corrections
@@ -45,6 +45,17 @@ public struct CorrectionSet: Sendable, Codable, Equatable {
             return type
         }
         return nil
+    }
+
+    /// Whether the user changed the text of the block or note at `anchor`.
+    public func hasEdit(for anchor: BlockAnchor) -> Bool {
+        corrections.contains { correction in
+            if case let .edit(other, _, _) = correction {
+                other.matches(anchor)
+            } else {
+                false
+            }
+        }
     }
 
     public mutating func setType(_ type: BlockType, for anchor: BlockAnchor) {
@@ -92,7 +103,9 @@ public struct CorrectionSet: Sendable, Codable, Equatable {
 
     /// Applies the corrections to `conversion`, the output of the pipeline.
     ///
-    /// Per block, an edit comes first and then the type, so the type applies
+    /// Merges and splits come first, in the order they were made, so that
+    /// every other correction finds the blocks as they are in the document.
+    /// Per block, an edit comes next and then the type, so the type applies
     /// to the edited text; word replacements come last and reach every
     /// block and note, edited or not. Chapters are cut again from the
     /// resulting blocks, and notes that lost their last reference are
@@ -101,7 +114,9 @@ public struct CorrectionSet: Sendable, Codable, Equatable {
         guard !corrections.isEmpty else {
             return CorrectedConversion(conversion: conversion, ignored: [], unapplied: [])
         }
-        var run = Run(corrections: corrections)
+        let structure = structure(of: conversion)
+        let conversion = structure.conversion
+        var run = Run(corrections: corrections, applied: structure.applied)
         var result = conversion
         let corrected = run.correctedBlocks(of: conversion)
         var blocks = corrected.blocks
@@ -138,7 +153,7 @@ private struct CorrectedBlocks {
 /// target.
 private struct Run {
     let corrections: [Correction]
-    var applied = Set<Int>()
+    var applied: Set<Int>
 
     /// The blocks of `conversion` with edits and types applied, their
     /// sources, and the blocks that were left out.
@@ -228,7 +243,7 @@ private struct Run {
     }
 }
 
-private extension Block {
+extension Block {
     enum Retyped {
         case block(Block)
         case ignored

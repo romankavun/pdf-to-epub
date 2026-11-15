@@ -192,6 +192,8 @@ private struct BlockCard: View {
     /// The run whose quick fixes are open.
     @State private var fixingRun: Int?
     @State private var isHovered = false
+    /// The cursor or selection in the editor, for splitting at the cursor.
+    @State private var selection: TextSelection?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -278,7 +280,7 @@ private struct BlockCard: View {
     /// brackets and must stay in them to stay in the document.
     private var editor: some View {
         VStack(alignment: .leading, spacing: 6) {
-            TextEditor(text: $model.draft)
+            TextEditor(text: $model.draft, selection: $selection)
                 .font(.body)
                 .frame(minHeight: 80)
                 .scrollContentBackground(.hidden)
@@ -292,8 +294,25 @@ private struct BlockCard: View {
                     .keyboardShortcut(.cancelAction)
                 Button("Save Text", action: model.commitEditing)
                     .keyboardShortcut(.return, modifiers: .command)
+                if isHeading || item.kind == .paragraph || item.kind.isNote {
+                    Button("Split at Cursor", systemImage: "scissors", action: splitAtCursor)
+                        .disabled(cursorOffset == nil || !model.canSplitEditing)
+                        .help("Cuts the block in two at the cursor. Save the text first if you changed it.")
+                }
             }
         }
+    }
+
+    /// The cursor's position in the draft, in characters; `nil` while text is
+    /// selected or there is no cursor.
+    private var cursorOffset: Int? {
+        guard case let .selection(range)? = selection?.indices, range.isEmpty else { return nil }
+        return model.draft.distance(from: model.draft.startIndex, to: range.lowerBound)
+    }
+
+    private func splitAtCursor() {
+        guard let offset = cursorOffset else { return }
+        model.splitEditing(atDraftOffset: offset)
     }
 
     /// What can be done to the selected block.
@@ -310,6 +329,9 @@ private struct BlockCard: View {
             case .heading, .paragraph:
                 Button("Edit Text", systemImage: "pencil", action: model.beginEditing)
                 typeMenu
+                Button("Merge with Next", systemImage: "arrow.triangle.merge", action: model.mergeSelectedWithNext)
+                    .disabled(!model.canMergeSelectedWithNext)
+                    .help("Joins the next block into this one.")
             }
         }
         .controlSize(.small)
