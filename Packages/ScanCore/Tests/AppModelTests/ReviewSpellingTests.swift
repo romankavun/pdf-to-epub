@@ -181,7 +181,9 @@ private struct NoStorage: ProjectPersisting {
         false
     }
 
-    func createProject(for _: Conversion, nextTo _: URL) throws -> URL {
+    func createProject(
+        for _: Conversion, named _: String, in _: URL, movingPages _: Bool
+    ) throws -> (location: URL, conversion: Conversion) {
         throw CocoaError(.fileNoSuchFile)
     }
 

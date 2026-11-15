@@ -1,4 +1,4 @@
-// pagescan: converts a folder of page images into an EPUB from the command
+// pagescan: converts a folder of page images or a PDF into an EPUB from the command
 // line. A thin wrapper over ScanCore, used for batch runs and for checking
 // the pipeline without the app.
 
@@ -22,7 +22,25 @@ do {
 }
 
 do {
-    let pages = try ImageFolderImporter().pageURLs(in: options.input)
+    let pages: [URL]
+    var renderedFolder: URL?
+    if options.inputIsPDF {
+        // The pages are drawn into a temporary folder that goes away with the
+        // run; pagescan keeps nothing but the EPUB.
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("pagescan-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        renderedFolder = folder
+        print("Drawing the pages of \(options.input.lastPathComponent)...")
+        pages = try await PDFImporter().renderPages(of: options.input, into: folder) { done, total in
+            if done % 25 == 0 || done == total {
+                print("  \(done)/\(total)")
+            }
+        }
+    } else {
+        pages = try ImageFolderImporter().pageURLs(in: options.input)
+    }
+    defer { renderedFolder.map { try? FileManager.default.removeItem(at: $0) } }
     print("Recognizing \(pages.count) pages (the first one can take a minute while the model loads)...")
     let engine = VisionOCREngine(languages: options.language.hasPrefix("en") ? ["en-US"] : [options.language, "en-US"])
     let metadata = DocumentMetadata(title: options.title, author: options.author, language: options.language)

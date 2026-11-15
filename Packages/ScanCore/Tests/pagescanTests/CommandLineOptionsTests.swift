@@ -41,4 +41,17 @@ struct CommandLineOptionsTests {
             "/second",
         ]) }
     }
+
+    @Test("a PDF input is named without its extension, for the title and the output")
+    func pdfInput() throws {
+        let options = try CommandLineOptions(arguments: ["/in/Sample.pdf"])
+        #expect(options.inputIsPDF)
+        #expect(options.title == "Sample")
+        #expect(options.output.path == "/in/Sample.epub")
+    }
+
+    @Test("a folder is not taken for a PDF")
+    func folderIsNotPDF() throws {
+        #expect(try !CommandLineOptions(arguments: ["/in/Sample"]).inputIsPDF)
+    }
 }

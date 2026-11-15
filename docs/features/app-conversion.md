@@ -1,18 +1,22 @@
-# App: convert a folder and save the EPUB
+# App: convert a folder or PDF and save the EPUB
 
-The app's main window takes a folder of page images through the same
+The app's main window takes a folder of page images, or a PDF, through the same
 pipeline as [`pagescan`](pagescan-cli.md) and saves the result as an EPUB.
 The result can be [reviewed](review.md) against the scans before saving,
 but not edited yet: what the pipeline produces is what gets saved.
 
 ## Usage
 
-1. **Open a folder**: press *Choose Folder…* (⌘O) or drop the folder on the
-   window. The folder must hold one image per page directly inside it.
-2. **Check the metadata**: the title is preset to the folder's name; the
+1. **Open a folder or PDF**: press *Choose Folder or PDF…* (⌘O) or drop it
+   on the window. A folder must hold one image per page directly inside it.
+   A PDF that cannot be read, is password-protected or has no pages is
+   reported; see [PDF import](pdf-import.md).
+2. **Check the metadata**: the title is preset to the folder's name or the
+   PDF's name without `.pdf`; the
    author is optional; the language is Ukrainian or English. English is
    always recognized as a second language.
-3. **Convert**: the window shows the scan of the page being recognized,
+3. **Convert**: for a PDF the pages are first drawn as images (*Drawing the
+   pages…*, with a progress bar). Then the window shows the scan of the page being recognized,
    and how many pages are done. Only the scan is shown, not what was
    recognized on it. After the last page the progress bar reads
    *Assembling the document…* while layout analysis runs. The first page takes
@@ -22,8 +26,8 @@ but not edited yet: what the pipeline produces is what gets saved.
    notes and whether a cover was found. *Needs attention* appears when note
    references or note texts could not be linked; see [notes](notes.md).
 5. **Review…** (⌘R): see [review](review.md).
-6. **Save EPUB…** (⌘S): the save panel suggests `<folder>.epub` next to the
-   folder. After saving, *Show in Finder* reveals the file. The document can be
+6. **Save EPUB…** (⌘S): the save panel suggests `<name>.epub` next to the
+   folder or PDF. After saving, *Show in Finder* reveals the file. The document can be
    saved more than once.
 
 The interface is in English, with a Ukrainian localization
@@ -49,7 +53,6 @@ previous scan on screen until the next one is ready.
 
 ## Known limits
 
-- Folder input only; PDF import is not built.
 - Cancelling takes effect in the window at once, but Vision finishes the
   page it is on in the background before the pipeline stops.
 - A finished conversion is saved as a [project](projects.md) beside the

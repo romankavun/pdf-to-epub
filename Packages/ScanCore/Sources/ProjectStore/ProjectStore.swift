@@ -40,6 +40,7 @@ public enum ProjectStoreError: Error, Equatable {
 /// Name.scanproject/
 ///   project.json       the conversion without image bytes
 ///   images/            one file per image of the document
+///   pages/             page images rendered from a PDF (optional)
 ///   corrections.json   the user's decisions
 ///   ignored-words.json words the review no longer flags (optional)
 /// ```
@@ -54,6 +55,7 @@ public struct ProjectStore: Sendable {
     private static let correctionsFile = "corrections.json"
     private static let ignoredWordsFile = "ignored-words.json"
     private static let imagesFolder = "images"
+    private static let pagesFolder = "pages"
 
     public init() {}
 
@@ -64,7 +66,15 @@ public struct ProjectStore: Sendable {
 
     /// Writes a new project with no corrections at `url`, which must not
     /// exist yet. Nothing is left at `url` when writing fails.
-    public func create(_ conversion: Conversion, at url: URL) throws {
+    ///
+    /// - Parameter movingPages: Whether the page images of `conversion`
+    ///   belong to the project and are moved into its `pages` folder. That
+    ///   is for pages rendered from a PDF, which exist nowhere else; scans
+    ///   in a folder stay where they are and are only referred to.
+    /// - Returns: `conversion` with its page URLs pointing at the moved
+    ///   files; unchanged when nothing was moved.
+    @discardableResult
+    public func create(_ conversion: Conversion, at url: URL, movingPages: Bool = false) throws -> Conversion {
         let manager = FileManager.default
         guard !manager.fileExists(atPath: url.path) else { throw ProjectStoreError.alreadyExists }
         try Self.validateImageNames(of: conversion)
@@ -72,12 +82,34 @@ public struct ProjectStore: Sendable {
         // cannot leave a half-written project that looks complete.
         let staging = url.deletingLastPathComponent()
             .appendingPathComponent(".\(url.lastPathComponent).\(UUID().uuidString).partial")
+        var movedFrom: [(from: URL, to: URL)] = []
         do {
             try manager.createDirectory(at: staging, withIntermediateDirectories: false)
-            try Self.writeConversion(conversion, in: staging)
+            var stored = conversion
+            if movingPages {
+                let pages = staging.appendingPathComponent(Self.pagesFolder)
+                try manager.createDirectory(at: pages, withIntermediateDirectories: false)
+                for page in conversion.pageURLs {
+                    let target = pages.appendingPathComponent(page.lastPathComponent)
+                    guard !manager.fileExists(atPath: target.path) else {
+                        throw ProjectStoreError.invalidImageName(page.lastPathComponent)
+                    }
+                    try manager.moveItem(at: page, to: target)
+                    movedFrom.append((page, target))
+                }
+                stored.pageURLs = conversion.pageURLs.map {
+                    url.appendingPathComponent(Self.pagesFolder).appendingPathComponent($0.lastPathComponent)
+                }
+            }
+            try Self.writeConversion(stored, in: staging, bundle: url)
             try Self.write(Stored.Corrections(corrections: CorrectionSet()), to: staging, name: Self.correctionsFile)
             try manager.moveItem(at: staging, to: url)
+            return stored
         } catch {
+            // Put moved pages back so a failed save loses nothing.
+            for move in movedFrom {
+                try? manager.moveItem(at: move.to, to: move.from)
+            }
             try? manager.removeItem(at: staging)
             throw error
         }
@@ -106,7 +138,7 @@ public struct ProjectStore: Sendable {
                 document: document,
                 unlinkedReferences: stored.unlinkedReferences,
                 unlinkedNotes: stored.unlinkedNotes,
-                pageURLs: stored.pageURLs.map { URL(fileURLWithPath: $0) },
+                pageURLs: stored.pageURLs.map { Self.pageURL($0, in: url) },
                 blockSources: stored.blockSources,
                 noteSources: stored.noteSources
             )
@@ -156,14 +188,32 @@ public struct ProjectStore: Sendable {
             try? manager.removeItem(at: staging)
             throw error
         }
-        try Self.write(Stored.Project(conversion, version: Self.formatVersion), to: url, name: Self.projectFile)
+        try Self.write(
+            Stored.Project(conversion, version: Self.formatVersion, bundle: url), to: url, name: Self.projectFile
+        )
     }
 
     // MARK: - Files
 
-    private static func writeConversion(_ conversion: Conversion, in folder: URL) throws {
+    /// - Parameter bundle: Where the project will finally be, which may
+    ///   differ from `folder`, where it is written first.
+    private static func writeConversion(_ conversion: Conversion, in folder: URL, bundle: URL) throws {
         try writeImages(of: conversion.document, to: folder.appendingPathComponent(imagesFolder))
-        try write(Stored.Project(conversion, version: formatVersion), to: folder, name: projectFile)
+        try write(Stored.Project(conversion, version: formatVersion, bundle: bundle), to: folder, name: projectFile)
+    }
+
+    /// Pages in the bundle are stored relative to it, so the bundle can be
+    /// moved or renamed; other pages are stored as absolute paths.
+    static func storedPath(of page: URL, in bundle: URL) -> String {
+        let prefix = bundle.resolvingSymlinksInPath().appendingPathComponent(pagesFolder).path + "/"
+        let path = page.resolvingSymlinksInPath().path
+        return path.hasPrefix(prefix) ? pagesFolder + "/" + path.dropFirst(prefix.count) : page.path
+    }
+
+    private static func pageURL(_ stored: String, in bundle: URL) -> URL {
+        stored.hasPrefix("/")
+            ? URL(fileURLWithPath: stored)
+            : bundle.appendingPathComponent(stored)
     }
 
     private static func writeImages(of document: Document, to folder: URL) throws {
@@ -222,12 +272,13 @@ private enum Stored {
         var coverImageID: ImageResource.ID?
         var unlinkedReferences: Int
         var unlinkedNotes: Int
-        /// File paths: the scans stay where they are and are not copied.
+        /// Scans stay where they are and are stored as absolute paths; pages
+        /// rendered from a PDF live in the bundle and are stored relative to it.
         var pageURLs: [String]
         var blockSources: [BlockSource]
         var noteSources: [BlockSource]
 
-        init(_ conversion: Conversion, version: Int) {
+        init(_ conversion: Conversion, version: Int, bundle: URL) {
             let document = conversion.document
             formatVersion = version
             metadata = document.metadata
@@ -237,7 +288,7 @@ private enum Stored {
             coverImageID = document.coverImageID
             unlinkedReferences = conversion.unlinkedReferences
             unlinkedNotes = conversion.unlinkedNotes
-            pageURLs = conversion.pageURLs.map(\.path)
+            pageURLs = conversion.pageURLs.map { ProjectStore.storedPath(of: $0, in: bundle) }
             blockSources = conversion.blockSources
             noteSources = conversion.noteSources
         }

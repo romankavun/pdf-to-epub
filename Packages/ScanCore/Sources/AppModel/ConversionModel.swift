@@ -6,7 +6,7 @@ import Importing
 import Observation
 import OCR
 
-/// State behind the app's main window: pick a folder of page images, enter
+/// State behind the app's main window: pick a folder of page images or a PDF, enter
 /// the document's metadata, convert with progress, export the EPUB.
 ///
 /// The model owns no conversion logic; it sequences a
@@ -15,40 +15,14 @@ import OCR
 @MainActor
 @Observable
 public final class ConversionModel {
-    /// Where the window is in the import-convert-export flow.
-    public enum Phase: Sendable, Equatable {
-        /// No folder chosen yet.
-        case empty
-        /// A folder is open and can be converted.
-        case ready
-        case converting(done: Int, total: Int)
-        case finished(Conversion)
-        case failed(Failure)
-    }
-
-    /// Why opening a folder or converting it failed. Kept as cases rather
-    /// than text so the view can show a localized message.
-    public enum Failure: Sendable, Equatable {
-        case notAFolder
-        case noImages
-        /// Vision stopped answering on a page, after the engine's retries.
-        case recognitionTimedOut
-        /// Anything else, with the error's own description.
-        case other(String)
-    }
-
-    /// The outcome of the last export of the current document.
-    public enum ExportResult: Sendable, Equatable {
-        case saved(URL)
-        case failed(String)
-    }
-
     public private(set) var phase: Phase = .empty
-    /// The open folder; `nil` until one was opened successfully.
-    public private(set) var folder: URL?
-    /// The number of page images found in ``folder``.
+    /// The open folder of scans, PDF or project; `nil` until one was opened
+    /// successfully.
+    public private(set) var input: URL?
+    /// The number of pages of the open document: page images found in the folder
+    /// or pages of the PDF.
     public var pageCount: Int {
-        pages.count
+        pdf != nil && pages.isEmpty ? pdfPageCount : pages.count
     }
 
     public private(set) var exportResult: ExportResult?
@@ -71,6 +45,12 @@ public final class ConversionModel {
     private let pipeline: any ConversionPipeline
     private let storage: any ProjectPersisting
     private var pages: [URL] = []
+    /// The PDF being converted; its pages are drawn into ``pages`` when the
+    /// conversion starts, and those files belong to the project afterwards.
+    private var pdf: URL?
+    private var pdfPageCount = 0
+    /// Where the pages of the PDF were drawn until a project takes them over.
+    private var stagingFolder: URL?
     /// Identifies the current run, so that progress and results arriving
     /// from a cancelled run are dropped.
     private var run = 0
@@ -81,18 +61,6 @@ public final class ConversionModel {
     ) {
         self.pipeline = pipeline
         self.storage = storage
-    }
-
-    /// A page image being recognized, for the progress screen to show.
-    public struct PageInProgress: Sendable, Equatable {
-        /// One-based position of the page in the document.
-        public var number: Int
-        public var url: URL
-
-        public init(number: Int, url: URL) {
-            self.number = number
-            self.url = url
-        }
     }
 
     /// The page the pipeline is working on while converting; `nil` in other
@@ -108,25 +76,44 @@ public final class ConversionModel {
 
     /// Whether ``start()`` would do anything.
     public var canStart: Bool {
-        guard !pages.isEmpty, !trimmed(title).isEmpty else { return false }
-        if case .converting = phase {
-            return false
+        guard pageCount > 0, !trimmed(title).isEmpty else { return false }
+        switch phase {
+        case .converting, .rendering: return false
+        default: return true
         }
-        return true
     }
 
-    /// Where to offer saving the EPUB: next to the folder, under its name.
+    /// Where to offer saving the EPUB: next to the input, under its name.
     public var suggestedExportURL: URL? {
-        folder.map { $0.deletingLastPathComponent().appendingPathComponent($0.lastPathComponent + ".epub") }
+        input.map { $0.deletingLastPathComponent().appendingPathComponent(Self.documentName(for: $0) + ".epub") }
     }
 
-    /// Opens `url`, which is either a project folder saved earlier or a
+    /// Opens `url`, which is a project folder saved earlier, a PDF or a
     /// folder of page images, whichever it turns out to be.
     public func open(_ url: URL) {
         if storage.isProject(at: url) {
             openProject(at: url)
+        } else if PDFImporter.isPDF(url), !Self.isDirectory(url) {
+            open(pdf: url)
         } else {
             open(folder: url)
+        }
+    }
+
+    /// Opens the PDF at `url` as the document to convert, replacing whatever was
+    /// open. The title is preset to the file's name without its extension.
+    /// A PDF that cannot be read or is locked moves the model to
+    /// ``Phase/failed(_:)`` with nothing open.
+    public func open(pdf url: URL) {
+        reset()
+        do {
+            pdfPageCount = try pipeline.pdfPageCount(of: url)
+            pdf = url
+            input = url
+            title = Self.documentName(for: url)
+            phase = .ready
+        } catch {
+            phase = .failed(Self.failure(for: error))
         }
     }
 
@@ -134,15 +121,19 @@ public final class ConversionModel {
     /// disk, nothing is converted. The scans are expected where they were,
     /// and ``start()`` converts them again under the same corrections.
     public func openProject(at url: URL) {
-        cancelRun()
-        exportResult = nil
-        projectError = nil
+        reset()
         do {
             let loaded = try storage.load(from: url)
             let conversion = loaded.conversion
             let metadata = conversion.document.metadata
             pages = conversion.pageURLs
-            folder = conversion.pageURLs.first?.deletingLastPathComponent()
+            // A project that holds its own pages came from a PDF; the document is
+            // then named after the project, otherwise after the scans' folder.
+            let holdsPages = conversion.pageURLs.first.map {
+                $0.deletingLastPathComponent().deletingLastPathComponent().lastPathComponent
+                    == url.lastPathComponent
+            } ?? false
+            input = holdsPages ? url : conversion.pageURLs.first?.deletingLastPathComponent()
             title = metadata.title
             author = metadata.author ?? ""
             language = metadata.language
@@ -153,7 +144,7 @@ public final class ConversionModel {
             phase = .finished(conversion)
         } catch {
             pages = []
-            folder = nil
+            input = nil
             project = nil
             phase = .failed(Self.failure(for: error))
         }
@@ -164,20 +155,29 @@ public final class ConversionModel {
     /// The title is preset to the folder's name. A folder that cannot be
     /// used moves the model to ``Phase/failed(_:)`` with nothing open.
     public func open(folder: URL) {
-        cancelRun()
-        exportResult = nil
-        project = nil
-        projectError = nil
+        reset()
         do {
             pages = try pipeline.pageURLs(in: folder)
-            self.folder = folder
+            input = folder
             title = folder.lastPathComponent
             phase = .ready
         } catch {
-            pages = []
-            self.folder = nil
             phase = .failed(Self.failure(for: error))
         }
+    }
+
+    /// Forgets the open document and everything tied to it, before another is
+    /// opened. A rendering left from a PDF is deleted.
+    private func reset() {
+        cancelRun()
+        discardStaging()
+        exportResult = nil
+        project = nil
+        projectError = nil
+        pages = []
+        pdf = nil
+        pdfPageCount = 0
+        input = nil
     }
 
     /// Starts converting the open folder. Does nothing when ``canStart`` is
@@ -187,28 +187,56 @@ public final class ConversionModel {
         cancelRun()
         exportResult = nil
         let run = run
-        let pages = pages
         let author = trimmed(author)
         let metadata = DocumentMetadata(
             title: trimmed(title), author: author.isEmpty ? nil : author, language: language
         )
-        phase = .converting(done: 0, total: pages.count)
+        let renderFirst = pages.isEmpty ? pdf : nil
+        phase = renderFirst == nil
+            ? .converting(done: 0, total: pages.count)
+            : .rendering(done: 0, total: pdfPageCount)
         let progress: @Sendable (Int, Int) -> Void = { [weak self] done, total in
             Task { @MainActor in self?.report(done: done, total: total, run: run) }
         }
         conversionTask = Task { [pipeline] in
             let outcome: Phase
             do {
-                outcome = try await .finished(pipeline.convert(pageURLs: pages, metadata: metadata, progress: progress))
+                if let renderFirst {
+                    try await render(renderFirst, run: run)
+                }
+                outcome = try await .finished(
+                    pipeline.convert(pageURLs: pages, metadata: metadata, progress: progress)
+                )
             } catch {
                 outcome = .failed(Self.failure(for: error))
             }
             guard run == self.run else { return }
-            phase = outcome
             if case let .finished(conversion) = outcome {
-                adopt(conversion)
+                phase = .finished(adopt(conversion))
+            } else {
+                // A PDF that failed is drawn again on the next try.
+                if pdf != nil {
+                    pages = []
+                }
+                discardStaging()
+                phase = outcome
             }
         }
+    }
+
+    /// Draws the pages of `pdf` into a folder of their own, which stays until
+    /// a project takes the files over.
+    private func render(_ pdf: URL, run: Int) async throws {
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PDFToEPUB-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        stagingFolder = folder
+        let drawn = try await pipeline.renderPages(of: pdf, into: folder) { [weak self] done, total in
+            Task { @MainActor in self?.report(rendered: done, total: total, run: run) }
+        }
+        guard run == self.run else { throw CancellationError() }
+        pages = drawn
+        phase = .converting(done: 0, total: drawn.count)
     }
 
     /// Stops the running conversion and returns to ``Phase/ready``.
@@ -216,8 +244,16 @@ public final class ConversionModel {
     /// The state changes at once, although the pipeline only notices the
     /// cancellation after the page it is working on.
     public func cancel() {
-        guard case .converting = phase else { return }
+        switch phase {
+        case .converting, .rendering: break
+        default: return
+        }
         cancelRun()
+        // A PDF that was only partly drawn starts over next time.
+        if pdf != nil, stagingFolder != nil, projectLocation == nil {
+            pages = []
+        }
+        discardStaging()
         phase = .ready
     }
 
@@ -236,22 +272,44 @@ public final class ConversionModel {
 
     /// Puts a conversion that just finished under the corrections: into the
     /// project that is open, which keeps them, or into a new project written
-    /// beside the folder of scans.
-    private func adopt(_ conversion: Conversion) {
+    /// beside the folder of scans or the PDF. Returns the conversion as it
+    /// is now stored: pages drawn from a PDF are moved into the project.
+    private func adopt(_ conversion: Conversion) -> Conversion {
         if let project {
             project.replaceBase(conversion)
-            return
+            return conversion
         }
+        var stored = conversion
         var location: URL?
-        if let folder {
+        if let input {
             do {
-                location = try storage.createProject(for: conversion, nextTo: folder)
+                let created = try storage.createProject(
+                    for: conversion, named: Self.documentName(for: input),
+                    in: input.deletingLastPathComponent(), movingPages: stagingFolder != nil
+                )
+                location = created.location
+                stored = created.conversion
                 projectError = nil
+                if stagingFolder != nil {
+                    pages = stored.pageURLs
+                    discardStaging()
+                }
             } catch {
                 projectError = String(describing: error)
             }
         }
-        project = ProjectModel(base: conversion, location: location, storage: storage)
+        project = ProjectModel(base: stored, location: location, storage: storage)
+        return stored
+    }
+
+    private var projectLocation: URL? {
+        project?.location
+    }
+
+    private func discardStaging() {
+        guard let stagingFolder else { return }
+        try? FileManager.default.removeItem(at: stagingFolder)
+        self.stagingFolder = nil
     }
 
     private func cancelRun() {
@@ -268,16 +326,14 @@ public final class ConversionModel {
         phase = .converting(done: done, total: total)
     }
 
-    private func trimmed(_ text: String) -> String {
-        text.trimmingCharacters(in: .whitespacesAndNewlines)
+    /// Progress of drawing the pages of a PDF, with the same rules as
+    /// ``report(done:total:run:)``.
+    private func report(rendered done: Int, total: Int, run: Int) {
+        guard run == self.run, case let .rendering(current, _) = phase, done > current else { return }
+        phase = .rendering(done: done, total: total)
     }
 
-    private static func failure(for error: any Error) -> Failure {
-        switch error {
-        case ImportError.notADirectory: .notAFolder
-        case ImportError.noImages: .noImages
-        case OCRError.timedOut: .recognitionTimedOut
-        default: .other(String(describing: error))
-        }
+    private func trimmed(_ text: String) -> String {
+        text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

@@ -64,7 +64,7 @@ struct ConversionModelProjectTests {
         #expect(model.phase == .finished(conversion))
         #expect(model.project?.location == projectURL)
         #expect(model.project?.conversion.document.blocks == [.paragraph(["Fixed."])])
-        #expect(model.folder?.path == folder.path)
+        #expect(model.input?.path == folder.path)
         #expect(model.pageCount == 3)
         #expect(model.title == "Saved title" && model.author == "Author" && model.language == "en")
     }
@@ -153,7 +153,9 @@ private struct FailingLoadStorage: ProjectPersisting {
         true
     }
 
-    func createProject(for _: Conversion, nextTo _: URL) throws -> URL {
+    func createProject(
+        for _: Conversion, named _: String, in _: URL, movingPages _: Bool
+    ) throws -> (location: URL, conversion: Conversion) {
         throw StorageFailure()
     }
 
