@@ -105,6 +105,13 @@ page in question. Defects 4 and 5 are not changed by it.
 - **Save ignored words in the project.** *Ignore This Word* in the review's
   quick fixes lasts only while the review is open; keep the list in the
   project bundle (apart from the recognized document, like corrections).
+- **Quick fixes open at the clicked word.** The quick-fix popover in the
+  review is attached to the whole block text, so its arrow points at the
+  middle of the block's top edge and it can cover the previous block. A click
+  arrives as a `fix://index` link and `Text` gives no rectangle for a run.
+  Either show the fixes in a row inside the block card (simple), or anchor the
+  popover to the word using the run rectangles from a `TextRenderer`.
+- **Redo in the review.** The review has Undo (⌘Z) but no Redo.
 - **Clickable "Needs attention" items.** A click on an item (suspicious words,
   references without a note, notes without a reference) opens the review at
   the page and block where that problem is.
