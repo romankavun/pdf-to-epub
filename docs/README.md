@@ -13,6 +13,7 @@ Build, run and a usage walkthrough are in the [project README](../README.md).
   - [0008 - Merging and splitting blocks are corrections applied before edits](adr/0008-merge-and-split-corrections.md)
   - [0009 - A PDF is drawn into page images once, and the project keeps them](adr/0009-pdf-drawn-to-page-images.md)
 - [Backlog: known defects, the next improvement (page preview while converting) and postponed ideas](backlog.md)
+- [Testing: unit tests, golden pages, regenerating expectations](testing.md)
 - Features: [features/](features/) - one page per user-facing feature.
   - [pagescan CLI: folder of page images or PDF to EPUB](features/pagescan-cli.md)
   - [PDF import: how a PDF becomes page images](features/pdf-import.md)

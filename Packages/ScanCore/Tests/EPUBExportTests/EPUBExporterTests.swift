@@ -91,20 +91,26 @@ struct EPUBExporterTests {
         #expect(result.status == 0, "\(String(decoding: result.output, as: UTF8.self))")
     }
 
-    /// Full conformance check. Skipped when epubcheck is not installed
-    /// (`brew install epubcheck`).
-    @Test("passes epubcheck", .enabled(if: EPUBCheck.path != nil, "epubcheck is not installed"))
+    /// Full conformance check. Without epubcheck it is skipped with a loud
+    /// reason, or fails when `REQUIRE_EPUBCHECK` is set (see `EPUBCheck`).
+    @Test("passes epubcheck")
     func epubcheck() throws {
+        let launcher: String
+        switch EPUBCheck.current {
+        case let .found(path):
+            launcher = path
+        case let .skip(reason):
+            FileHandle.standardError.write(Data("warning: \(reason)\n".utf8))
+            try Test.cancel(Comment(rawValue: reason))
+            return
+        case let .fail(reason):
+            Issue.record(Comment(rawValue: reason))
+            return
+        }
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).epub")
         defer { try? FileManager.default.removeItem(at: url) }
         try exporter.export(Fixtures.document, to: url, modified: modified)
-        let result = try Shell.run(#require(EPUBCheck.path), ["--failonwarnings", url.path])
+        let result = try Shell.run(launcher, ["--failonwarnings", url.path])
         #expect(result.status == 0, "\(String(decoding: result.output, as: UTF8.self))")
     }
-}
-
-enum EPUBCheck {
-    /// Location of the epubcheck launcher, if installed via Homebrew.
-    static let path: String? = ["/opt/homebrew/bin/epubcheck", "/usr/local/bin/epubcheck"]
-        .first { FileManager.default.isExecutableFile(atPath: $0) }
 }

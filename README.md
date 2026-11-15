@@ -39,7 +39,12 @@ Tests:
 swift test --package-path Packages/ScanCore
 ```
 
-The `epubcheck` test is skipped when `epubcheck` is not installed. Tests on
+Before committing, run `scripts/check.sh` (format, lint, fast tests). CI runs
+the same checks plus the golden pages and the app build; see
+[docs/testing.md](docs/testing.md).
+
+The `epubcheck` test is skipped with a warning when `epubcheck` is not
+installed; `REQUIRE_EPUBCHECK=1` turns that into a failure (CI sets it). Tests on
 real documents run only when `PAGESCAN_SAMPLES_DIR` points to a folder of
 sample sets.
 

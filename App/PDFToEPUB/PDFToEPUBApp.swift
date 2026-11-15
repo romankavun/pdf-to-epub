@@ -9,7 +9,7 @@ struct PDFToEPUBApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(model: model)
+            ContentView(model: model, hooks: .current)
         }
     }
 }

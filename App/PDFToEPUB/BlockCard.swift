@@ -85,6 +85,8 @@ struct BlockCard: View {
                 .stroke(isSelected ? Color.accentColor : .clear, lineWidth: 1.5)
         }
         .contentShape(RoundedRectangle(cornerRadius: 8))
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("blockCard")
         .onHover { isHovered = $0 }
     }
 
@@ -159,10 +161,12 @@ struct BlockCard: View {
             Button("Heading 1") { model.setSelectedType(.heading(level: 1)) }
             Button("Heading 2") { model.setSelectedType(.heading(level: 2)) }
             Button("Heading 3") { model.setSelectedType(.heading(level: 3)) }
+                .accessibilityIdentifier("typeHeading3")
             Divider()
             Button("Ignore", systemImage: "eye.slash") { model.setSelectedType(.ignored) }
             Button("Reset to Recognized Type", action: model.resetSelectedType)
         }
+        .accessibilityIdentifier("typeMenu")
     }
 
     private var isHeading: Bool {

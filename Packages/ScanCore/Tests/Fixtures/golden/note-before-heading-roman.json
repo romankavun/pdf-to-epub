@@ -1,0 +1,42 @@
+{
+  "blocks" : [
+    {
+      "kind" : "paragraph",
+      "text" : "river harbour orchard stone meadow bridge lantern violin morni winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winte river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone"
+    },
+    {
+      "kind" : "paragraph",
+      "notes" : [
+        "IX",
+        "X",
+        "XI"
+      ],
+      "text" : "Старий міст над річкою стояв порожній до самого вечора, і запалили ліхтарі і вітер стих над садом знову."
+    },
+    {
+      "kind" : "heading",
+      "level" : 1,
+      "text" : "Розділ другий"
+    },
+    {
+      "kind" : "paragraph",
+      "text" : "Другий розділ починається абзацом звичайного тексту, який займає кілька рядків і потім закінчується."
+    }
+  ],
+  "notes" : [
+    {
+      "label" : "IX",
+      "text" : "Перша примітка, коротка."
+    },
+    {
+      "label" : "X",
+      "text" : "Друга примітка, теж коротка."
+    },
+    {
+      "label" : "XI",
+      "text" : "Третя примітка починається внизу сторінки і її речення закінчується лише одним словом."
+    }
+  ],
+  "unlinkedNotes" : 0,
+  "unlinkedReferences" : 0
+}
