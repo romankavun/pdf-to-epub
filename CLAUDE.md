@@ -12,7 +12,8 @@ folder, convert with progress, review the result against the scans, correct
 it (block types, text, ignoring, applying a fix to similar blocks, undo),
 save the EPUB (`AppModel` + `App/`). Every conversion is kept as a project
 bundle beside the scans, with the corrections stored apart from the
-recognized document (`Corrections`, `ProjectStore`). PDF input is not built; see
+recognized document (`Corrections`, `ProjectStore`). PDF input works too: pages are drawn to PNG files (`Importing`), the
+project keeps them in its bundle (ADR 0009). See
 `docs/features/` for what each piece does and its limits. Modules listed
 below that do not exist yet are created when a test first needs them.
 
@@ -56,7 +57,7 @@ Import -> Preprocess -> OCR -> Layout analysis -> Document model -> EPUB export
                                                   user review (UI)
 ```
 
-1. **Import** - PDF (PDFKit) or image folder becomes an ordered list of pages.
+1. **Import** - PDF (CoreGraphics, drawn to page images) or image folder becomes an ordered list of pages.
 2. **Preprocess** - deskew, crop margins, split a two-page spread into pages.
 3. **OCR** - `RecognizeDocumentsRequest` with explicit languages. We use only
    its lines and word boxes; its paragraph grouping, `title`, and confidence
@@ -102,7 +103,7 @@ making corrections cheap rather than pretending they are not needed.
 Packages/ScanCore/          Swift package, no UI imports
   Sources/
     DocumentModel/          value types; no dependencies
-    Importing/              PDF and image folder import
+    Importing/              PDF (drawn to page images) and image folder import
     Preprocessing/          deskew, crop, spread splitting
     OCR/                    Vision adapter behind OCREngine protocol
     LayoutAnalysis/         block classification heuristics
@@ -121,7 +122,7 @@ docs/                       feature and architecture documentation
 Rules:
 - `ScanCore` never imports SwiftUI or AppKit UI types. The app depends on the
   package, never the reverse.
-- Only `OCR` imports Vision; only `Importing` imports PDFKit. Everything else
+- Only `OCR` imports Vision; only `Importing` reads PDFs (CoreGraphics `CGPDF`, no PDFKit needed). Everything else
   works on the package's own value types.
 - `DocumentModel` types are `Sendable`, `Codable` value types.
 

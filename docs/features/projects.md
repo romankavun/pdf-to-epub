@@ -5,8 +5,8 @@ over several sessions.
 
 ## Usage
 
-- When a conversion finishes, the app writes `<folder name>.scanproject`
-  next to the folder of scans (`<name> 2.scanproject` if that exists). The
+- When a conversion finishes, the app writes `<folder or PDF name>.scanproject`
+  next to the folder of scans or the PDF (`<name> 2.scanproject` if that exists). The
   summary shows its name and *Show in Finder*. Nothing is asked.
 - Words ignored in the review's quick fixes are kept in the project too, in
   a file of their own (`ignored-words.json`), not as corrections: undo does
@@ -29,8 +29,9 @@ over several sessions.
 ```
 Name.scanproject/
   project.json       the conversion: chapters, notes, where each block lies,
-                     the paths of the scans, the metadata (no image bytes)
+                     the paths of the scans (relative for `pages/`), the metadata (no image bytes)
   images/            one file per figure and the cover
+  pages/             page images drawn from a PDF (only for PDF documents)
   corrections.json   the user's decisions
   ignored-words.json words the review no longer flags (optional)
 ```
@@ -43,9 +44,13 @@ crash while creating it leaves no half-written project.
 
 ## Known limits
 
-- The scans are not copied into the project; their paths are stored. If the
-  folder is moved or renamed, the review shows no page images (the document and
-  EPUB export still work).
+- Scans in a folder are not copied into the project; their paths are stored.
+  If the folder is moved or renamed, the review shows no page images (the
+  document and EPUB export still work). Pages drawn from a PDF are different:
+  they are moved into the project's `pages/` folder and stored relative to
+  it, so the project works after the PDF is moved or deleted and after the
+  project itself is moved. They cost disk space (about the size of the
+  document's clean pages as PNG).
 - Replacing the conversion of an existing project is not atomic: a crash in
   the middle leaves a project that reports itself as damaged.
 - A project cannot be moved to another name from inside the app; moving the

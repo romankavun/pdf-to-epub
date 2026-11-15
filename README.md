@@ -5,9 +5,9 @@ structure: headings, paragraphs, illustrations with captions, the cover and
 linked notes. Recognition runs on device with Apple Vision; nothing is sent
 over the network.
 
-Today the input is a **folder of page images** (one image per page). PDF
-input is not built yet; see [docs/backlog.md](docs/backlog.md) and the milestone list in
-[CLAUDE.md](CLAUDE.md).
+The input is a **PDF** or a **folder of page images** (one image per page);
+see [docs/features/pdf-import.md](docs/features/pdf-import.md). The milestone
+list is in [CLAUDE.md](CLAUDE.md), known defects in [docs/backlog.md](docs/backlog.md).
 
 ## Requirements
 
@@ -30,7 +30,7 @@ scheme.
 The command-line tool, same pipeline without the window:
 
 ```bash
-swift run --package-path Packages/ScanCore -c release pagescan <folder>
+swift run --package-path Packages/ScanCore -c release pagescan <folder-or-file.pdf>
 ```
 
 Tests:
@@ -45,11 +45,11 @@ sample sets.
 
 ## Usage walkthrough
 
-1. Put the page images of a document in one folder (`png`, `jpg`, `tif`,
-   `heic`), named so that Finder sorts them in page order.
-2. Start the app and press *Choose Folder…* (⌘O), or drop the folder on the
-   window.
-3. Check the title (preset to the folder's name), add the author if you
+1. Have the document as a PDF, or put its page images in one folder (`png`,
+   `jpg`, `tif`, `heic`), named so that Finder sorts them in page order.
+2. Start the app and press *Choose Folder or PDF…* (⌘O), or drop the PDF or
+   folder on the window.
+3. Check the title (preset to the folder's or the PDF's name), add the author if you
    like, pick Ukrainian or English, and press *Convert*. The first page
    takes about a minute while Vision loads its model; after that a page
    takes well under a second.
@@ -64,8 +64,9 @@ sample sets.
    Select a block to change its type, edit its text or ignore it (⌘Z
    undoes); the app offers the same change for similar blocks and for a
    word fixed once. See [docs/features/corrections.md](docs/features/corrections.md).
-6. The document and every correction are saved as `<folder>.scanproject` beside
-   the scans. Choose that folder (⌘O) later to continue where you left off.
+6. The document and every correction are saved as `<name>.scanproject` beside
+   the scans or the PDF. A PDF's pages are kept inside it. Choose that
+   folder (⌘O) later to continue where you left off.
 7. *Save EPUB…* (⌘S) writes the document with the corrections applied.
 
 ## Documentation
