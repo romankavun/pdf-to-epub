@@ -27,6 +27,8 @@ public struct DocumentSnapshot: Codable, Equatable, Sendable {
     public var notes: [NoteEntry]
     public var unlinkedReferences: Int
     public var unlinkedNotes: Int
+    /// `true` when the document has a cover image; absent otherwise.
+    public var hasCover: Bool?
 
     public init(document: Document, unlinkedReferences: Int, unlinkedNotes: Int) {
         let labels = Dictionary(uniqueKeysWithValues: document.notes.map { ($0.id, $0.label) })
@@ -47,6 +49,7 @@ public struct DocumentSnapshot: Codable, Equatable, Sendable {
         notes = document.notes.map { NoteEntry(label: $0.label, text: $0.content.plainText) }
         self.unlinkedReferences = unlinkedReferences
         self.unlinkedNotes = unlinkedNotes
+        hasCover = document.coverImageID == nil ? nil : true
     }
 
     /// Differences from `expected`, one sentence each; empty when this
@@ -74,6 +77,9 @@ public struct DocumentSnapshot: Codable, Equatable, Sendable {
         }
         if unlinkedReferences != expected.unlinkedReferences {
             found.append("unlinked references \(unlinkedReferences), expected \(expected.unlinkedReferences)")
+        }
+        if (hasCover ?? false) != (expected.hasCover ?? false) {
+            found.append("cover \(hasCover ?? false), expected \(expected.hasCover ?? false)")
         }
         if unlinkedNotes != expected.unlinkedNotes {
             found.append("unlinked notes \(unlinkedNotes), expected \(expected.unlinkedNotes)")

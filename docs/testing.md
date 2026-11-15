@@ -66,6 +66,13 @@ Current cases:
 | `note-before-heading`, `note-before-heading-roman` | backlog defect 4: a note across an almost empty page, then a heading. **Not reproduced** with synthetic pages; kept as guards |
 | `bottom-notes` | backlog defect 5 with arabic labels: passes |
 | `bottom-notes-roman` | backlog defect 5: reproduced (known issue). Long roman labels such as `LXXVIII` are not all found by the marker detector and those notes stay paragraphs with the label in the text; the width limit `maximumAspect` in `NoteMarkerDetector` is the first suspect, not yet confirmed |
+| `bilingual` | Ukrainian body with English fragments in the same paragraph: passes |
+| `lists` | bulleted and numbered items: passes as one paragraph per item (the model has no list type; backlog defect 1) |
+| `multi-level-headings` | h1/h2/h3: known issue, backlog defect 8 (only two levels exist) |
+| `contents-page` | a contents page: known issue, backlog defect 9 (first entry becomes a heading) |
+| `cover` | a picture-only first page becomes the cover and adds no blocks; the snapshot records `hasCover`: passes |
+| `picture-page` | a page that is only a picture with a caption: known issue, backlog defect 10 |
+| `pdf-basic` | the `basic` document drawn into a PDF (`viaPDF`) and imported through `PDFImporter`: passes |
 
 ## Property tests
 

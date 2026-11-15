@@ -87,6 +87,30 @@ page in question. Defects 4 and 5 are not changed by it.
    Reproduce with synthetic lines: two rows of fragments plus one tall box
    between them, under a normal paragraph.
 
+8. **Headings have only two levels; a third is never produced.** Found by
+   the golden case `multi-level-headings` (2026-11-15). A heading is level 1
+   when its line is at least 1.5 times the body line height
+   (`headingHeightFactor`), and level 2 when it is body size or slightly
+   larger and recognized by weight and space. Headings set at 2.0, 1.5 and
+   1.25 times the body size come out as levels 1, 2 and 2; the expected
+   result is 1, 2 and 3. Levels should come from the distinct heading sizes
+   of the whole document, ranked from the largest.
+
+9. **The first entry of a contents list becomes a heading.** Found by the
+   golden case `contents-page`. After the heading "Contents" the first
+   short line ("The Orchard 3") is taken for a level 1 heading; the other
+   entries are paragraphs. The line is only recognized by the space above
+   it. Expected: the heading and four paragraphs. (Making the entries
+   links is a separate improvement, see *Contents pages*.)
+
+10. **The caption of a picture that fills a page is not attached.** Found by
+    the golden case `picture-page`. When a page holds only a picture, a
+    caption and a page number, the figure comes out with an empty caption
+    and the caption text becomes a paragraph after it. Captions are
+    attached by the wide step that follows them (ADR 0002), and a caption
+    at the end of a page has no such step. Expected: one figure with the
+    caption.
+
 ## Improvements
 
 ### Review screen and summary (ideas from hands-on use, 2026-11-14)

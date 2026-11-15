@@ -58,7 +58,7 @@ let package = Package(
         ),
         .testTarget(
             name: "GoldenPagesTests",
-            dependencies: ["TestSupport", "Conversion", "DocumentModel", "LayoutAnalysis", "OCR"]
+            dependencies: ["TestSupport", "Conversion", "DocumentModel", "Importing", "LayoutAnalysis", "OCR"]
         ),
         .testTarget(name: "TextReviewTests", dependencies: ["TextReview"]),
         .testTarget(
