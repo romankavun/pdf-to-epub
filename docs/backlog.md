@@ -102,19 +102,11 @@ page in question. Defects 4 and 5 are not changed by it.
 - **Section of manual changes in the review.** An optional section, not always
   visible (shown and hidden on request), listing every change made by hand
   (type changes, edited text, ignored blocks, applied fixes).
-- **Save ignored words in the project.** *Ignore This Word* in the review's
-  quick fixes lasts only while the review is open; keep the list in the
-  project bundle (apart from the recognized document, like corrections).
-- **Quick fixes open at the clicked word.** The quick-fix popover in the
-  review is attached to the whole block text, so its arrow points at the
-  middle of the block's top edge and it can cover the previous block. A click
-  arrives as a `fix://index` link and `Text` gives no rectangle for a run.
-  Either show the fixes in a row inside the block card (simple), or anchor the
-  popover to the word using the run rectangles from a `TextRenderer`.
-- **Redo in the review.** The review has Undo (⌘Z) but no Redo.
-- **Clickable "Needs attention" items.** A click on an item (suspicious words,
-  references without a note, notes without a reference) opens the review at
-  the page and block where that problem is.
+- **Locate unlinked references and notes.** *References without a note* and
+  *Notes without a reference* on the summary are only counts. Make them open
+  the review at the page and block: the note linker would have to keep the
+  sources of the references and notes it could not link (in `LayoutAnalysis`
+  and `Conversion`), and the review would list them as stops.
 - **Edit notes and link them by hand.** Edit a note's text and connect a note
   to a reference, or detach it, by hand. Low priority.
 - **Contents pages.** Detect pages that hold the contents and make them

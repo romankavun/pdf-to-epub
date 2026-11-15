@@ -27,7 +27,7 @@ leaving it out.
   and note texts with suspicious words, across pages, wrapping around at the
   ends. A block on two pages is one stop, shown on the page it starts on.
 - **Corrections**: select a block to change its type, edit its text or
-  ignore it, and use *Undo* (⌘Z); the bar below offers the same change for
+  ignore it, and use *Undo* (⌘Z) and *Redo* (⇧⌘Z; a new correction drops what could be redone; both are off while a text is being edited); the bar below offers the same change for
   similar blocks. See [corrections](corrections.md).
 - **Back to Summary** (Esc) returns to the numbers and *Save EPUB…*.
 
@@ -35,12 +35,14 @@ Linked note references appear as the note's label, raised and coloured.
 
 ## Quick fixes
 
-A flagged word is a link: clicking it opens a small list of suggestions, and
+A flagged word is a link: clicking it opens a row of suggestions inside the block's card (a popover
+could not point at the clicked word), and
 choosing one replaces the word as an ordinary text correction (undoable; if
 the same word stands elsewhere, replacing it everywhere is offered). *Edit
-Text…* in the list opens the whole block for editing, and *Ignore This Word*
+Text…* in the row opens the whole block for editing, and *Ignore This Word*
 stops flagging that word (in any case) everywhere in the document. Ignored words
-are kept only while the review is open; they are not saved in the project.
+are saved in the [project](projects.md) (`ignored-words.json`), apart from the
+corrections: they are not undone and survive closing the app and converting again.
 
 - For a mixed-script word the suggestion swaps look-alike letters for the
   word's own alphabet ("Журавeль" with a Latin "o" becomes "Журавель"); for a
@@ -72,12 +74,13 @@ noisier (names, dialect, archaic words):
 
 - Suspicious words are highlighted in orange, outlined, counted in the
   toolbar and visited by *Next Issue*; the summary lists them under *Needs
-  attention*.
+  attention*, and clicking the number opens the review at the first one.
 - Misspelled words are off by default. The *Spelling* toggle in the toolbar
   marks them with a blue dotted underline and enables their own counter and
   *Next / Previous Misspelling* (⌥⌘G, ⇧⌥⌘G). They never change the issue
   count or the issue navigation. The summary shows their number in a
-  separate *For a second pass* section.
+  separate *For a second pass* section; clicking the number turns *Spelling*
+  on and opens the review at the first one.
 
 The spelling rule picks the language per word by its script (Cyrillic is
 checked as Ukrainian, Latin as English), so Ukrainian text with English
@@ -108,7 +111,10 @@ that state.
   second part is reached through the block's stop on its first page.
 - The spelling rule trusts the system dictionaries: dialect, archaic or
   invented words are flagged and a misread name is not. *Ignore This Word*
-  helps with the noise but is not saved in the project. The rule is off for a language with no installed dictionary.
+  helps with the noise. The rule is off for a language with no installed dictionary.
+- *References without a note* and *Notes without a reference* on the summary
+  are numbers only: layout analysis does not record where they are, so they
+  cannot open the review at the problem yet.
 - False positives are expected for formulas and codes ("H2O").
 - The review itself is rebuilt each time it is opened; the corrections are
   kept in the [project](projects.md).
