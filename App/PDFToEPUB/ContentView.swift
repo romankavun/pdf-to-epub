@@ -8,6 +8,8 @@ import UniformTypeIdentifiers
 /// The main window: one screen per phase of ``ConversionModel``.
 struct ContentView: View {
     @Bindable var model: ConversionModel
+    /// Launch arguments of a UI test; ``UITestHooks/none`` otherwise.
+    var hooks = UITestHooks.none
     @State private var isChoosingFolder = false
     /// The review of the finished conversion, while its screen is open.
     @State private var review: ReviewModel?
@@ -36,7 +38,7 @@ struct ContentView: View {
                     // the corrections applied.
                     let corrected = model.project?.conversion ?? conversion
                     ResultScreen(
-                        model: model, summary: ConversionSummary(corrected), counted: counted,
+                        model: model, hooks: hooks, summary: ConversionSummary(corrected), counted: counted,
                         chooseFolder: chooseFolder
                     ) { start in
                         let opened = model.project.map { ReviewModel(project: $0, detector: detector) }
@@ -68,6 +70,11 @@ struct ContentView: View {
         }
         .padding(24)
         .frame(minWidth: 640, minHeight: 420)
+        .task {
+            if let folder = hooks.folder {
+                model.open(folder)
+            }
+        }
         // A review belongs to one conversion; any change of phase ends it.
         .onChange(of: model.phase) { review = nil }
         // A folder of scans and a saved project are both folders; the model
@@ -139,6 +146,7 @@ private struct MetadataForm: View {
             HStack {
                 Spacer()
                 Button("Convert", action: model.start)
+                    .accessibilityIdentifier("convertButton")
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
                     .disabled(!model.canStart)
@@ -239,6 +247,7 @@ private enum ReviewStart {
 /// What the conversion produced, and saving it as an EPUB.
 private struct ResultScreen: View {
     var model: ConversionModel
+    var hooks: UITestHooks
     var summary: ConversionSummary
     /// The summary with suspicious and misspelled words counted; `nil` until counted.
     var counted: ConversionSummary?
@@ -293,8 +302,10 @@ private struct ResultScreen: View {
                     Button("Convert Again", action: model.start)
                         .disabled(!model.canStart)
                     Button("Review…") { review(.top) }
+                        .accessibilityIdentifier("reviewButton")
                         .keyboardShortcut("r")
                     Button("Save EPUB…", action: save)
+                        .accessibilityIdentifier("saveButton")
                         .buttonStyle(.borderedProminent)
                         .keyboardShortcut("s")
                 }
@@ -347,6 +358,7 @@ private struct ResultScreen: View {
         case let .saved(url):
             HStack {
                 Label("Saved \(url.lastPathComponent)", systemImage: "checkmark.circle.fill")
+                    .accessibilityIdentifier("exportSaved")
                     .foregroundStyle(.green)
                 Spacer()
                 Button("Show in Finder") {
@@ -364,6 +376,10 @@ private struct ResultScreen: View {
     /// Uses `NSSavePanel` directly: `fileExporter` wants the whole document
     /// in memory as a `FileDocument`, while the exporter writes to a URL.
     private func save() {
+        if let output = hooks.output {
+            Task { await model.export(to: output) }
+            return
+        }
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.epub]
         panel.canCreateDirectories = true
