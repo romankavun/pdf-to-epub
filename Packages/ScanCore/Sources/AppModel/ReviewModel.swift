@@ -21,8 +21,17 @@ public final class ReviewModel {
     /// The document's embedded images, for showing figures.
     public let images: [ImageResource.ID: Data]
     public private(set) var pages: [Page] = []
-    /// The total number of flagged words in the document.
+    /// The total number of OCR-suspect words in the document.
     public private(set) var issueCount = 0
+    /// The total number of words the spell checker does not know. Counted
+    /// and navigated apart from ``issueCount``, which has priority.
+    public private(set) var misspellingCount = 0
+    /// Whether the review marks misspelled words. Off by default: they are
+    /// numerous and mostly harmless, and OCR suspects come first.
+    public var showsSpelling = false
+    /// Words the user chose to ignore, lowercased. They are no longer
+    /// flagged anywhere. Kept for this review only, not in the project.
+    public internal(set) var ignoredWords: Set<String> = []
     /// The page being viewed.
     public private(set) var pageIndex = 0
     /// The block in focus, always on the page being viewed.
@@ -37,7 +46,9 @@ public final class ReviewModel {
     /// the pages they start on, top to bottom. A block on two pages is one
     /// stop, on the page it starts on.
     private var flagged: [(itemID: ItemID, page: Int)] = []
-    private let detector: SuspiciousWordDetector
+    /// Like ``flagged``, for blocks with misspelled words.
+    private var misspelled: [(itemID: ItemID, page: Int)] = []
+    let detector: SuspiciousWordDetector
 
     public init(project: ProjectModel, detector: SuspiciousWordDetector = SuspiciousWordDetector()) {
         self.project = project
@@ -61,13 +72,9 @@ public final class ReviewModel {
         let shown = items()
         pages = Self.pages(showing: shown, urls: project.conversion.pageURLs)
         issueCount = shown.reduce(0) { $0 + $1.item.issueCount }
-        flagged = shown.enumerated()
-            .filter { $0.element.item.issueCount > 0 }
-            .sorted {
-                let (left, right) = ($0.element.source.start, $1.element.source.start)
-                return (left.page, left.box.minY, $0.offset) < (right.page, right.box.minY, $1.offset)
-            }
-            .map { ($0.element.item.id, $0.element.source.page) }
+        misspellingCount = shown.reduce(0) { $0 + $1.item.misspellingCount }
+        flagged = Self.stops(of: shown) { $0.issueCount > 0 }
+        misspelled = Self.stops(of: shown) { $0.misspellingCount > 0 }
         selectedItemID = selectedAnchor.flatMap { anchor in
             currentPage?.items.first { $0.anchor == anchor }?.id
         }
@@ -88,12 +95,17 @@ public final class ReviewModel {
             var runs = Self.runs(of: content, noteLabels: labels, detector: detector)
             if !flagging {
                 runs = runs.map { Run(text: $0.text, style: $0.style) }
+            } else if !ignoredWords.isEmpty {
+                for index in runs.indices where ignoredWords.contains(runs[index].text.lowercased()) {
+                    runs[index].reason = nil
+                }
             }
-            let issues = runs.count { $0.reason != nil }
-            return (
-                Item(id: id, kind: kind, anchor: BlockAnchor(source), runs: runs, box: source.box, issueCount: issues),
-                source
+            let issues = runs.count { $0.reason?.isOCRSuspect == true }
+            var item = Item(
+                id: id, kind: kind, anchor: BlockAnchor(source), runs: runs, box: source.box, issueCount: issues
             )
+            item.misspellingCount = runs.count { $0.reason == .misspelled }
+            return (item, source)
         }
         let blocks = zip(document.blocks, project.conversion.blockSources).enumerated().map { index, pair in
             let (block, source) = pair
@@ -230,7 +242,56 @@ public final class ReviewModel {
         select(itemID: flagged[previous].itemID)
     }
 
+    // MARK: - Misspellings
+
+    /// How many blocks and notes have misspelled words.
+    public var misspelledItemCount: Int {
+        misspelled.count
+    }
+
+    /// Which misspelling stop the selected block is, counting from 1; `nil`
+    /// when the selection has no misspelled word.
+    public var misspellingPosition: Int? {
+        misspelled.firstIndex { $0.itemID == selectedItemID }.map { $0 + 1 }
+    }
+
+    /// Like ``goToNextIssue()``, for blocks with misspelled words.
+    public func goToNextMisspelling() {
+        guard !misspelled.isEmpty else { return }
+        let next = if let position = misspellingPosition {
+            position % misspelled.count
+        } else {
+            misspelled.firstIndex { $0.page >= pageIndex } ?? 0
+        }
+        select(itemID: misspelled[next].itemID)
+    }
+
+    /// Like ``goToPreviousIssue()``, for blocks with misspelled words.
+    public func goToPreviousMisspelling() {
+        guard !misspelled.isEmpty else { return }
+        let previous = if let position = misspellingPosition {
+            (position - 2 + misspelled.count) % misspelled.count
+        } else {
+            misspelled.lastIndex { $0.page < pageIndex } ?? misspelled.count - 1
+        }
+        select(itemID: misspelled[previous].itemID)
+    }
+
     // MARK: - Helpers
+
+    /// The items that pass `isFlagged`, in the order of the pages they start
+    /// on, top to bottom.
+    private static func stops(
+        of shown: [(item: Item, source: BlockSource)], where isFlagged: (Item) -> Bool
+    ) -> [(itemID: ItemID, page: Int)] {
+        shown.enumerated()
+            .filter { isFlagged($0.element.item) }
+            .sorted {
+                let (left, right) = ($0.element.source.start, $1.element.source.start)
+                return (left.page, left.box.minY, $0.offset) < (right.page, right.box.minY, $1.offset)
+            }
+            .map { ($0.element.item.id, $0.element.source.page) }
+    }
 
     private static func runs(
         of content: [Inline], noteLabels: [Note.ID: String], detector: SuspiciousWordDetector

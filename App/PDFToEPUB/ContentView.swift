@@ -2,6 +2,7 @@ import AppModel
 import Corrections
 import ImageIO
 import SwiftUI
+import TextReview
 import UniformTypeIdentifiers
 
 /// The main window: one screen per phase of ``ConversionModel``.
@@ -10,6 +11,11 @@ struct ContentView: View {
     @State private var isChoosingFolder = false
     /// The review of the finished conversion, while its screen is open.
     @State private var review: ReviewModel?
+    /// Suspicious words in the corrected document, counted off the main thread;
+    /// `nil` until counted.
+    @State private var counted: ConversionSummary?
+    /// One detector for the summary and the review, so their counts agree.
+    private let detector = SuspiciousWordDetector(spellChecker: SystemSpellChecker())
 
     var body: some View {
         Group {
@@ -28,10 +34,18 @@ struct ContentView: View {
                     // the corrections applied.
                     let corrected = model.project?.conversion ?? conversion
                     ResultScreen(
-                        model: model, summary: ConversionSummary(corrected), chooseFolder: chooseFolder
+                        model: model, summary: ConversionSummary(corrected), counted: counted,
+                        chooseFolder: chooseFolder
                     ) {
-                        review = model.project.map { ReviewModel(project: $0) }
-                            ?? ReviewModel(conversion: conversion)
+                        review = model.project.map { ReviewModel(project: $0, detector: detector) }
+                            ?? ReviewModel(conversion: conversion, detector: detector)
+                    }
+                    .task(id: model.project?.corrections.corrections.count) {
+                        counted = nil
+                        let detector = detector
+                        counted = await Task.detached {
+                            ConversionSummary(corrected, detector: detector)
+                        }.value
                     }
                 }
             case let .failed(failure):
@@ -225,6 +239,8 @@ private struct PagePreview: View {
 private struct ResultScreen: View {
     var model: ConversionModel
     var summary: ConversionSummary
+    /// The summary with suspicious and misspelled words counted; `nil` until counted.
+    var counted: ConversionSummary?
     var chooseFolder: () -> Void
     var review: () -> Void
 
@@ -240,10 +256,19 @@ private struct ResultScreen: View {
                     Text(summary.hasCover ? "Yes" : "No")
                 }
             }
-            if summary.unlinkedReferences > 0 || summary.unlinkedNotes > 0 {
+            if summary.unlinkedReferences > 0 || summary.unlinkedNotes > 0 || (counted?.suspiciousWords ?? 0) > 0 {
                 Section("Needs attention") {
+                    if let counted, counted.suspiciousWords > 0 {
+                        LabeledContent("Suspicious words", value: counted.suspiciousWords.formatted())
+                    }
                     LabeledContent("References without a note", value: summary.unlinkedReferences.formatted())
                     LabeledContent("Notes without a reference", value: summary.unlinkedNotes.formatted())
+                }
+            }
+            if let counted, counted.misspelledWords > 0 {
+                // Apart from "Needs attention": spelling is noisy and comes second.
+                Section("For a second pass") {
+                    LabeledContent("Words the dictionary does not know", value: counted.misspelledWords.formatted())
                 }
             }
             projectSection

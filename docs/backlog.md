@@ -105,9 +105,9 @@ page in question. Defects 4 and 5 are not changed by it.
 - **Section of manual changes in the review.** An optional section, not always
   visible (shown and hidden on request), listing every change made by hand
   (type changes, edited text, ignored blocks, applied fixes).
-- **Suspicious words on the summary screen.** In "Needs attention" show how
-  many suspicious words remain in the project (the review already shows
-  "Issue N of M").
+- **Save ignored words in the project.** *Ignore This Word* in the review's
+  quick fixes lasts only while the review is open; keep the list in the
+  project bundle (apart from the recognized document, like corrections).
 - **Clickable "Needs attention" items.** A click on an item (suspicious words,
   references without a note, notes without a reference) opens the review at
   the page and block where that problem is.

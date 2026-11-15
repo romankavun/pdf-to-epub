@@ -11,8 +11,8 @@ leaving it out.
 - **Pages**: the arrows in the toolbar, or ⌘[ and ⌘].
 - **Blocks**: every block on the page is outlined on the scan and listed
   as a card, top to bottom: heading, paragraph or illustration (with the
-  cropped picture and its caption). Clicking an outline or a card puts that
-  block in focus on both sides.
+  cropped picture and its caption). Clicking an outline or anywhere on a
+  card, text included, puts that block in focus on both sides.
 - **Blocks across pages**: a paragraph that runs onto the next page is
   shown on both pages. Each page outlines its own part; the card carries the
   whole text and says that it continues on the next page or from the
@@ -33,17 +33,57 @@ leaving it out.
 
 Linked note references appear as the note's label, raised and coloured.
 
+## Quick fixes
+
+A flagged word is a link: clicking it opens a small list of suggestions, and
+choosing one replaces the word as an ordinary text correction (undoable; if
+the same word stands elsewhere, replacing it everywhere is offered). *Edit
+Text…* in the list opens the whole block for editing, and *Ignore This Word*
+stops flagging that word (in any case) everywhere in the document. Ignored words
+are kept only while the review is open; they are not saved in the project.
+
+- For a mixed-script word the suggestion swaps look-alike letters for the
+  word's own alphabet ("Журавeль" with a Latin "o" becomes "Журавель"); for a
+  digit it offers the letter it resembles ("сл0во" becomes "слово"). These
+  need no dictionary.
+- For a misspelling the suggestions come from the system spell checker.
+- Misspelled words are clickable only while *Spelling* is on.
+
+A click anywhere on a block's card selects it. Text can be selected with the
+mouse once the block is selected; a hovered card is lightly highlighted.
+
 ## What counts as suspicious
 
 `SuspiciousWordDetector` (`TextReview` module) flags a word by two rules
-that need no dictionary:
+that need no dictionary and a third that uses the system spell checker:
 
 | Rule | Example | Typical cause |
 |---|---|---|
 | Latin and Cyrillic letters in one word | "Журавeль" with a Latin "o" | a look-alike letter from the wrong alphabet |
 | A digit with letters on both sides | "сл0во" | a letter read as a digit |
 
+| Not in the dictionary | "докмент", "wrod" | a letter lost or misread, with only plausible letters |
+
 Digits at the edge of a word ("2nd", "3D", "1990-х") are left alone.
+
+The first two rules point to an OCR misreading and have priority: they are
+the **suspicious words**. The spelling rule is kept apart, because it is far
+noisier (names, dialect, archaic words):
+
+- Suspicious words are highlighted in orange, outlined, counted in the
+  toolbar and visited by *Next Issue*; the summary lists them under *Needs
+  attention*.
+- Misspelled words are off by default. The *Spelling* toggle in the toolbar
+  marks them with a blue dotted underline and enables their own counter and
+  *Next / Previous Misspelling* (⌥⌘G, ⇧⌥⌘G). They never change the issue
+  count or the issue navigation. The summary shows their number in a
+  separate *For a second pass* section.
+
+The spelling rule picks the language per word by its script (Cyrillic is
+checked as Ukrainian, Latin as English), so Ukrainian text with English
+fragments works. It skips words of one or two letters, all-capital words,
+and a capitalized word that does not begin a sentence (taken for a name).
+See ADR 0007.
 
 ## How it is built
 
@@ -66,8 +106,9 @@ that state.
 - A block on two pages shows its whole text on both cards: where the page
   break falls inside the text is not recorded. A suspicious word in the
   second part is reached through the block's stop on its first page.
-- No spelling check yet: a misread word made of plausible letters is not
-  flagged. `NSSpellChecker` is planned as a further rule.
+- The spelling rule trusts the system dictionaries: dialect, archaic or
+  invented words are flagged and a misread name is not. *Ignore This Word*
+  helps with the noise but is not saved in the project. The rule is off for a language with no installed dictionary.
 - False positives are expected for formulas and codes ("H2O").
 - The review itself is rebuilt each time it is opened; the corrections are
   kept in the [project](projects.md).

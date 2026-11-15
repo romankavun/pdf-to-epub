@@ -21,9 +21,7 @@
         }
       }
     },
-    "%@ similar blocks look like this one. Make them paragraphs too?" : {
-
-    },
+    "%@ similar blocks look like this one. Make them paragraphs too?" : {},
     "%lld" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -668,9 +666,7 @@
         }
       }
     },
-    "Page %@" : {
-
-    },
+    "Page %@" : {},
     "Page %@ of %@" : {
       "localizations" : {
         "en" : {
@@ -937,9 +933,17 @@
         }
       }
     },
-    "Suspicious words: %@" : {
-
+    "Suspicious words" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Підозрілі слова"
+          }
+        }
+      }
     },
+    "Suspicious words: %@" : {},
     "Suspicious words: %lld" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1088,6 +1092,116 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Так"
+          }
+        }
+      }
+    },
+    "Spelling" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Орфографія"
+          }
+        }
+      }
+    },
+    "Mark words the dictionary does not know. Noisy: names and rare words are marked too." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Позначати слова, яких немає у словнику. Багато шуму: імена й рідкісні слова теж позначаються."
+          }
+        }
+      }
+    },
+    "Misspelling %lld of %lld" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Помилка правопису %lld з %lld"
+          }
+        }
+      }
+    },
+    "Misspelled words: %lld" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Слів з помилками правопису: %lld"
+          }
+        }
+      }
+    },
+    "Previous Misspelling" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Попередня помилка правопису"
+          }
+        }
+      }
+    },
+    "Next Misspelling" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Наступна помилка правопису"
+          }
+        }
+      }
+    },
+    "For a second pass" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для другого проходу"
+          }
+        }
+      }
+    },
+    "Words the dictionary does not know" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Слова, яких немає у словнику"
+          }
+        }
+      }
+    },
+    "No suggestions" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Немає варіантів"
+          }
+        }
+      }
+    },
+    "Edit Text…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редагувати текст…"
+          }
+        }
+      }
+    },
+    "Ignore This Word" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ігнорувати це слово"
           }
         }
       }

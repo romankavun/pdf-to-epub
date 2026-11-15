@@ -71,8 +71,10 @@ public extension ReviewModel {
         /// The area the block covers on this page, normalized, origin at the
         /// top-left corner.
         public var box: CGRect
-        /// The number of flagged words in ``runs``.
+        /// The number of OCR-suspect words in ``runs``.
         public var issueCount: Int
+        /// The number of words in ``runs`` that the dictionary does not know.
+        public var misspellingCount = 0
         /// Whether the block starts on an earlier page.
         public var continuesFromPreviousPage = false
         /// Whether the block runs on to a later page.
