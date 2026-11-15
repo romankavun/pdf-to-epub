@@ -55,8 +55,8 @@ struct NoteLinker {
                 }
             }
             switch draft {
-            case let .heading(pieces):
-                blocks.append(.heading(level: 1, content: inlines(pieces, links: links)))
+            case let .heading(level, pieces):
+                blocks.append(.heading(level: level, content: inlines(pieces, links: links)))
             case let .paragraph(pieces):
                 blocks.append(.paragraph(inlines(pieces, links: links)))
             case let .figure(imageID, caption):
@@ -165,7 +165,7 @@ struct NoteLinker {
     /// note are not: notes do not refer to notes.
     private func references(in draft: DraftBlock) -> [Int] {
         let pieces: [Piece] = switch draft {
-        case let .heading(pieces), let .paragraph(pieces), let .figure(_, pieces): pieces
+        case let .heading(_, pieces), let .paragraph(pieces), let .figure(_, pieces): pieces
         case .note: []
         }
         return pieces.compactMap { piece in

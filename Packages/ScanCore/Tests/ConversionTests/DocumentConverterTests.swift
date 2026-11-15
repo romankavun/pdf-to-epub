@@ -1,6 +1,7 @@
 import Conversion
 import DocumentModel
 import Foundation
+import LayoutAnalysis
 import OCR
 import Testing
 
@@ -28,6 +29,17 @@ private struct FakeLocator: NoteMarkerLocator {
 
     func markers(inImageAt url: URL) throws -> [CGRect] {
         markers[url.lastPathComponent] ?? []
+    }
+}
+
+/// Returns canned ink densities keyed by file name, by line text.
+private struct FakeInk: LineInkMeasurer {
+    var heavy: [String: Set<String>] = [:]
+
+    func ink(inImageAt url: URL, lines: [TextLine]) throws -> [LineInk] {
+        lines.map { line in
+            LineInk(box: line.box, density: heavy[url.lastPathComponent]?.contains(line.text) == true ? 0.4 : 0.2)
+        }
     }
 }
 
@@ -86,7 +98,7 @@ struct DocumentConverterTests {
         let document = try await DocumentConverter(
             engine: engine,
             pictureExtractor: FakeExtractor(),
-            markerLocator: FakeLocator()
+            markerLocator: FakeLocator(), inkMeasurer: FakeInk()
         ).convert(
             pageURLs: urls,
             metadata: metadata
@@ -100,10 +112,28 @@ struct DocumentConverterTests {
         ])
     }
 
+    @Test("a bold line at body size, set apart, becomes a heading using the measured ink")
+    func boldHeading() async throws {
+        let lines = body(["one a", "one b", "one c"]) + [
+            TextLine(text: "Sub Part", box: CGRect(x: 0.05, y: 0.3, width: 0.2, height: 0.017)),
+        ] + body(["two a", "two b"], top: 0.38)
+        let engine = FakeEngine(pages: ["1.png": RecognizedPage(lines: lines)])
+        let url = URL(fileURLWithPath: "/pages/1.png")
+        let measured = FakeInk(heavy: ["1.png": ["Sub Part"]])
+        let document = try await DocumentConverter(
+            engine: engine, pictureExtractor: FakeExtractor(), markerLocator: FakeLocator(), inkMeasurer: measured
+        ).convert(pageURLs: [url], metadata: metadata)
+        #expect(document.blocks.contains(.heading(level: 1, content: ["Sub Part"])))
+        let plain = try await DocumentConverter(
+            engine: engine, pictureExtractor: FakeExtractor(), markerLocator: FakeLocator(), inkMeasurer: FakeInk()
+        ).convert(pageURLs: [url], metadata: metadata)
+        #expect(!plain.blocks.contains(.heading(level: 1, content: ["Sub Part"])))
+    }
+
     @Test("keeps the page files and the page each block came from, for review")
     func sources() async throws {
         let conversion = try await DocumentConverter(
-            engine: engine, pictureExtractor: FakeExtractor(), markerLocator: FakeLocator()
+            engine: engine, pictureExtractor: FakeExtractor(), markerLocator: FakeLocator(), inkMeasurer: FakeInk()
         ).analyze(pageURLs: urls, metadata: metadata)
 
         #expect(conversion.pageURLs == urls)
@@ -116,7 +146,7 @@ struct DocumentConverterTests {
         let document = try await DocumentConverter(
             engine: engine,
             pictureExtractor: FakeExtractor(),
-            markerLocator: FakeLocator()
+            markerLocator: FakeLocator(), inkMeasurer: FakeInk()
         ).convert(
             pageURLs: Array(urls.dropFirst()),
             metadata: metadata
@@ -127,21 +157,31 @@ struct DocumentConverterTests {
     @Test("reports progress once per page, in order")
     func progress() async throws {
         let recorder = ProgressRecorder()
-        _ = try await DocumentConverter(engine: engine, pictureExtractor: FakeExtractor(), markerLocator: FakeLocator())
-            .convert(
-                pageURLs: urls,
-                metadata: metadata
-            ) { done, total in
-                recorder.record(done, total)
-            }
+        _ = try await DocumentConverter(
+            engine: engine,
+            pictureExtractor: FakeExtractor(),
+            markerLocator: FakeLocator(),
+            inkMeasurer: FakeInk()
+        )
+        .convert(
+            pageURLs: urls,
+            metadata: metadata
+        ) { done, total in
+            recorder.record(done, total)
+        }
         #expect(recorder.values == ["1/3", "2/3", "3/3"])
     }
 
     @Test("passes an engine failure through")
     func engineFailure() async {
         await #expect(throws: CocoaError.self) {
-            try await DocumentConverter(engine: engine, pictureExtractor: FakeExtractor(), markerLocator: FakeLocator())
-                .convert(pageURLs: [URL(fileURLWithPath: "/pages/missing.png")], metadata: metadata)
+            try await DocumentConverter(
+                engine: engine,
+                pictureExtractor: FakeExtractor(),
+                markerLocator: FakeLocator(),
+                inkMeasurer: FakeInk()
+            )
+            .convert(pageURLs: [URL(fileURLWithPath: "/pages/missing.png")], metadata: metadata)
         }
     }
 
@@ -155,8 +195,13 @@ struct DocumentConverterTests {
                 ExtractedPicture(box: CGRect(x: 0.05, y: 0.35, width: 0.5, height: 0.2), pngData: Data([2])),
             ],
         ])
-        let document = try await DocumentConverter(engine: engine, pictureExtractor: extractor, markerLocator: FakeLocator())
-            .convert(pageURLs: urls, metadata: metadata)
+        let document = try await DocumentConverter(
+            engine: engine,
+            pictureExtractor: extractor,
+            markerLocator: FakeLocator(),
+            inkMeasurer: FakeInk()
+        )
+        .convert(pageURLs: urls, metadata: metadata)
 
         #expect(document.images == [
             ImageResource(id: "figure-001", filename: "figure-001.png", mediaType: "image/png", data: Data([1])),
@@ -177,8 +222,13 @@ struct DocumentConverterTests {
             "1.png": [ExtractedPicture(box: CGRect(x: 0.2, y: 0.1, width: 0.6, height: 0.8), pngData: Data([9]))],
             "2.png": [ExtractedPicture(box: CGRect(x: 0.05, y: 0.4, width: 0.5, height: 0.3), pngData: Data([1]))],
         ])
-        let document = try await DocumentConverter(engine: engine, pictureExtractor: extractor, markerLocator: FakeLocator())
-            .convert(pageURLs: urls, metadata: metadata)
+        let document = try await DocumentConverter(
+            engine: engine,
+            pictureExtractor: extractor,
+            markerLocator: FakeLocator(),
+            inkMeasurer: FakeInk()
+        )
+        .convert(pageURLs: urls, metadata: metadata)
 
         #expect(document.coverImageID == "cover")
         #expect(document.images.map(\.filename) == ["cover.png", "figure-001.png"])
@@ -191,8 +241,13 @@ struct DocumentConverterTests {
         let extractor = FakeExtractor(pictures: [
             "1.png": [ExtractedPicture(box: CGRect(x: 0.3, y: 0.5, width: 0.4, height: 0.3), pngData: Data([9]))],
         ])
-        let document = try await DocumentConverter(engine: engine, pictureExtractor: extractor, markerLocator: FakeLocator())
-            .convert(pageURLs: urls, metadata: metadata)
+        let document = try await DocumentConverter(
+            engine: engine,
+            pictureExtractor: extractor,
+            markerLocator: FakeLocator(),
+            inkMeasurer: FakeInk()
+        )
+        .convert(pageURLs: urls, metadata: metadata)
 
         #expect(document.coverImageID == nil)
         #expect(document.images.map(\.id) == ["figure-001"])
@@ -207,8 +262,13 @@ struct DocumentConverterTests {
             }
         }
         await #expect(throws: PictureExtractionError.self) {
-            try await DocumentConverter(engine: engine, pictureExtractor: Failing(), markerLocator: FakeLocator())
-                .convert(pageURLs: urls, metadata: metadata)
+            try await DocumentConverter(
+                engine: engine,
+                pictureExtractor: Failing(),
+                markerLocator: FakeLocator(),
+                inkMeasurer: FakeInk()
+            )
+            .convert(pageURLs: urls, metadata: metadata)
         }
     }
 
@@ -226,7 +286,7 @@ struct DocumentConverterTests {
         let locator = FakeLocator(markers: ["2.png": [reference], "4.png": [label]])
 
         let conversion = try await DocumentConverter(
-            engine: engine, pictureExtractor: FakeExtractor(), markerLocator: locator
+            engine: engine, pictureExtractor: FakeExtractor(), markerLocator: locator, inkMeasurer: FakeInk()
         ).analyze(pageURLs: urls + [URL(fileURLWithPath: "/pages/4.png")], metadata: metadata)
 
         #expect(engine.erased.values == [[], [reference], [], [label]])
@@ -245,7 +305,7 @@ struct DocumentConverterTests {
         engine.labels = ["2.png": ["7"]]
         let locator = FakeLocator(markers: ["2.png": [CGRect(x: 0.985, y: 0.2, width: 0.01, height: 0.012)]])
         let conversion = try await DocumentConverter(
-            engine: engine, pictureExtractor: FakeExtractor(), markerLocator: locator
+            engine: engine, pictureExtractor: FakeExtractor(), markerLocator: locator, inkMeasurer: FakeInk()
         ).analyze(pageURLs: urls, metadata: metadata)
         #expect(conversion.unlinkedReferences == 1)
         #expect(conversion.document.notes.isEmpty)
@@ -260,19 +320,29 @@ struct DocumentConverterTests {
             }
         }
         await #expect(throws: PictureExtractionError.self) {
-            try await DocumentConverter(engine: engine, pictureExtractor: FakeExtractor(), markerLocator: Failing())
-                .convert(pageURLs: urls, metadata: metadata)
+            try await DocumentConverter(
+                engine: engine,
+                pictureExtractor: FakeExtractor(),
+                markerLocator: Failing(),
+                inkMeasurer: FakeInk()
+            )
+            .convert(pageURLs: urls, metadata: metadata)
         }
     }
 
     @Test("stops when the task is cancelled")
     func cancellation() async {
         let task = Task {
-            try await DocumentConverter(engine: engine, pictureExtractor: FakeExtractor(), markerLocator: FakeLocator())
-                .convert(
-                    pageURLs: urls,
-                    metadata: metadata
-                )
+            try await DocumentConverter(
+                engine: engine,
+                pictureExtractor: FakeExtractor(),
+                markerLocator: FakeLocator(),
+                inkMeasurer: FakeInk()
+            )
+            .convert(
+                pageURLs: urls,
+                metadata: metadata
+            )
         }
         task.cancel()
         await #expect(throws: CancellationError.self) { try await task.value }

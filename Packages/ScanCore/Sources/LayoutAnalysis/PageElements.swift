@@ -30,6 +30,8 @@ struct Row {
     /// Markers on the line from left to right, with their index among all
     /// markers of the document.
     var markers: [(index: Int, box: CGRect)] = []
+    /// Ink density of the line, when the page image was measured.
+    var ink: Double?
 
     /// The marker standing before the first word, if any. A list number
     /// before it ("12. ") does not count as a word: endnotes are often set
@@ -141,7 +143,10 @@ extension LayoutAnalyzer {
             page.pictures.contains { $0.box.contains(CGPoint(x: box.midX, y: box.midY)) }
         }
         let lines = joiningPieces(page.lines.filter { !isInPicture($0.box) }).sorted { $0.box.minY < $1.box.minY }
-        var rows = lines.map { Row(line: $0) }
+        var rows = lines.map { line in
+            let center = CGPoint(x: line.box.midX, y: line.box.midY)
+            return Row(line: line, ink: page.lineInk.first { $0.box.contains(center) }?.density)
+        }
         for (offset, marker) in page.markers.enumerated() where !isInPicture(marker.box) {
             // The line the marker stands on: the one whose height contains
             // the marker's centre, closest in height if several do.
