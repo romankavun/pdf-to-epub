@@ -187,10 +187,11 @@ be imported, and a tiny CoreText renderer is simpler than a build script.
 
 ### One-time macOS setup
 
-- **Developer mode** must be on, or the runner fails with "Timed out while
-  enabling automation mode": `sudo DevToolsSecurity -enable`
-  (`DevToolsSecurity -status` shows the state), and your user must be in the
-  `_developer` group.
+- **Developer mode** (Privacy & Security > Developer Mode, or
+  `sudo DevToolsSecurity -enable`) must be on, or the runner fails with "Timed
+  out while enabling automation mode". Your user must be in the `_developer`
+  group. `DevToolsSecurity -status` can still print "disabled" on a machine
+  where the test passes, so trust the test run, not that command.
 - The first run asks to allow **PDFToEPUBUITests-Runner** to control the
   computer (System Settings > Privacy & Security > Accessibility). Allow it
   and run again. Do not touch the mouse or keyboard while the test runs.
