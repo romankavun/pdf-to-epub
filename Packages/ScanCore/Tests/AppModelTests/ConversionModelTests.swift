@@ -61,6 +61,13 @@ final class Recorder<Value: Sendable>: @unchecked Sendable {
 
 struct FakePipeline: ConversionPipeline {
     var pages: Result<[URL], ImportError> = .success(threePages)
+    var pdfPages: Result<Int, PDFImportError> = .success(3)
+    var renderFailure: PDFImportError?
+    /// Whether the conversion records the pages it was given, as the real one does.
+    var echoPages = false
+    /// When set, rendering reports page 1 and then waits.
+    var renderGate: Gate?
+    let renderedInto = Recorder<URL>()
     var failure: FakeFailure?
     var exportFailure: EPUBExportError?
     /// When set, the conversion reports page `pauseAfter` and then waits.
@@ -72,6 +79,31 @@ struct FakePipeline: ConversionPipeline {
 
     func pageURLs(in _: URL) throws -> [URL] {
         try pages.get()
+    }
+
+    func pdfPageCount(of _: URL) throws -> Int {
+        try pdfPages.get()
+    }
+
+    func renderPages(
+        of _: URL,
+        into folder: URL,
+        progress: @escaping @Sendable (Int, Int) -> Void
+    ) async throws -> [URL] {
+        renderedInto.record(folder)
+        if let renderFailure {
+            throw renderFailure
+        }
+        let count = try pdfPages.get()
+        let urls = (1 ... count).map { folder.appendingPathComponent("page-000\($0).png") }
+        for done in 1 ... count {
+            progress(done, count)
+            if done == 1, let renderGate {
+                await renderGate.wait()
+                try Task.checkCancellation()
+            }
+        }
+        return urls
     }
 
     func convert(
@@ -90,7 +122,11 @@ struct FakePipeline: ConversionPipeline {
                 try Task.checkCancellation()
             }
         }
-        return fakeConversion(title: metadata.title)
+        var conversion = fakeConversion(title: metadata.title)
+        if echoPages {
+            conversion.pageURLs = pageURLs
+        }
+        return conversion
     }
 
     func export(_ document: Document, to url: URL) async throws {
@@ -132,7 +168,7 @@ struct ConversionModelTests {
         model.open(folder: folder)
 
         #expect(model.phase == .ready)
-        #expect(model.folder?.path == folder.path)
+        #expect(model.input?.path == folder.path)
         #expect(model.pageCount == 3)
         #expect(model.title == "Sample")
         #expect(model.canStart)
@@ -145,7 +181,7 @@ struct ConversionModelTests {
         model.open(folder: folder)
 
         #expect(model.phase == .failed(.noImages))
-        #expect(model.folder == nil)
+        #expect(model.input == nil)
         #expect(!model.canStart)
     }
 

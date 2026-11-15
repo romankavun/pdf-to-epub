@@ -55,6 +55,7 @@ final class FakeStorage: ProjectPersisting, @unchecked Sendable {
     private var replacedStorage: [Conversion] = []
     private var ignoredStorage: [Set<String>] = []
     private var createdStorage: [Conversion] = []
+    private var createdDetails: [(name: String, parent: URL, movingPages: Bool)] = []
     var saveFailure: (any Error)?
     var replaceFailure: (any Error)?
     var createFailure: (any Error)?
@@ -77,16 +78,32 @@ final class FakeStorage: ProjectPersisting, @unchecked Sendable {
         lock.withLock { createdStorage }
     }
 
+    var createdDetail: [(name: String, parent: URL, movingPages: Bool)] {
+        lock.withLock { createdDetails }
+    }
+
     func isProject(at url: URL) -> Bool {
         projects[url] != nil
     }
 
-    func createProject(for conversion: Conversion, nextTo folder: URL) throws -> URL {
+    func createProject(
+        for conversion: Conversion, named name: String, in parent: URL, movingPages: Bool
+    ) throws -> (location: URL, conversion: Conversion) {
         if let createFailure {
             throw createFailure
         }
-        lock.withLock { createdStorage.append(conversion) }
-        return folder.deletingLastPathComponent().appendingPathComponent(folder.lastPathComponent + ".scanproject")
+        lock.withLock {
+            createdStorage.append(conversion)
+            createdDetails.append((name, parent, movingPages))
+        }
+        let location = parent.appendingPathComponent(name + ".scanproject")
+        var stored = conversion
+        if movingPages {
+            stored.pageURLs = conversion.pageURLs.map {
+                location.appendingPathComponent("pages").appendingPathComponent($0.lastPathComponent)
+            }
+        }
+        return (location, stored)
     }
 
     func load(from url: URL) throws -> Project {

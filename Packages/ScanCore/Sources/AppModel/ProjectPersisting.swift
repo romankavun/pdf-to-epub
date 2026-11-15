@@ -9,9 +9,16 @@ public protocol ProjectPersisting: Sendable {
     /// Whether `url` is a project folder rather than a folder of scans.
     func isProject(at url: URL) -> Bool
 
-    /// Writes a new project for `conversion` next to `folder`, under a name
-    /// that is not taken yet, and returns where it is.
-    func createProject(for conversion: Conversion, nextTo folder: URL) throws -> URL
+    /// Writes a new project for `conversion` in `parent`, as `name` followed
+    /// by `.scanproject` or, when that is taken, by a number, and returns
+    /// where it is with the conversion as stored.
+    ///
+    /// - Parameter movingPages: Whether the page images of `conversion` were
+    ///   rendered for this project and are to be moved into it; the returned
+    ///   conversion then points at the moved files.
+    func createProject(
+        for conversion: Conversion, named name: String, in parent: URL, movingPages: Bool
+    ) throws -> (location: URL, conversion: Conversion)
 
     func load(from url: URL) throws -> Project
 
@@ -26,7 +33,7 @@ public protocol ProjectPersisting: Sendable {
 }
 
 /// The project on the real disk, in a `.scanproject` folder beside the folder
-/// of scans.
+/// of scans or the PDF.
 public struct LiveProjectStorage: ProjectPersisting {
     private let store = ProjectStore()
 
@@ -36,16 +43,15 @@ public struct LiveProjectStorage: ProjectPersisting {
         store.isProject(at: url)
     }
 
-    public func createProject(for conversion: Conversion, nextTo folder: URL) throws -> URL {
-        let parent = folder.deletingLastPathComponent()
-        let name = folder.lastPathComponent
+    public func createProject(
+        for conversion: Conversion, named name: String, in parent: URL, movingPages: Bool
+    ) throws -> (location: URL, conversion: Conversion) {
         var attempt = 1
         while true {
             let suffix = attempt == 1 ? "" : " \(attempt)"
             let url = parent.appendingPathComponent("\(name)\(suffix).scanproject")
             do {
-                try store.create(conversion, at: url)
-                return url
+                return try (url, store.create(conversion, at: url, movingPages: movingPages))
             } catch ProjectStoreError.alreadyExists {
                 attempt += 1
             }

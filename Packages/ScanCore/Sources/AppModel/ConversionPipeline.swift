@@ -11,6 +11,17 @@ public protocol ConversionPipeline: Sendable {
     /// The page images in `folder`, in reading order.
     func pageURLs(in folder: URL) throws -> [URL]
 
+    /// The number of pages of the PDF at `pdf`; fails when it cannot be read.
+    func pdfPageCount(of pdf: URL) throws -> Int
+
+    /// Draws the pages of `pdf` into `folder`, which must exist, and returns
+    /// the image files in page order. Honours task cancellation.
+    func renderPages(
+        of pdf: URL,
+        into folder: URL,
+        progress: @escaping @Sendable (_ done: Int, _ total: Int) -> Void
+    ) async throws -> [URL]
+
     /// Converts the pages into a document. Honours task cancellation.
     ///
     /// - Parameter progress: Called from any thread after each page with the
@@ -25,7 +36,7 @@ public protocol ConversionPipeline: Sendable {
     func export(_ document: Document, to url: URL) async throws
 }
 
-/// The real pipeline: image folder, Vision OCR, layout analysis, EPUB.
+/// The real pipeline: image folder or PDF, Vision OCR, layout analysis, EPUB.
 public struct LivePipeline: ConversionPipeline {
     public init() {}
 
@@ -39,6 +50,18 @@ public struct LivePipeline: ConversionPipeline {
 
     public func pageURLs(in folder: URL) throws -> [URL] {
         try ImageFolderImporter().pageURLs(in: folder)
+    }
+
+    public func pdfPageCount(of pdf: URL) throws -> Int {
+        try PDFImporter().pageCount(of: pdf)
+    }
+
+    public func renderPages(
+        of pdf: URL,
+        into folder: URL,
+        progress: @escaping @Sendable (Int, Int) -> Void
+    ) async throws -> [URL] {
+        try await PDFImporter().renderPages(of: pdf, into: folder, progress: progress)
     }
 
     public func convert(
