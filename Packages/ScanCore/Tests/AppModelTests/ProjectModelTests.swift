@@ -176,6 +176,40 @@ struct ProjectModelTests {
         #expect(model.corrections.isEmpty)
     }
 
+    @Test("redo brings back an undone change, saves, and a new change drops what could be redone")
+    func redo() {
+        let model = model()
+        #expect(!model.canRedo)
+        let first = BlockAnchor(projectConversion().blockSources[0])
+        let second = BlockAnchor(projectConversion().blockSources[3])
+        model.setType(.heading(level: 1), for: first)
+        model.setType(.heading(level: 1), for: second)
+        model.undo()
+        model.undo()
+        #expect(model.canRedo)
+        model.redo()
+        #expect(model.corrections.type(for: first) == .heading(level: 1))
+        #expect(model.corrections.type(for: second) == nil)
+        #expect(storage.saved.last == model.corrections)
+        model.redo()
+        #expect(model.corrections.type(for: second) == .heading(level: 1))
+        #expect(!model.canRedo)
+        model.redo()
+        #expect(model.corrections.type(for: second) == .heading(level: 1))
+        model.undo()
+        model.setType(.heading(level: 2), for: first)
+        #expect(!model.canRedo)
+    }
+
+    @Test("converting again clears what could be redone")
+    func redoClearedByNewBase() {
+        let model = model()
+        model.setType(.heading(level: 1), for: BlockAnchor(projectConversion().blockSources[0]))
+        model.undo()
+        model.replaceBase(projectConversion())
+        #expect(!model.canRedo)
+    }
+
     @Test("a group of types is one step to undo")
     func groupedTypes() {
         let model = model()

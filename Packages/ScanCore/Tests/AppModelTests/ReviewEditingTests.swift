@@ -218,6 +218,21 @@ struct ReviewEditingTests {
         #expect(model.selectedItemID == .block(0))
         #expect(!model.canUndo)
     }
+
+    @Test("redo brings back the undone change and keeps the selection")
+    func redo() {
+        let model = review()
+        #expect(!model.canRedo)
+        model.select(itemID: .block(0))
+        model.setSelectedType(.heading(level: 2))
+        model.dismissProposal()
+        model.undo()
+        #expect(model.canRedo)
+        model.redo()
+        #expect(item(.block(0), in: model)?.kind == .heading(level: 2))
+        #expect(model.selectedItemID == .block(0))
+        #expect(!model.canRedo)
+    }
 }
 
 @MainActor

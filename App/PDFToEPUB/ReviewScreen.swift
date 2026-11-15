@@ -54,6 +54,10 @@ struct ReviewScreen: View {
                 .labelStyle(.iconOnly)
                 .keyboardShortcut("z")
                 .disabled(!model.canUndo || model.isEditing)
+            Button("Redo", systemImage: "arrow.uturn.forward", action: model.redo)
+                .labelStyle(.iconOnly)
+                .keyboardShortcut("z", modifiers: [.command, .shift])
+                .disabled(!model.canRedo || model.isEditing)
             issueNavigation
         }
     }

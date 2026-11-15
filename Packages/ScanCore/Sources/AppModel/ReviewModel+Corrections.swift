@@ -26,6 +26,19 @@ public extension ReviewModel {
         rebuild()
     }
 
+    var canRedo: Bool {
+        project.canRedo
+    }
+
+    /// Brings back the correction taken back last by ``undo()``.
+    func redo() {
+        guard project.canRedo else { return }
+        cancelEditing()
+        proposal = nil
+        project.redo()
+        rebuild()
+    }
+
     /// Gives the selected block a type. A note has none, and a figure can
     /// only be ignored. When a paragraph and a heading are swapped, similar
     /// blocks are offered the same change in ``proposal``.

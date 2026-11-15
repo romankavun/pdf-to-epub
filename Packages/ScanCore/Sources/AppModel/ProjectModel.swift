@@ -35,6 +35,8 @@ public final class ProjectModel {
 
     /// Earlier states of the corrections, newest last.
     private var history: [CorrectionSet] = []
+    /// States taken back by undo, newest last; emptied by any new change.
+    private var undone: [CorrectionSet] = []
     private let storage: any ProjectPersisting
 
     public init(
@@ -53,6 +55,10 @@ public final class ProjectModel {
 
     public var canUndo: Bool {
         !history.isEmpty
+    }
+
+    public var canRedo: Bool {
+        !undone.isEmpty
     }
 
     // MARK: - Changes
@@ -129,7 +135,17 @@ public final class ProjectModel {
     /// Takes back the last change.
     public func undo() {
         guard let previous = history.popLast() else { return }
+        undone.append(corrections)
         corrections = previous
+        recompute()
+        persist()
+    }
+
+    /// Brings back the change taken back last by ``undo()``.
+    public func redo() {
+        guard let next = undone.popLast() else { return }
+        history.append(corrections)
+        corrections = next
         recompute()
         persist()
     }
@@ -141,6 +157,7 @@ public final class ProjectModel {
     public func replaceBase(_ conversion: Conversion) {
         base = conversion
         history = []
+        undone = []
         recompute()
         guard let location else { return }
         do {
@@ -195,6 +212,7 @@ public final class ProjectModel {
     private func commit(_ updated: CorrectionSet) {
         guard updated != corrections else { return }
         history.append(corrections)
+        undone = []
         corrections = updated
         recompute()
         persist()
