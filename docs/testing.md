@@ -158,3 +158,42 @@ adjustments (runner label, Xcode path, Homebrew formulae).
 ## Not yet covered
 
 UI tests are a separate step of the testing plan.
+
+## UI test (XCUITest)
+
+One end-to-end scenario in `App/PDFToEPUBUITests`: open a folder of pages,
+convert, open the review, make the first block a level 3 heading, save the
+EPUB, and check that the file exists and contains `<h3`.
+
+```bash
+xcodebuild -project App/PDFToEPUB.xcodeproj -scheme PDFToEPUB test
+```
+
+It is **not** part of `scripts/check.sh` or CI: it needs a logged-in desktop
+session, drives the real window and waits for the first Vision request (over a
+minute). Run it by hand before a release or after changing the review or save
+flow.
+
+How it avoids the system file panels: in Debug builds the app reads two launch
+arguments (`UITestHooks.swift`): `-UITestFolder <path>` opens that folder when
+the window appears, `-UITestOutput <path>` makes "Save EPUB…" write there
+without asking. Release builds ignore them. The views the test drives carry
+accessibility identifiers (`convertButton`, `reviewButton`, `blockCard`,
+`typeMenu`, `typeHeading3`, `saveButton`, `exportSaved`).
+
+The pages are drawn by the test itself (`PageFolder.swift`, invented text):
+the package's `TestSupport` belongs to another package's test target and cannot
+be imported, and a tiny CoreText renderer is simpler than a build script.
+
+### One-time macOS setup
+
+- **Developer mode** must be on, or the runner fails with "Timed out while
+  enabling automation mode": `sudo DevToolsSecurity -enable`
+  (`DevToolsSecurity -status` shows the state), and your user must be in the
+  `_developer` group.
+- The first run asks to allow **PDFToEPUBUITests-Runner** to control the
+  computer (System Settings > Privacy & Security > Accessibility). Allow it
+  and run again. Do not touch the mouse or keyboard while the test runs.
+
+The test does not assert on the position of the quick-fix popover (a known
+defect, `docs/backlog.md`).
