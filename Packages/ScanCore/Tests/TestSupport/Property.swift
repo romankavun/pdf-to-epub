@@ -96,6 +96,39 @@ public enum Property {
     }
 }
 
+public extension Property {
+    /// Like ``check(_:cases:sourceLocation:body:)`` for a body that awaits, for
+    /// properties that run the real OCR pipeline. Same seeds, same
+    /// `PROPERTY_SEED` and `PROPERTY_CASES` handling.
+    static func checkAsync(
+        _ name: String,
+        cases: Int,
+        sourceLocation: SourceLocation = #_sourceLocation,
+        body: (inout SeededGenerator) async throws -> Void
+    ) async {
+        let environment = ProcessInfo.processInfo.environment
+        let seeds: [UInt64]
+        if let single = environment["PROPERTY_SEED"].flatMap({ UInt64($0) }) {
+            seeds = [single]
+        } else {
+            let count = environment["PROPERTY_CASES"].flatMap { Int($0) } ?? cases
+            seeds = (0 ..< count).map(seed(ofCase:))
+        }
+        for seed in seeds {
+            var generator = SeededGenerator(seed: seed)
+            do {
+                try await body(&generator)
+            } catch {
+                Issue.record(
+                    "Property '\(name)' failed: \(error). Reproduce with PROPERTY_SEED=\(seed)",
+                    sourceLocation: sourceLocation
+                )
+                return
+            }
+        }
+    }
+}
+
 public extension RandomNumberGenerator {
     mutating func int(_ range: ClosedRange<Int>) -> Int {
         Int.random(in: range, using: &self)
