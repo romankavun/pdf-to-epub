@@ -14,10 +14,10 @@ extension Tag {
 /// A synthetic document and the name of its expectation file.
 struct GoldenCase: Sendable {
     var name: String
-    var pages: [SyntheticPage]
     /// Backlog item that makes this case fail today; the comparison is then
     /// wrapped in `withKnownIssue` so the suite stays green until it is fixed.
     var knownIssue: String?
+    var pages: [SyntheticPage]
 }
 
 /// Renders the pages, converts them with the real pipeline and compares the
@@ -32,10 +32,16 @@ func runGolden(_ golden: GoldenCase) async throws {
         try page.writePNG(to: url)
         return url
     }
-    let metadata = DocumentMetadata(identifier: "urn:uuid:\(UUID().uuidString)", title: golden.name, author: nil, language: "en")
+    let metadata = DocumentMetadata(
+        identifier: "urn:uuid:\(UUID().uuidString)",
+        title: golden.name,
+        author: nil,
+        language: "en"
+    )
     let conversion = try await DocumentConverter(engine: VisionOCREngine()).analyze(pageURLs: urls, metadata: metadata)
     let actual = DocumentSnapshot(
-        document: conversion.document, unlinkedReferences: conversion.unlinkedReferences, unlinkedNotes: conversion.unlinkedNotes
+        document: conversion.document, unlinkedReferences: conversion.unlinkedReferences,
+        unlinkedNotes: conversion.unlinkedNotes
     )
 
     if GoldenStore.isRecording {

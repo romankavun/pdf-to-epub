@@ -46,7 +46,8 @@ page in question. Defects 4 and 5 are not changed by it.
    as a heading and the note is too long. Cause not investigated: probably
    the continuation of a note runs on into the next page's first block
    across an almost empty page. Expected: a note ends where its sentence
-   ends; a heading never continues a note. Reproduce with synthetic pages:
+   ends; a heading never continues a note. Golden cases `note-before-heading*`
+   ([testing](testing.md)) do *not* reproduce it. Reproduce with synthetic pages:
    a note at the bottom of page 1, a page with one short line, then a page
    starting with a larger heading.
 
@@ -63,7 +64,8 @@ page in question. Defects 4 and 5 are not changed by it.
    note). Not investigated; the same problem as defect 4 may be involved in
    the glued heading. Expected: every block under the rule that opens with a
    marker is a note, continued across the page break as one note.
-   Reproduce with synthetic pages: four notes under a rule, the last one
+   Golden case `bottom-notes-roman` reproduces it (known issue; long roman
+   labels are not all found as markers). Reproduce with synthetic pages: four notes under a rule, the last one
    continuing on the next page, followed by a note and a heading.
 
 7. **One paragraph comes out as three when the engine splits its first two

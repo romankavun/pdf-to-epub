@@ -54,7 +54,18 @@ public struct SyntheticPage: Sendable {
     /// margin: layout analysis measures it from the most common left edge,
     /// so a short page alone would have none. The first line is indented.
     public static func prose(lines count: Int = 16, seed: Int = 0) -> SyntheticPage {
-        let words = ["river", "stone", "lantern", "winter", "orchard", "bridge", "morning", "harbour", "meadow", "violin"]
+        let words = [
+            "river",
+            "stone",
+            "lantern",
+            "winter",
+            "orchard",
+            "bridge",
+            "morning",
+            "harbour",
+            "meadow",
+            "violin",
+        ]
         var elements: [Element] = []
         for index in 0 ..< count {
             let text = (0 ..< 9).map { words[(index * 3 + $0 * 7 + seed) % words.count] }.joined(separator: " ")
@@ -86,52 +97,65 @@ public struct SyntheticPage: Sendable {
 
         // `top` is measured from the top edge; Core Graphics counts from the bottom.
         var top = Self.size.height * 0.07
-        let pitch = Self.bodySize * 1.6
         for element in elements {
-            switch element {
-            case let .line(text):
-                drawLine(text, size: Self.bodySize, top: top, in: context)
-                top += pitch
-            case let .gap(lines):
-                top += pitch * lines
-            case let .heading(text, scale):
-                let size = Self.bodySize * scale
-                let line = Self.line(text, size: size, bold: true, italic: false, color: CGColor(gray: 0, alpha: 1))
-                draw(line, centredAtTop: top, size: size, in: context)
-                top += size * 1.9
-            case let .picture(heightFraction, caption):
-                let band = CGRect(
-                    x: Self.size.width * 0.18, y: Self.size.height - top - Self.size.height * heightFraction,
-                    width: Self.size.width * 0.64, height: Self.size.height * heightFraction
-                )
-                context.setFillColor(CGColor(gray: 0.55, alpha: 1))
-                context.fill(band)
-                top += Self.size.height * heightFraction + Self.bodySize * 0.6
-                if let caption {
-                    let size = Self.bodySize * 0.75
-                    let line = Self.line(caption, size: size, bold: false, italic: true, color: CGColor(gray: 0, alpha: 1))
-                    draw(line, centredAtTop: top, size: size, in: context)
-                    // Layout analysis attaches a caption by the wide step
-                    // that follows it (ADR 0002), as sample sets have.
-                    top += pitch * 3.8
-                }
-            case .rule:
-                context.setFillColor(CGColor(gray: 0.3, alpha: 1))
-                context.fill(CGRect(
-                    x: Self.leftMargin, y: Self.size.height - top - 2,
-                    width: Self.size.width - 2 * Self.leftMargin, height: 2
-                ))
-                top += pitch * 0.5
-            case let .pageNumber(text):
-                let size = Self.bodySize * 0.8
-                let line = Self.line(text, size: size, bold: false, italic: false, color: CGColor(gray: 0, alpha: 1))
-                draw(line, centredAtTop: Self.size.height * 0.95, size: size, in: context)
-            case let .moveTo(fraction):
-                top = Self.size.height * fraction
-            }
+            top = draw(element, top: top, in: context)
         }
         guard let image = context.makeImage() else { throw CocoaError(.fileWriteUnknown) }
         return image
+    }
+
+    /// Draws one element at `top` and returns where the next one starts.
+    private func draw(_ element: Element, top start: CGFloat, in context: CGContext) -> CGFloat {
+        var top = start
+        let pitch = Self.bodySize * 1.6
+        switch element {
+        case let .line(text):
+            drawLine(text, size: Self.bodySize, top: top, in: context)
+            top += pitch
+        case let .gap(lines):
+            top += pitch * lines
+        case let .heading(text, scale):
+            let size = Self.bodySize * scale
+            let line = Self.line(text, size: size, bold: true, italic: false, color: CGColor(gray: 0, alpha: 1))
+            draw(line, centredAtTop: top, size: size, in: context)
+            top += size * 1.9
+        case let .picture(heightFraction, caption):
+            let band = CGRect(
+                x: Self.size.width * 0.18, y: Self.size.height - top - Self.size.height * heightFraction,
+                width: Self.size.width * 0.64, height: Self.size.height * heightFraction
+            )
+            context.setFillColor(CGColor(gray: 0.55, alpha: 1))
+            context.fill(band)
+            top += Self.size.height * heightFraction + Self.bodySize * 0.6
+            if let caption {
+                let size = Self.bodySize * 0.75
+                let line = Self.line(
+                    caption,
+                    size: size,
+                    bold: false,
+                    italic: true,
+                    color: CGColor(gray: 0, alpha: 1)
+                )
+                draw(line, centredAtTop: top, size: size, in: context)
+                // Layout analysis attaches a caption by the wide step
+                // that follows it (ADR 0002), as sample sets have.
+                top += pitch * 3.8
+            }
+        case .rule:
+            context.setFillColor(CGColor(gray: 0.3, alpha: 1))
+            context.fill(CGRect(
+                x: Self.leftMargin, y: Self.size.height - top - 2,
+                width: Self.size.width - 2 * Self.leftMargin, height: 2
+            ))
+            top += pitch * 0.5
+        case let .pageNumber(text):
+            let size = Self.bodySize * 0.8
+            let line = Self.line(text, size: size, bold: false, italic: false, color: CGColor(gray: 0, alpha: 1))
+            draw(line, centredAtTop: Self.size.height * 0.95, size: size, in: context)
+        case let .moveTo(fraction):
+            top = Self.size.height * fraction
+        }
+        return top
     }
 
     private func drawLine(_ text: String, size: CGFloat, top: CGFloat, in context: CGContext) {
@@ -148,7 +172,13 @@ public struct SyntheticPage: Sendable {
             // inside a line is smaller and raised.
             let opensLine = isMarker && index == 0
             let runSize = isMarker ? size * (opensLine ? 0.85 : 0.62) : size
-            let line = Self.line(text, size: runSize, bold: false, italic: false, color: isMarker ? Self.linkBlue : black)
+            let line = Self.line(
+                text,
+                size: runSize,
+                bold: false,
+                italic: false,
+                color: isMarker ? Self.linkBlue : black
+            )
             // A marker is raised to the height of the capitals of the line.
             let lift = isMarker && !opensLine ? size * 0.38 : 0
             context.textPosition = CGPoint(x: x, y: Self.size.height - top - size + lift)
@@ -171,7 +201,9 @@ public struct SyntheticPage: Sendable {
         var index = text.startIndex
         while index < text.endIndex {
             if text[index] == "{", let close = text[index...].firstIndex(of: "}") {
-                if !current.isEmpty { runs.append((current, false)) }
+                if !current.isEmpty {
+                    runs.append((current, false))
+                }
                 current = ""
                 runs.append((String(text[text.index(after: index) ..< close]), true))
                 index = text.index(after: close)
@@ -180,7 +212,9 @@ public struct SyntheticPage: Sendable {
                 index = text.index(after: index)
             }
         }
-        if !current.isEmpty { runs.append((current, false)) }
+        if !current.isEmpty {
+            runs.append((current, false))
+        }
         return runs
     }
 

@@ -34,12 +34,17 @@ public struct DocumentSnapshot: Codable, Equatable, Sendable {
             let references = block.referencedNoteIDs.map { labels[$0] ?? "?" }
             let notes = references.isEmpty ? nil : references
             switch block {
-            case let .heading(level, content): return BlockEntry(kind: "heading", level: level, text: content.plainText, notes: notes)
+            case let .heading(level, content): return BlockEntry(
+                    kind: "heading",
+                    level: level,
+                    text: content.plainText,
+                    notes: notes
+                )
             case let .paragraph(content): return BlockEntry(kind: "paragraph", text: content.plainText, notes: notes)
             case let .figure(figure): return BlockEntry(kind: "figure", text: figure.caption.plainText, notes: notes)
             }
         }
-        self.notes = document.notes.map { NoteEntry(label: $0.label, text: $0.content.plainText) }
+        notes = document.notes.map { NoteEntry(label: $0.label, text: $0.content.plainText) }
         self.unlinkedReferences = unlinkedReferences
         self.unlinkedNotes = unlinkedNotes
     }
@@ -53,16 +58,7 @@ public struct DocumentSnapshot: Codable, Equatable, Sendable {
             found.append("block count \(blocks.count), expected \(expected.blocks.count)")
         }
         for (index, pair) in zip(blocks, expected.blocks).enumerated() {
-            let (actual, wanted) = pair
-            if actual.kind != wanted.kind || actual.level != wanted.level {
-                found.append("block \(index): \(actual.kind) \(actual.level ?? 0), expected \(wanted.kind) \(wanted.level ?? 0)")
-            }
-            if (actual.notes ?? []) != (wanted.notes ?? []) {
-                found.append("block \(index): note references \(actual.notes ?? []), expected \(wanted.notes ?? [])")
-            }
-            if !TextSimilarity.matches(actual.text, wanted.text, threshold: textThreshold) {
-                found.append("block \(index): text \"\(actual.text)\", expected \"\(wanted.text)\"")
-            }
+            found += Self.differences(of: pair.0, from: pair.1, index: index, threshold: textThreshold)
         }
         if notes.count != expected.notes.count {
             found.append("note count \(notes.count), expected \(expected.notes.count)")
@@ -81,6 +77,25 @@ public struct DocumentSnapshot: Codable, Equatable, Sendable {
         }
         if unlinkedNotes != expected.unlinkedNotes {
             found.append("unlinked notes \(unlinkedNotes), expected \(expected.unlinkedNotes)")
+        }
+        return found
+    }
+
+    private static func differences(of actual: BlockEntry, from wanted: BlockEntry, index: Int,
+                                    threshold: Double) -> [String]
+    {
+        var found: [String] = []
+        if actual.kind != wanted.kind || actual.level != wanted.level {
+            found
+                .append(
+                    "block \(index): \(actual.kind) \(actual.level ?? 0), expected \(wanted.kind) \(wanted.level ?? 0)"
+                )
+        }
+        if (actual.notes ?? []) != (wanted.notes ?? []) {
+            found.append("block \(index): note references \(actual.notes ?? []), expected \(wanted.notes ?? [])")
+        }
+        if !TextSimilarity.matches(actual.text, wanted.text, threshold: threshold) {
+            found.append("block \(index): text \"\(actual.text)\", expected \"\(wanted.text)\"")
         }
         return found
     }
