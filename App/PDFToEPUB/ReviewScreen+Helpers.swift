@@ -14,14 +14,11 @@ extension ReviewModel.Kind {
 extension ReviewModel.Item {
     /// Flagged blocks stand out; note texts are told apart from the body.
     var outlineColor: Color {
-        if issueCount > 0 {
-            .orange
-        } else if kind.isNote {
-            .teal
-        } else if kind == .ignored {
-            .gray
-        } else {
-            .accentColor
+        switch outline {
+        case .flagged: .orange
+        case .note: .teal
+        case .ignored: .gray
+        case .plain: .accentColor
         }
     }
 }

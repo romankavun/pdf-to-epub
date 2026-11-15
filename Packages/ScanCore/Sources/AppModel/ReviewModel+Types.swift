@@ -55,6 +55,25 @@ public extension ReviewModel {
         case ignored(Int)
     }
 
+    /// A button a selected block shows.
+    enum ItemAction: Sendable, Equatable {
+        case editText
+        case editCaption
+        case bringBack
+        case ignore
+        /// The menu of types.
+        case changeType
+        case mergeWithNext
+    }
+
+    /// The look of a block's frame.
+    enum Outline: Sendable, Equatable {
+        case flagged
+        case note
+        case ignored
+        case plain
+    }
+
     /// The part of a block or a note text that lies on one page.
     ///
     /// A paragraph that runs onto the next page appears on both pages with
@@ -79,6 +98,35 @@ public extension ReviewModel {
         public var continuesFromPreviousPage = false
         /// Whether the block runs on to a later page.
         public var continuesOnNextPage = false
+
+        /// What can be done to this block once it is selected, in the order
+        /// the buttons appear. Kept here so the view only draws it.
+        public var actions: [ItemAction] {
+            switch kind {
+            case .ignored: [.bringBack]
+            case .note: [.editText]
+            case .figure: [.editCaption, .ignore]
+            case .heading, .paragraph: [.editText, .changeType, .mergeWithNext]
+            }
+        }
+
+        /// Whether the editor of this block offers "split at cursor".
+        public var offersSplit: Bool {
+            textType != nil || kind.isNote
+        }
+
+        /// How the block's frame is told apart from others: flagged words win.
+        public var outline: Outline {
+            if issueCount > 0 {
+                .flagged
+            } else if kind.isNote {
+                .note
+            } else if kind == .ignored {
+                .ignored
+            } else {
+                .plain
+            }
+        }
 
         /// The text as the editor shows it: a note reference is its label in
         /// `⟦` `⟧` brackets.
