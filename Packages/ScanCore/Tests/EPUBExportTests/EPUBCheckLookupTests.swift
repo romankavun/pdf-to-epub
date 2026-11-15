@@ -15,7 +15,7 @@ struct EPUBCheckLookupTests {
         #expect(resolve(installed: ["/opt/homebrew/bin/epubcheck"]) == .found("/opt/homebrew/bin/epubcheck"))
     }
 
-    @Test("finds a launcher on PATH, as on a CI runner")
+    @Test("finds a launcher on PATH, as with a Homebrew install")
     func foundOnPath() {
         let environment = ["PATH": "/usr/bin:/somewhere/bin"]
         #expect(resolve(environment: environment, installed: ["/somewhere/bin/epubcheck"])

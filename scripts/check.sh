@@ -1,6 +1,6 @@
 #!/bin/bash
 # Pre-commit check: formatting, lint and the fast tests (no Vision golden pages).
-# Run before every commit; CI runs the same plus the golden pages and the app build.
+# Run before every commit. The Vision golden pages are run separately (docs/testing.md).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

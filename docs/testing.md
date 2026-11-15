@@ -94,7 +94,7 @@ Swift Testing has no property testing, so `TestSupport` has a small one:
   `Property.require` / `Property.requireEqual`. The first failing case is
   recorded as one issue and the run of that property stops.
 - The seeds are fixed (`Property.baseSeed`), so the suite is deterministic: a
-  failure in CI is the same failure locally.
+  failure is the same failure on every run.
 
 ### Reproducing a failure
 
@@ -133,27 +133,10 @@ Homebrew locations and `PATH`.
 
 - Without epubcheck the test is **skipped** with the reason `EPUB NOT
   VALIDATED ...`, also printed to stderr as a warning.
-- With `REQUIRE_EPUBCHECK=1` a missing epubcheck **fails** the test. CI sets
-  it, so the check cannot be skipped there by accident.
+- With `REQUIRE_EPUBCHECK=1` a missing epubcheck **fails** the test. Use it before a
+  release so the check cannot be skipped by accident.
 
-## Continuous integration
-
-`.github/workflows/ci.yml` runs on pushes to `main` and on pull requests, on
-`macos-26` runners, with two jobs:
-
-| Job | Steps |
-|---|---|
-| `build-and-test` | newest installed Xcode, `brew install epubcheck swiftformat swiftlint`, `swiftformat --lint`, `swiftlint --strict`, unit tests (`--skip GoldenPageTests`, `REQUIRE_EPUBCHECK=1`), `xcodebuild` of the app |
-| `golden-pages` | the `.golden` suite only, `continue-on-error: true` |
-
-Golden pages are a separate job because they depend on the Apple Vision
-release of the runner: a different OS build can change OCR output without
-any layout regression. They are reported on their own, and can be made a
-required check once their behaviour on the runner is known. Real-document tests
-need `PAGESCAN_SAMPLES_DIR`, which CI never sets, so they are skipped.
-
-The workflow has not yet run on a real runner; the first run may need
-adjustments (runner label, Xcode path, Homebrew formulae).
+There is no CI: checks run locally (`scripts/check.sh`, and the golden pages by hand).
 
 ## Not yet covered
 
@@ -169,7 +152,7 @@ EPUB, and check that the file exists and contains `<h3`.
 xcodebuild -project App/PDFToEPUB.xcodeproj -scheme PDFToEPUB test
 ```
 
-It is **not** part of `scripts/check.sh` or CI: it needs a logged-in desktop
+It is **not** part of `scripts/check.sh`: it needs a logged-in desktop
 session, drives the real window and waits for the first Vision request (over a
 minute). Run it by hand before a release or after changing the review or save
 flow.

@@ -39,7 +39,7 @@ public struct PropertyViolation: Error, CustomStringConvertible {
 /// - `PROPERTY_CASES=<n>`: run `n` cases instead of the default of the test.
 public enum Property {
     /// The seed of the first case. Fixed, so the suite is deterministic and a
-    /// failure seen in CI is seen locally.
+    /// failure seen once is seen again.
     public static let baseSeed: UInt64 = 0x00B0_0C5C_A1AD
 
     /// Seed of case number `index`.

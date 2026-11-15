@@ -2,8 +2,8 @@ import Foundation
 
 /// Locates `epubcheck` and decides whether a missing one is an error.
 ///
-/// Locally a missing epubcheck only skips the conformance test (loudly); CI
-/// sets `REQUIRE_EPUBCHECK=1` so that the check can never be skipped silently.
+/// By default a missing epubcheck only skips the conformance test (loudly);
+/// `REQUIRE_EPUBCHECK=1` makes it an error so the check cannot be skipped silently.
 enum EPUBCheck {
     enum Resolution: Equatable {
         case found(String)
