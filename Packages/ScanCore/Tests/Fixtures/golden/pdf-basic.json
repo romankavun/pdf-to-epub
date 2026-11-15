@@ -1,0 +1,36 @@
+{
+  "blocks" : [
+    {
+      "kind" : "paragraph",
+      "text" : "river harbour orchard stone meadow bridge lantern violin morni winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winte river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone"
+    },
+    {
+      "kind" : "heading",
+      "level" : 1,
+      "text" : "The Orchard"
+    },
+    {
+      "kind" : "paragraph",
+      "notes" : [
+        "1"
+      ],
+      "text" : "Morning came over the harbour and the old bridge was quiet until the violin began to play."
+    },
+    {
+      "kind" : "figure",
+      "text" : "The bridge at dawn"
+    },
+    {
+      "kind" : "paragraph",
+      "text" : "A second paragraph follows the picture and ends here."
+    }
+  ],
+  "notes" : [
+    {
+      "label" : "1",
+      "text" : "A note about the bridge."
+    }
+  ],
+  "unlinkedNotes" : 0,
+  "unlinkedReferences" : 0
+}

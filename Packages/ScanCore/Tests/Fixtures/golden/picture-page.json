@@ -1,0 +1,23 @@
+{
+  "blocks": [
+    {
+      "kind": "paragraph",
+      "text": "river harbour orchard stone meadow bridge lantern violin morni winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour"
+    },
+    {
+      "kind": "paragraph",
+      "text": "The last paragraph before the full page picture ends here."
+    },
+    {
+      "kind": "figure",
+      "text": "The harbour at night"
+    },
+    {
+      "kind": "paragraph",
+      "text": "The next paragraph starts after the picture page and runs on."
+    }
+  ],
+  "notes": [],
+  "unlinkedNotes": 0,
+  "unlinkedReferences": 0
+}

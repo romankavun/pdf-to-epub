@@ -131,3 +131,136 @@ struct GoldenPageTests {
         ]))
     }
 }
+
+private let shortProse = SyntheticPage.prose(lines: 8)
+
+@Suite("Golden pages: coverage", .tags(.golden), .serialized)
+struct GoldenCoverageTests {
+    @Test("Ukrainian body with English fragments", .timeLimit(.minutes(10)))
+    func bilingual() async throws {
+        try await runGolden(GoldenCase(name: "bilingual", knownIssue: nil, pages: [
+            shortProse,
+            SyntheticPage([
+                .heading("Розділ перший"), .gap(1),
+                .line("> Вечір над садом був тихий, і хтось сказав: the old bridge is"),
+                .line("quiet tonight, а потім додав, що завтра буде дощ."),
+                .gap(0.5),
+                .line("> У книжці він прочитав речення all roads lead to the harbour"),
+                .line("і довго думав про нього."),
+                .pageNumber("1"),
+            ]),
+        ]))
+    }
+
+    @Test("bulleted and numbered lists", .timeLimit(.minutes(10)))
+    func lists() async throws {
+        try await runGolden(GoldenCase(name: "lists", knownIssue: nil, pages: [
+            shortProse,
+            SyntheticPage([
+                .heading("Packing list"), .gap(1),
+                .line("> Take the following things on the journey:"),
+                .line("> • a warm blanket for the cold nights"),
+                .line("> • a lantern with spare candles"),
+                .line("> • a small violin case"),
+                .line("> Then follow these steps in order:"),
+                .line("> 1. Close the shutters of the house."),
+                .line("> 2. Lock the old gate behind you."),
+                .line("> 3. Walk down to the harbour."),
+                .pageNumber("1"),
+            ]),
+        ]))
+    }
+
+    @Test("headings of three levels", .timeLimit(.minutes(10)))
+    func multiLevelHeadings() async throws {
+        try await runGolden(GoldenCase(name: "multi-level-headings", knownIssue: "docs/backlog.md defect 8", pages: [
+            shortProse,
+            SyntheticPage([
+                .heading("The Orchard", scale: 2.0), .gap(0.5),
+                .heading("Early Years", scale: 1.5), .gap(0.5),
+                .line("> The orchard was planted long ago by people who loved the"),
+                .line("river and the stone wall."),
+                .gap(0.5),
+                .heading("The First Winter", scale: 1.25), .gap(0.5),
+                .line("> That winter was cold and the lanterns burned late into the"),
+                .line("night."),
+                .gap(0.5),
+                .heading("Later Years", scale: 1.5), .gap(0.5),
+                .line("> Later the meadow was sold and the bridge was rebuilt."),
+                .pageNumber("1"),
+            ]),
+        ]))
+    }
+
+    @Test("a contents page followed by the first chapter", .timeLimit(.minutes(10)))
+    func contentsPage() async throws {
+        try await runGolden(GoldenCase(name: "contents-page", knownIssue: "docs/backlog.md defect 9", pages: [
+            shortProse,
+            SyntheticPage([
+                .heading("Contents"), .gap(1),
+                .line("> The Orchard 3"),
+                .line("> Early Years 7"),
+                .line("> The First Winter 12"),
+                .line("> Later Years 18"),
+                .pageNumber("1"),
+            ]),
+            SyntheticPage([
+                .heading("The Orchard"), .gap(1),
+                .line("> The orchard was planted long ago by people who loved the"),
+                .line("river and the stone wall."),
+                .pageNumber("2"),
+            ]),
+        ]))
+    }
+
+    @Test("a picture-only first page is the cover and contributes no text", .timeLimit(.minutes(10)))
+    func cover() async throws {
+        try await runGolden(GoldenCase(name: "cover", knownIssue: nil, pages: [
+            SyntheticPage([.picture(height: 0.7, caption: nil)]),
+            shortProse,
+            SyntheticPage([
+                .heading("The Orchard"), .gap(1),
+                .line("> The orchard was planted long ago by people who loved the"),
+                .line("river and the stone wall."),
+                .pageNumber("2"),
+            ]),
+        ]))
+    }
+
+    @Test("a page that is only an illustration with a caption", .timeLimit(.minutes(10)))
+    func pictureOnlyPage() async throws {
+        try await runGolden(GoldenCase(name: "picture-page", knownIssue: "docs/backlog.md defect 10", pages: [
+            shortProse,
+            SyntheticPage([
+                .line("> The last paragraph before the full page picture ends here."),
+                .pageNumber("1"),
+            ]),
+            SyntheticPage([
+                .gap(2), .picture(height: 0.5, caption: "The harbour at night"),
+                .pageNumber("2"),
+            ]),
+            SyntheticPage([
+                .line("> The next paragraph starts after the picture page and runs on."),
+                .pageNumber("3"),
+            ]),
+        ]))
+    }
+
+    @Test("the basic document drawn into a PDF and imported", .timeLimit(.minutes(10)))
+    func pdfInput() async throws {
+        try await runGolden(GoldenCase(name: "pdf-basic", knownIssue: nil, pages: [
+            prose,
+            SyntheticPage([
+                .heading("The Orchard"), .gap(1),
+                .line("> Morning came over the harbour and the old{1} bridge"),
+                .line("was quiet until the violin began to play."),
+                .picture(height: 0.2, caption: "The bridge at dawn"),
+                .line("> A second paragraph follows the picture and"),
+                .line("ends here."),
+                .moveTo(0.82), .rule,
+                .line("> {1} A note about the bridge."),
+                .pageNumber("2"),
+            ]),
+        ], viaPDF: true))
+    }
+}
