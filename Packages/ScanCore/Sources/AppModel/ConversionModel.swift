@@ -147,7 +147,8 @@ public final class ConversionModel {
             author = metadata.author ?? ""
             language = metadata.language
             project = ProjectModel(
-                base: conversion, corrections: loaded.corrections, location: url, storage: storage
+                base: conversion, corrections: loaded.corrections, ignoredWords: loaded.ignoredWords,
+                location: url, storage: storage
             )
             phase = .finished(conversion)
         } catch {

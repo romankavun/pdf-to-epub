@@ -53,6 +53,7 @@ final class FakeStorage: ProjectPersisting, @unchecked Sendable {
     private let lock = NSLock()
     private var savedStorage: [CorrectionSet] = []
     private var replacedStorage: [Conversion] = []
+    private var ignoredStorage: [Set<String>] = []
     private var createdStorage: [Conversion] = []
     var saveFailure: (any Error)?
     var replaceFailure: (any Error)?
@@ -62,6 +63,10 @@ final class FakeStorage: ProjectPersisting, @unchecked Sendable {
 
     var saved: [CorrectionSet] {
         lock.withLock { savedStorage }
+    }
+
+    var savedIgnored: [Set<String>] {
+        lock.withLock { ignoredStorage }
     }
 
     var replaced: [Conversion] {
@@ -94,6 +99,10 @@ final class FakeStorage: ProjectPersisting, @unchecked Sendable {
             throw saveFailure
         }
         lock.withLock { savedStorage.append(corrections) }
+    }
+
+    func save(ignoredWords: Set<String>, to _: URL) throws {
+        lock.withLock { ignoredStorage.append(ignoredWords) }
     }
 
     func replaceConversion(in _: URL, with conversion: Conversion) throws {
@@ -208,6 +217,24 @@ struct ProjectModelTests {
         model.undo()
         model.replaceBase(projectConversion())
         #expect(!model.canRedo)
+    }
+
+    @Test("an ignored word is kept lowercased and saved apart from the corrections, and undo leaves it")
+    func ignoredWords() {
+        let model = model()
+        model.ignoreWord("Журавeль")
+        #expect(model.ignoredWords == ["журавeль"])
+        #expect(storage.savedIgnored.last == ["журавeль"])
+        #expect(storage.saved.isEmpty)
+        #expect(!model.canUndo)
+    }
+
+    @Test("a project opened with ignored words has them")
+    func opensWithIgnoredWords() {
+        let model = ProjectModel(
+            base: projectConversion(), ignoredWords: ["x"], location: location, storage: storage
+        )
+        #expect(model.ignoredWords == ["x"])
     }
 
     @Test("a group of types is one step to undo")

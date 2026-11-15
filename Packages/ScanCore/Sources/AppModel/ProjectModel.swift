@@ -27,6 +27,10 @@ public final class ProjectModel {
     public private(set) var conversion: Conversion
     /// Blocks the user left out of the document.
     public private(set) var ignored: [IgnoredBlock] = []
+    /// Words the review no longer flags, lowercased. Kept in the project
+    /// beside the corrections but not part of them: not undone, and not
+    /// affected by converting again.
+    public private(set) var ignoredWords: Set<String>
     /// Corrections that found nothing to act on in the current base, for the
     /// user to know about after converting again.
     public private(set) var unapplied: [Correction] = []
@@ -42,11 +46,13 @@ public final class ProjectModel {
     public init(
         base: Conversion,
         corrections: CorrectionSet = CorrectionSet(),
+        ignoredWords: Set<String> = [],
         location: URL? = nil,
         storage: any ProjectPersisting = LiveProjectStorage()
     ) {
         self.base = base
         self.corrections = corrections
+        self.ignoredWords = ignoredWords
         self.location = location
         self.storage = storage
         conversion = base
@@ -130,6 +136,20 @@ public final class ProjectModel {
         }
         commit(updated)
         return true
+    }
+
+    /// Stops flagging `word`, in any case, and saves the list.
+    public func ignoreWord(_ word: String) {
+        let lowered = word.lowercased()
+        guard !ignoredWords.contains(lowered) else { return }
+        ignoredWords.insert(lowered)
+        guard let location else { return }
+        do {
+            try storage.save(ignoredWords: ignoredWords, to: location)
+            saveError = nil
+        } catch {
+            saveError = String(describing: error)
+        }
     }
 
     /// Takes back the last change.

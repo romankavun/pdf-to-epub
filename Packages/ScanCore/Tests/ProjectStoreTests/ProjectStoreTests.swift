@@ -96,6 +96,18 @@ struct ProjectStoreTests {
         }
     }
 
+    @Test("ignored words come back with the project and survive converting again")
+    func savesIgnoredWords() throws {
+        try withFolder { folder in
+            let url = folder.appendingPathComponent("Document.scanproject")
+            try store.create(sampleConversion(), at: url)
+            #expect(try store.load(from: url).ignoredWords.isEmpty)
+            try store.save(ignoredWords: ["бо", "abc"], to: url)
+            try store.replaceConversion(in: url, with: sampleConversion(title: "Again"))
+            #expect(try store.load(from: url).ignoredWords == ["бо", "abc"])
+        }
+    }
+
     @Test("creating over an existing item fails and leaves it alone")
     func refusesToOverwrite() throws {
         try withFolder { folder in

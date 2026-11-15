@@ -30,8 +30,11 @@ public final class ReviewModel {
     /// numerous and mostly harmless, and OCR suspects come first.
     public var showsSpelling = false
     /// Words the user chose to ignore, lowercased. They are no longer
-    /// flagged anywhere. Kept for this review only, not in the project.
-    public internal(set) var ignoredWords: Set<String> = []
+    /// flagged anywhere; the project keeps them.
+    public var ignoredWords: Set<String> {
+        project.ignoredWords
+    }
+
     /// The page being viewed.
     public private(set) var pageIndex = 0
     /// The block in focus, always on the page being viewed.

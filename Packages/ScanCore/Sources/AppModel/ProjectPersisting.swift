@@ -17,6 +17,9 @@ public protocol ProjectPersisting: Sendable {
 
     func save(_ corrections: CorrectionSet, to url: URL) throws
 
+    /// Replaces the ignored words of the project at `url`.
+    func save(ignoredWords: Set<String>, to url: URL) throws
+
     /// Replaces the conversion of the project at `url` and keeps its
     /// corrections.
     func replaceConversion(in url: URL, with conversion: Conversion) throws
@@ -55,6 +58,10 @@ public struct LiveProjectStorage: ProjectPersisting {
 
     public func save(_ corrections: CorrectionSet, to url: URL) throws {
         try store.save(corrections, to: url)
+    }
+
+    public func save(ignoredWords: Set<String>, to url: URL) throws {
+        try store.save(ignoredWords: ignoredWords, to: url)
     }
 
     public func replaceConversion(in url: URL, with conversion: Conversion) throws {

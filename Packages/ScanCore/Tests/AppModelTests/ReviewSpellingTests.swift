@@ -1,8 +1,10 @@
-import AppModel
+@testable import AppModel
 import Conversion
+import Corrections
 import DocumentModel
 import Foundation
 import LayoutAnalysis
+import ProjectStore
 import Testing
 import TextReview
 
@@ -157,4 +159,37 @@ struct ReviewSpellingTests {
         #expect(model.pages[0].items.first { $0.id == .block(1) }?.misspellingCount == 1)
         #expect(model.project.corrections.corrections.isEmpty)
     }
+
+    @Test("an ignored word stays ignored in a review opened later on the same project")
+    func ignoredWordsAreKept() {
+        let project = ProjectModel(base: conversion(), storage: NoStorage())
+        let model = ReviewModel(project: project, detector: detector)
+        let item = model.pages[0].items[1]
+        let index = item.runs.firstIndex { $0.reason == .misspelled } ?? 0
+        model.ignoreWord(inRunAt: index, of: item.id)
+        #expect(model.misspellingCount == 3)
+        #expect(project.ignoredWords.count == 1)
+
+        let reopened = ReviewModel(project: project, detector: detector)
+        #expect(reopened.misspellingCount == 3)
+        #expect(reopened.ignoredWords == project.ignoredWords)
+    }
+}
+
+private struct NoStorage: ProjectPersisting {
+    func isProject(at _: URL) -> Bool {
+        false
+    }
+
+    func createProject(for _: Conversion, nextTo _: URL) throws -> URL {
+        throw CocoaError(.fileNoSuchFile)
+    }
+
+    func load(from _: URL) throws -> Project {
+        throw CocoaError(.fileNoSuchFile)
+    }
+
+    func save(_: CorrectionSet, to _: URL) throws {}
+    func save(ignoredWords _: Set<String>, to _: URL) throws {}
+    func replaceConversion(in _: URL, with _: Conversion) throws {}
 }
