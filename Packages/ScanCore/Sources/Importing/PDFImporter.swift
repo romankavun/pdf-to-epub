@@ -120,11 +120,10 @@ public struct PDFImporter: Sendable {
         let shown = turned ? CGSize(width: box.height, height: box.width) : box.size
         guard shown.width > 0, shown.height > 0 else { return nil }
 
-        var scale = resolution / 72
-        if !turned, let native = Self.soleImageSize(of: page) {
-            scale = Double(native.width) / shown.width
-        }
-        scale = min(scale, Double(longestSide) / max(shown.width, shown.height))
+        let scale = min(
+            PageImagePlacement.pixelsPerPoint(of: page) ?? resolution / 72,
+            Double(longestSide) / max(shown.width, shown.height)
+        )
         let width = max(1, Int((shown.width * scale).rounded()))
         let height = max(1, Int((shown.height * scale).rounded()))
 
@@ -144,46 +143,6 @@ public struct PDFImporter: Sendable {
         ))
         context.drawPDFPage(page)
         return context.makeImage()
-    }
-
-    /// The pixel size of the page's image when the page's resources hold
-    /// exactly one image and no form that could hold more, as in a scanned
-    /// document; `nil` otherwise.
-    private static func soleImageSize(of page: CGPDFPage) -> (width: Int, height: Int)? {
-        var resources: CGPDFDictionaryRef?
-        guard let dictionary = page.dictionary,
-              CGPDFDictionaryGetDictionary(dictionary, "Resources", &resources), let resources
-        else { return nil }
-        var xobjects: CGPDFDictionaryRef?
-        guard CGPDFDictionaryGetDictionary(resources, "XObject", &xobjects), let xobjects else { return nil }
-
-        final class Found { var sizes: [(Int, Int)] = []
-            var others = 0
-        }
-        let found = Found()
-        CGPDFDictionaryApplyFunction(xobjects, { _, object, info in
-            guard let info else { return }
-            let found = Unmanaged<Found>.fromOpaque(info).takeUnretainedValue()
-            var stream: CGPDFStreamRef?
-            guard CGPDFObjectGetValue(object, .stream, &stream), let stream,
-                  let dictionary = CGPDFStreamGetDictionary(stream)
-            else { return }
-            var subtype: UnsafePointer<CChar>?
-            guard CGPDFDictionaryGetName(dictionary, "Subtype", &subtype), let subtype,
-                  String(cString: subtype) == "Image"
-            else {
-                found.others += 1
-                return
-            }
-            var width: CGPDFInteger = 0, height: CGPDFInteger = 0
-            CGPDFDictionaryGetInteger(dictionary, "Width", &width)
-            CGPDFDictionaryGetInteger(dictionary, "Height", &height)
-            found.sizes.append((Int(width), Int(height)))
-        }, Unmanaged.passUnretained(found).toOpaque())
-        guard found.sizes.count == 1, found.others == 0, let size = found.sizes.first,
-              size.0 > 0, size.1 > 0
-        else { return nil }
-        return size
     }
 
     private static func writePNG(_ image: CGImage, to url: URL) throws {

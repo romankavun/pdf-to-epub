@@ -91,6 +91,25 @@ struct PDFImporterTests {
         #expect(colour == [10, 20, 200])
     }
 
+    @Test("keeps the image's own pixels when it is placed smaller than the page")
+    func placedImage() async throws {
+        // 400x600 pixels over a 50x75 point rectangle: 8 pixels per point.
+        let image = try #require(SyntheticPDF.solidImage(width: 400, height: 600, red: 200, green: 30, blue: 30))
+        let pdf = try SyntheticPDF.write([.init(size: CGSize(width: 100, height: 150)) { context in
+            context.draw(image, in: CGRect(x: 25, y: 37.5, width: 50, height: 75))
+        }])
+        let folder = try scratchFolder()
+        defer { try? FileManager.default.removeItem(at: pdf)
+            try? FileManager.default.removeItem(at: folder)
+        }
+        let urls = try await importer.renderPages(of: pdf, into: folder)
+        let file = try #require(urls.first)
+        let size = try pixelSize(of: file)
+        #expect(size.width == 800 && size.height == 1200)
+        #expect(try pixel(of: file, x: 400, y: 600) == [200, 30, 30])
+        #expect(try pixel(of: file, x: 20, y: 20) == [255, 255, 255])
+    }
+
     @Test("caps the longest side of a page")
     func cap() async throws {
         let pdf = try SyntheticPDF.write([.init(size: CGSize(width: 1000, height: 2000))])
