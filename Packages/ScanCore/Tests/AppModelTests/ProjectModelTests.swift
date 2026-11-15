@@ -53,6 +53,7 @@ final class FakeStorage: ProjectPersisting, @unchecked Sendable {
     private let lock = NSLock()
     private var savedStorage: [CorrectionSet] = []
     private var replacedStorage: [Conversion] = []
+    private var ignoredStorage: [Set<String>] = []
     private var createdStorage: [Conversion] = []
     var saveFailure: (any Error)?
     var replaceFailure: (any Error)?
@@ -62,6 +63,10 @@ final class FakeStorage: ProjectPersisting, @unchecked Sendable {
 
     var saved: [CorrectionSet] {
         lock.withLock { savedStorage }
+    }
+
+    var savedIgnored: [Set<String>] {
+        lock.withLock { ignoredStorage }
     }
 
     var replaced: [Conversion] {
@@ -94,6 +99,10 @@ final class FakeStorage: ProjectPersisting, @unchecked Sendable {
             throw saveFailure
         }
         lock.withLock { savedStorage.append(corrections) }
+    }
+
+    func save(ignoredWords: Set<String>, to _: URL) throws {
+        lock.withLock { ignoredStorage.append(ignoredWords) }
     }
 
     func replaceConversion(in _: URL, with conversion: Conversion) throws {
@@ -174,6 +183,58 @@ struct ProjectModelTests {
         #expect(model.corrections.isEmpty && !model.canUndo)
         model.undo()
         #expect(model.corrections.isEmpty)
+    }
+
+    @Test("redo brings back an undone change, saves, and a new change drops what could be redone")
+    func redo() {
+        let model = model()
+        #expect(!model.canRedo)
+        let first = BlockAnchor(projectConversion().blockSources[0])
+        let second = BlockAnchor(projectConversion().blockSources[3])
+        model.setType(.heading(level: 1), for: first)
+        model.setType(.heading(level: 1), for: second)
+        model.undo()
+        model.undo()
+        #expect(model.canRedo)
+        model.redo()
+        #expect(model.corrections.type(for: first) == .heading(level: 1))
+        #expect(model.corrections.type(for: second) == nil)
+        #expect(storage.saved.last == model.corrections)
+        model.redo()
+        #expect(model.corrections.type(for: second) == .heading(level: 1))
+        #expect(!model.canRedo)
+        model.redo()
+        #expect(model.corrections.type(for: second) == .heading(level: 1))
+        model.undo()
+        model.setType(.heading(level: 2), for: first)
+        #expect(!model.canRedo)
+    }
+
+    @Test("converting again clears what could be redone")
+    func redoClearedByNewBase() {
+        let model = model()
+        model.setType(.heading(level: 1), for: BlockAnchor(projectConversion().blockSources[0]))
+        model.undo()
+        model.replaceBase(projectConversion())
+        #expect(!model.canRedo)
+    }
+
+    @Test("an ignored word is kept lowercased and saved apart from the corrections, and undo leaves it")
+    func ignoredWords() {
+        let model = model()
+        model.ignoreWord("Журавeль")
+        #expect(model.ignoredWords == ["журавeль"])
+        #expect(storage.savedIgnored.last == ["журавeль"])
+        #expect(storage.saved.isEmpty)
+        #expect(!model.canUndo)
+    }
+
+    @Test("a project opened with ignored words has them")
+    func opensWithIgnoredWords() {
+        let model = ProjectModel(
+            base: projectConversion(), ignoredWords: ["x"], location: location, storage: storage
+        )
+        #expect(model.ignoredWords == ["x"])
     }
 
     @Test("a group of types is one step to undo")

@@ -9,10 +9,15 @@ public struct Project: Sendable, Equatable {
     /// The pipeline's output, untouched by corrections.
     public var conversion: Conversion
     public var corrections: CorrectionSet
+    /// Words the user told the review to stop flagging, lowercased.
+    public var ignoredWords: Set<String>
 
-    public init(conversion: Conversion, corrections: CorrectionSet = CorrectionSet()) {
+    public init(
+        conversion: Conversion, corrections: CorrectionSet = CorrectionSet(), ignoredWords: Set<String> = []
+    ) {
         self.conversion = conversion
         self.corrections = corrections
+        self.ignoredWords = ignoredWords
     }
 }
 
@@ -36,6 +41,7 @@ public enum ProjectStoreError: Error, Equatable {
 ///   project.json       the conversion without image bytes
 ///   images/            one file per image of the document
 ///   corrections.json   the user's decisions
+///   ignored-words.json words the review no longer flags (optional)
 /// ```
 ///
 /// Corrections have a file of their own because they change after every
@@ -46,6 +52,7 @@ public struct ProjectStore: Sendable {
     private static let formatVersion = 1
     private static let projectFile = "project.json"
     private static let correctionsFile = "corrections.json"
+    private static let ignoredWordsFile = "ignored-words.json"
     private static let imagesFolder = "images"
 
     public init() {}
@@ -104,7 +111,11 @@ public struct ProjectStore: Sendable {
                 noteSources: stored.noteSources
             )
             let corrections = try Self.read(Stored.Corrections.self, from: url, name: Self.correctionsFile)
-            return Project(conversion: conversion, corrections: corrections.corrections)
+            let ignored = try? Self.read(Stored.IgnoredWords.self, from: url, name: Self.ignoredWordsFile)
+            return Project(
+                conversion: conversion, corrections: corrections.corrections,
+                ignoredWords: Set(ignored?.words ?? [])
+            )
         } catch let error as ProjectStoreError {
             throw error
         } catch {
@@ -116,6 +127,13 @@ public struct ProjectStore: Sendable {
     public func save(_ corrections: CorrectionSet, to url: URL) throws {
         guard isProject(at: url) else { throw ProjectStoreError.notAProject }
         try Self.write(Stored.Corrections(corrections: corrections), to: url, name: Self.correctionsFile)
+    }
+
+    /// Replaces the ignored words of the project at `url`. They have a file
+    /// of their own: they are not corrections of the document and are not undone.
+    public func save(ignoredWords: Set<String>, to url: URL) throws {
+        guard isProject(at: url) else { throw ProjectStoreError.notAProject }
+        try Self.write(Stored.IgnoredWords(words: ignoredWords.sorted()), to: url, name: Self.ignoredWordsFile)
     }
 
     /// Replaces the conversion of the project at `url`, for a document converted
@@ -188,6 +206,11 @@ private enum Stored {
     struct Corrections: Codable {
         var formatVersion = 1
         var corrections: CorrectionSet
+    }
+
+    struct IgnoredWords: Codable {
+        var formatVersion = 1
+        var words: [String]
     }
 
     struct Project: Codable {

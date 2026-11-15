@@ -8,6 +8,9 @@ over several sessions.
 - When a conversion finishes, the app writes `<folder name>.scanproject`
   next to the folder of scans (`<name> 2.scanproject` if that exists). The
   summary shows its name and *Show in Finder*. Nothing is asked.
+- Words ignored in the review's quick fixes are kept in the project too, in
+  a file of their own (`ignored-words.json`), not as corrections: undo does
+  not take them back.
 - Every correction is written as soon as it is made. There is no save
   button, and quitting loses nothing.
 - Open a project with *Choose Folder…* (⌘O) or by dropping it on the window:
@@ -29,11 +32,12 @@ Name.scanproject/
                      the paths of the scans, the metadata (no image bytes)
   images/            one file per figure and the cover
   corrections.json   the user's decisions
+  ignored-words.json words the review no longer flags (optional)
 ```
 
 Both JSON files carry `formatVersion` (1). Corrections have a file of their
 own because they change after every edit and are small. Converting again
-replaces `project.json` and `images/` and leaves `corrections.json` alone.
+replaces `project.json` and `images/` and leaves `corrections.json` and `ignored-words.json` alone.
 The folder is written beside the destination and moved into place, so a
 crash while creating it leaves no half-written project.
 
@@ -46,6 +50,6 @@ crash while creating it leaves no half-written project.
   the middle leaves a project that reports itself as damaged.
 - A project cannot be moved to another name from inside the app; moving the
   folder in Finder is fine.
-- Undo history is not saved.
+- Undo and redo history is not saved.
 - One window, one document: opening another project or folder closes the
   current one.

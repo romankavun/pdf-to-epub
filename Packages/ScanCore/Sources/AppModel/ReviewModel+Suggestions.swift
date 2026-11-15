@@ -37,10 +37,10 @@ public extension ReviewModel {
     }
 
     /// Stops flagging the word in run `index` of `itemID`, in any case and
-    /// everywhere in the document, for this review. The text is not changed.
+    /// everywhere in the document, and keeps that in the project. The text is not changed.
     func ignoreWord(inRunAt index: Int, of itemID: ItemID) {
         guard let run = run(at: index, in: itemID), run.reason != nil else { return }
-        ignoredWords.insert(run.text.lowercased())
+        project.ignoreWord(run.text)
         rebuild()
     }
 

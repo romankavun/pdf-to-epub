@@ -36,9 +36,19 @@ struct ContentView: View {
                     ResultScreen(
                         model: model, summary: ConversionSummary(corrected), counted: counted,
                         chooseFolder: chooseFolder
-                    ) {
-                        review = model.project.map { ReviewModel(project: $0, detector: detector) }
+                    ) { start in
+                        let opened = model.project.map { ReviewModel(project: $0, detector: detector) }
                             ?? ReviewModel(conversion: conversion, detector: detector)
+                        switch start {
+                        case .top:
+                            break
+                        case .suspiciousWord:
+                            opened.goToNextIssue()
+                        case .misspelledWord:
+                            opened.showsSpelling = true
+                            opened.goToNextMisspelling()
+                        }
+                        review = opened
                     }
                     .task(id: model.project?.corrections.corrections.count) {
                         counted = nil
@@ -235,6 +245,12 @@ private struct PagePreview: View {
     }
 }
 
+/// Where the review opens: at the first page, or at the first block with a
+/// problem the summary counts.
+private enum ReviewStart {
+    case top, suspiciousWord, misspelledWord
+}
+
 /// What the conversion produced, and saving it as an EPUB.
 private struct ResultScreen: View {
     var model: ConversionModel
@@ -242,7 +258,7 @@ private struct ResultScreen: View {
     /// The summary with suspicious and misspelled words counted; `nil` until counted.
     var counted: ConversionSummary?
     var chooseFolder: () -> Void
-    var review: () -> Void
+    var review: (ReviewStart) -> Void
 
     var body: some View {
         Form {
@@ -259,7 +275,11 @@ private struct ResultScreen: View {
             if summary.unlinkedReferences > 0 || summary.unlinkedNotes > 0 || (counted?.suspiciousWords ?? 0) > 0 {
                 Section("Needs attention") {
                     if let counted, counted.suspiciousWords > 0 {
-                        LabeledContent("Suspicious words", value: counted.suspiciousWords.formatted())
+                        LabeledContent("Suspicious words") {
+                            Button(counted.suspiciousWords.formatted()) { review(.suspiciousWord) }
+                                .buttonStyle(.link)
+                                .help("Opens the review at the first one.")
+                        }
                     }
                     LabeledContent("References without a note", value: summary.unlinkedReferences.formatted())
                     LabeledContent("Notes without a reference", value: summary.unlinkedNotes.formatted())
@@ -268,7 +288,11 @@ private struct ResultScreen: View {
             if let counted, counted.misspelledWords > 0 {
                 // Apart from "Needs attention": spelling is noisy and comes second.
                 Section("For a second pass") {
-                    LabeledContent("Words the dictionary does not know", value: counted.misspelledWords.formatted())
+                    LabeledContent("Words the dictionary does not know") {
+                        Button(counted.misspelledWords.formatted()) { review(.misspelledWord) }
+                            .buttonStyle(.link)
+                            .help("Opens the review at the first one.")
+                    }
                 }
             }
             projectSection
@@ -283,7 +307,7 @@ private struct ResultScreen: View {
                     Spacer()
                     Button("Convert Again", action: model.start)
                         .disabled(!model.canStart)
-                    Button("Review…", action: review)
+                    Button("Review…") { review(.top) }
                         .keyboardShortcut("r")
                     Button("Save EPUB…", action: save)
                         .buttonStyle(.borderedProminent)
