@@ -196,5 +196,26 @@ be imported, and a tiny CoreText renderer is simpler than a build script.
   computer (System Settings > Privacy & Security > Accessibility). Allow it
   and run again. Do not touch the mouse or keyboard while the test runs.
 
+### Known flake: Vision `e5rtError` (cause not found)
+
+Once, when an agent session ran this test, the first Vision request failed
+with `e5rtError` (code 13, Neural Engine), the app showed "Could not convert
+the document" and the test timed out after 420 s. The same error was seen earlier
+in the OCR tests run by other agent sessions. It did not reproduce in a later
+run: the unchanged test passed in 82 s. What was learned:
+
+- A sandbox of the agent's shell is **not** the cause: XCUITest launches the
+  app through system services, outside the shell's process tree.
+- Forcing Vision onto the CPU was tried and **not adopted**: the test passed
+  with it too (19 s, but that run had a warm model cache, so it is not a fair
+  speed comparison), which proves nothing about the cause. The likeliest
+  explanation, unproven, is a Neural Engine busy with or unavailable to
+  another process. If it comes back, retry first; re-test the CPU-only idea
+  only against a cold start (needs the model cache location found and
+  cleared, or a reboot).
+- 20 runs on 4 sample sets (5 pages each) passed 18 times; the 2 failures
+  (the same document) were in the review step ("no blocks", "no type menu"), not
+  in OCR. Not investigated: a possible flake or a real defect on that document.
+
 The test does not assert on the position of the quick-fix popover (a known
 defect, `docs/backlog.md`).
