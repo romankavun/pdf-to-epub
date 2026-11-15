@@ -25,7 +25,7 @@ enum EPUBCheck {
     /// `PATH`, in that order.
     static func resolve(environment: [String: String], isExecutable: (String) -> Bool) -> Resolution {
         let pathDirectories = (environment["PATH"] ?? "").split(separator: ":").map { "\($0)/epubcheck" }
-        let candidates = [environment["EPUBCHECK_PATH"]].compactMap { $0 } + defaultLocations + pathDirectories
+        let candidates = [environment["EPUBCHECK_PATH"]].compactMap(\.self) + defaultLocations + pathDirectories
         if let path = candidates.first(where: isExecutable) {
             return .found(path)
         }

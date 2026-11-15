@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # A missing epubcheck must fail the build, not skip the conformance test.
+  REQUIRE_EPUBCHECK: "1"
+
+jobs:
+  build-and-test:
+    name: Lint, tests, app build
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode
+        run: |
+          latest=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$latest"
+          xcodebuild -version
+          swift --version
+
+      - name: Install tools
+        run: brew install epubcheck swiftformat swiftlint
+
+      - name: swiftformat
+        run: swiftformat --lint .
+
+      - name: swiftlint
+        run: swiftlint --strict
+
+      # Golden pages need Apple Vision, whose output may differ on a runner;
+      # they run in their own job below.
+      - name: Unit tests
+        run: swift test --package-path Packages/ScanCore --skip GoldenPageTests
+
+      - name: Build the app
+        run: xcodebuild -project App/PDFToEPUB.xcodeproj -scheme PDFToEPUB build
+
+  golden-pages:
+    name: Golden pages (Vision OCR)
+    runs-on: macos-26
+    timeout-minutes: 30
+    # Reported separately: a failure here can mean a different Vision release
+    # on the runner rather than a layout regression, so it does not block merges
+    # unless it is made a required check.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode
+        run: |
+          latest=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$latest"
+
+      - name: Golden page tests
+        run: swift test --package-path Packages/ScanCore --filter GoldenPageTests
