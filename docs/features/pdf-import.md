@@ -36,5 +36,25 @@ deletes it, keeping only the EPUB.
   that way can come out differently from the same clean pages as a folder.
 - Two-page spreads and skewed scans are not corrected; preprocessing is not
   built.
-- Verified on short PDFs only (see the session report); a whole 380-page
-  document has not been converted from PDF.
+- A PDF whose pages are clean pages inset on a white page (a grey card with
+  white margins all round) comes out as one picture per page and no text:
+  picture detection takes the card for an illustration. This is the layout
+  analysis meeting a margin it does not crop, not something the import
+  changes; cropping margins belongs to preprocessing, which is not built. A
+  161-page PDF of this kind was converted to an EPUB with 160 figures.
+
+## How it was checked
+
+- Synthetic PDFs in the tests: page count, order, size, colour, errors,
+  cancellation, and a project that reopens after its PDF is deleted.
+- On a 31-page sample PDF, the drawn pages 1-13 are pixel-identical to the
+  same document's clean pages (maximum difference 0 of 255), and the whole document
+  converts to 3 chapters, 8 headings, 174 paragraphs, 12 figures, a cover
+  and 9 linked notes, the same counts as the image folder; `epubcheck` finds
+  no errors. Note markers survive, so the link colour is intact.
+- The 161-page PDF above converted in about 140 seconds with a peak memory
+  footprint of about 220 MB, so pages are not held in memory.
+- In the app, with a 2-page PDF: choosing it from the open panel and by drag
+  and drop, converting, reviewing the scans, saving the EPUB, then renaming
+  the project bundle, deleting the PDF and reopening the project: the review
+  still shows the scans.
