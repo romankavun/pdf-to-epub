@@ -111,6 +111,33 @@ page in question. Defects 4 and 5 are not changed by it.
     at the end of a page has no such step. Expected: one figure with the
     caption.
 
+11. **Lines at the top or bottom of a paragraph are missing from the review
+    when they touch the neighbouring block** (test document `test/weinachten`,
+    found 2026-11-18 by hand in the review screen; review page N is printed
+    page N - 1). Three cases, one probable cause: the outline of a block
+    overlaps the next one vertically, and the lines in the overlap are in
+    no paragraph.
+    - Review page 114: the last line of the first paragraph is missing; the
+      outline stops one line short and the text ends mid-paragraph.
+    - Review page 101: the first three lines of the third paragraph are
+      missing; the paragraph starts in the middle of a sentence and the
+      third line is cut by the outline of the next block.
+    - Review page 72: the first three lines of the second paragraph are
+      missing; the next block starts in the middle of a sentence.
+    Cause not investigated (line grouping into paragraphs, or the line
+    filter of defect 2, or the overlap of block areas). Expected: every
+    recognized line on the page is in exactly one block. Reproduce with
+    synthetic pages: paragraphs with a small vertical gap whose boxes
+    overlap by part of a line.
+
+12. **The suspicious word counts disagree** (test document `test/weinachten`,
+    found 2026-11-18). The summary shows 4 suspicious words after 16
+    corrections, while the review screen says "No suspicious words" on
+    page 1. Probably one counter is not recomputed after corrections, or
+    the two count different things (whole document against the current page).
+    "Notes without a reference" (4) may be stale in the same way. Expected:
+    the summary and the review agree and both update after a correction.
+
 ## Improvements
 
 ### Review screen and summary (ideas from hands-on use, 2026-11-14)
@@ -128,6 +155,8 @@ page in question. Defects 4 and 5 are not changed by it.
 - **Section of manual changes in the review.** An optional section, not always
   visible (shown and hidden on request), listing every change made by hand
   (type changes, edited text, ignored blocks, applied fixes).
+- **Navigate the review by headings.** A list or outline of the document's
+  headings in the review screen to jump to the page of a chapter or section.
 - **Locate unlinked references and notes.** *References without a note* and
   *Notes without a reference* on the summary are only counts. Make them open
   the review at the page and block: the note linker would have to keep the
