@@ -96,6 +96,31 @@ struct RunningHeaderTests {
         #expect(texts(analyzer.blocks(from: pages)).contains { $0.contains("* * *") })
     }
 
+    @Test("a footer is recognized whether the engine reads the spaces in it or not")
+    func footerWithoutSpaces() {
+        let pages = (1 ... 6).map { index in
+            page(index, extra: [line(index == 3 ? "ANDYWEIR" : "ANDY WEIR", x: 0.4, y: 0.95, width: 0.2)])
+        }
+        #expect(!texts(analyzer.blocks(from: pages)).contains { $0.contains("ANDY") })
+    }
+
+    @Test("a footer at the bottom of scanned pages is dropped although its height and spacing vary")
+    func scannedFooter() {
+        // Each scanned leaf is cropped differently, so the footer drifts
+        // up and down by more than the height tolerance, and the engine
+        // reads the author's name with or without the space.
+        let pages = (1 ... 8).map { index in
+            let name = index == 4 ? "ANDYWEIR" : "ANDY WEIR"
+            let footer = index.isMultiple(of: 2)
+                ? line("\(index) \(name)", x: 0.13, y: 0.91 + 0.007 * Double(index), width: 0.2)
+                : line("THE DOCUMENT \(index)", x: 0.68, y: 0.95, width: 0.2)
+            return page(index, extra: [footer])
+        }
+        let found = texts(LayoutAnalyzer(options: .paperScan).blocks(from: pages))
+        #expect(!found.contains { $0.contains("ANDY") || $0.contains("THE DOCUMENT") })
+        #expect(found.count == 8)
+    }
+
     @Test("a header at a different height on one page is kept there")
     func differentHeight() {
         var pages = (1 ... 6).map { page($0, extra: [line("THE DOCUMENT TITLE", x: 0.3, y: 0.04, width: 0.4)]) }

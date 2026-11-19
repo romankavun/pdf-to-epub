@@ -7,7 +7,7 @@ import Preprocessing
 import Testing
 
 /// Returns canned pages keyed by file name instead of looking at pixels.
-private struct FakeEngine: OCREngine {
+struct FakeEngine: OCREngine {
     var pages: [String: RecognizedPage]
     /// Labels to report for the marker regions of a page, keyed by file name.
     var labels: [String: [String]] = [:]
@@ -25,7 +25,7 @@ private struct FakeEngine: OCREngine {
 }
 
 /// Returns canned marker boxes keyed by file name.
-private struct FakeLocator: NoteMarkerLocator {
+struct FakeLocator: NoteMarkerLocator {
     var markers: [String: [CGRect]] = [:]
 
     func markers(inImageAt url: URL) throws -> [CGRect] {
@@ -34,7 +34,7 @@ private struct FakeLocator: NoteMarkerLocator {
 }
 
 /// Returns canned ink densities keyed by file name, by line text.
-private struct FakeInk: LineInkMeasurer {
+struct FakeInk: LineInkMeasurer {
     var heavy: [String: Set<String>] = [:]
 
     func ink(inImageAt url: URL, lines: [TextLine]) throws -> [LineInk] {
@@ -44,7 +44,7 @@ private struct FakeInk: LineInkMeasurer {
     }
 }
 
-private final class Recorder<Value: Sendable>: @unchecked Sendable {
+final class Recorder<Value: Sendable>: @unchecked Sendable {
     private let lock = NSLock()
     private var storage: [Value] = []
 
@@ -58,9 +58,11 @@ private final class Recorder<Value: Sendable>: @unchecked Sendable {
 }
 
 /// Pretends to prepare each page into a folder of its own.
-private struct FakePreparer: PagePreparing {
+struct FakePreparer: PagePreparing {
+    var profile: InputProfile = .paperScan
+
     func profile(ofDocumentWith _: [URL]) throws -> InputProfile {
-        .paperScan
+        profile
     }
 
     func prepare(pageAt url: URL, as profile: InputProfile) throws -> URL {
@@ -69,7 +71,7 @@ private struct FakePreparer: PagePreparing {
 }
 
 /// Returns canned pictures keyed by file name instead of looking at pixels.
-private struct FakeExtractor: PictureExtractor {
+struct FakeExtractor: PictureExtractor {
     var pictures: [String: [ExtractedPicture]] = [:]
 
     func pictures(inImageAt url: URL, lines _: [TextLine]) throws -> [ExtractedPicture] {
@@ -77,7 +79,7 @@ private struct FakeExtractor: PictureExtractor {
     }
 }
 
-private func body(_ texts: [String], top: Double = 0.2) -> [TextLine] {
+func body(_ texts: [String], top: Double = 0.2) -> [TextLine] {
     texts.enumerated().map { index, text in
         TextLine(
             text: text,
@@ -371,26 +373,5 @@ private final class ProgressRecorder: @unchecked Sendable {
 
     var values: [String] {
         lock.withLock { storage }
-    }
-}
-
-@Suite("DocumentConverter with a page preparer")
-struct DocumentConverterPreparerTests {
-    @Test("recognizes the prepared pages and keeps them for review")
-    func preparedPages() async throws {
-        let engine = FakeEngine(pages: [
-            "1.png": RecognizedPage(lines: body(["one a", "one b"])),
-            "2.png": RecognizedPage(lines: body(["two a", "two b"])),
-        ])
-        let conversion = try await DocumentConverter(
-            engine: engine, pictureExtractor: FakeExtractor(), markerLocator: FakeLocator(), inkMeasurer: FakeInk(),
-            preparer: FakePreparer()
-        ).analyze(
-            pageURLs: ["1.png", "2.png"].map { URL(fileURLWithPath: "/pages/\($0)") },
-            metadata: DocumentMetadata(title: "Prepared", author: nil, language: "en")
-        )
-
-        #expect(conversion.pageURLs.map(\.path) == ["/prepared/1.png", "/prepared/2.png"])
-        #expect(conversion.document.blocks.count == 2)
     }
 }

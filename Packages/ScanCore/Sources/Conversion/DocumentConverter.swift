@@ -86,7 +86,10 @@ public struct DocumentConverter: Sendable {
     /// With a preparer, the document's ``InputProfile`` is decided first, then
     /// each page is prepared before anything reads it, and every stage reads
     /// the prepared image; the result's ``Conversion/pageURLs`` are the
-    /// prepared images, so block boxes refer to what the review shows.
+    /// prepared images, so block boxes refer to what the review shows. A document
+    /// of paper scans is laid out as print
+    /// (``LayoutAnalysis/LayoutAnalyzer/forPaperScans``): running lines may
+    /// drift between pages and line-end hyphens are the typesetter's.
     ///
     /// Pages are processed one after another. The call honours task
     /// cancellation between pages.
@@ -145,7 +148,7 @@ public struct DocumentConverter: Sendable {
             }
             progress(pages.count, pageURLs.count)
         }
-        let layout = analyzer.layout(of: pages)
+        let layout = (profile == .paperScan ? analyzer.forPaperScans : analyzer).layout(of: pages)
         let document = Document(
             metadata: metadata,
             chapters: Self.chapters(from: layout.blocks, fallbackTitle: metadata.title),

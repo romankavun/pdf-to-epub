@@ -28,20 +28,16 @@ struct Metrics {
         // because the step is then never compared against anything.
         lineStep = Self.median(steps) ?? lineHeight
 
-        // The most common left edge among long lines. Continuation lines
-        // outnumber indented first lines in prose, so the mode is the margin.
-        let bucketWidth = 0.01
-        let long = lines.filter { $0.box.width > 0.5 }
-        let edges = (long.isEmpty ? lines : long).map { Double($0.box.minX) }
-        let buckets = Dictionary(grouping: edges) { ($0 / bucketWidth).rounded() }
-        let modal = buckets.max { left, right in
-            left.value.count != right.value.count ? left.value.count < right.value.count : left.key > right.key
-        }
-        margin = modal.flatMap { Self.median($0.value) } ?? 0
+        // The leftmost left edge that a fair share of the lines start at:
+        // continuation lines and the short last lines of paragraphs. The
+        // most common edge among long lines would be the indent on pages of
+        // short paragraphs, whose long lines are mostly first lines.
+        let edges = lines.map { Double($0.box.minX) }
+        margin = PageMargin.leftmostLevel(of: edges) ?? Self.median(edges) ?? 0
     }
 
     /// Lower median, so that an even split between two values picks the smaller.
-    private static func median(_ values: [Double]) -> Double? {
+    static func median(_ values: [Double]) -> Double? {
         guard !values.isEmpty else { return nil }
         return values.sorted()[(values.count - 1) / 2]
     }

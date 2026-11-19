@@ -58,14 +58,49 @@ public struct LayoutAnalyzer: Sendable {
         /// A line is bold when its ink density is at least this many times
         /// the document's typical density.
         public var boldInkFactor = 1.15
+        /// Whether a hyphen at the end of a line was added by the typesetter
+        /// and is dropped when the word is joined ("con-" + "tainers"). True
+        /// for printed documents; clean-page sources break lines without adding hyphens,
+        /// so for their clean pages a line-end hyphen is part of the word.
+        public var removesSoftHyphens = false
+        /// Whether each page's margin is measured on its own, following a
+        /// leaf that is cropped differently or lies at a slant (see
+        /// `PageMargin`). Clean pages share one margin, which a page with no
+        /// unindented line, such as a page of one-line notes, could not
+        /// measure.
+        public var measuresMarginPerPage = false
 
         public init() {}
+
+        /// Thresholds for photographed or scanned printed pages.
+        ///
+        /// Each leaf is cropped from the scanner bed on its own, so running
+        /// lines drift up and down from page to page by more than on a
+        /// clean page, and a printed document hyphenates words at line ends.
+        public static var paperScan: Options {
+            var options = Options()
+            options.runningLineHeightTolerance = 0.05
+            options.removesSoftHyphens = true
+            options.measuresMarginPerPage = true
+            return options
+        }
     }
 
     public var options: Options
 
     public init(options: Options = Options()) {
         self.options = options
+    }
+
+    /// This analyzer with the thresholds of ``Options/paperScan`` in place of
+    /// its own for the things that differ in print; its other options stay.
+    public var forPaperScans: LayoutAnalyzer {
+        var copy = self
+        let scan = Options.paperScan
+        copy.options.runningLineHeightTolerance = scan.runningLineHeightTolerance
+        copy.options.removesSoftHyphens = scan.removesSoftHyphens
+        copy.options.measuresMarginPerPage = scan.measuresMarginPerPage
+        return copy
     }
 
     /// Blocks of a document without illustrations or notes, in reading order.
@@ -110,6 +145,8 @@ public struct LayoutAnalyzer: Sendable {
         let typicalInk = typicalInk(of: pages)
         var assembly = Assembly()
         for (pageIndex, page) in pages.enumerated() {
+            let margin = margin(of: page, metrics: metrics)
+            let measures = PageMeasures(metrics: metrics, margin: margin)
             var previous: TextLine?
             for (elementIndex, element) in page.enumerated() {
                 switch element {
@@ -127,16 +164,17 @@ public struct LayoutAnalyzer: Sendable {
                         at: elementIndex, in: page, metrics: metrics, typicalInk: typicalInk
                     )
                     let isHeading = headingStyle != nil
-                    if continues(assembly.draft, with: row, isHeading: isHeading, step: step, metrics: metrics) {
+                    if continues(assembly.draft, with: row, isHeading: isHeading, step: step, on: measures) {
                         assembly.draft?.append(
-                            row.pieces(skippingLeadingMarker: false), page: pageIndex, box: line.box
+                            row.pieces(skippingLeadingMarker: false), page: pageIndex, box: line.box,
+                            removesSoftHyphens: options.removesSoftHyphens
                         )
                     } else {
                         flush(&assembly, gapBelow: step, metrics: metrics)
                         // A block that opens with a marker is the text of a note.
                         var draft = Draft(
                             headingStyle: headingStyle, noteMarker: row.leadingMarker,
-                            isHanging: row.leadingMarker != nil && !isIndented(line, metrics: metrics)
+                            isHanging: row.leadingMarker != nil && !isIndented(line, margin: margin)
                         )
                         draft.append(row.pieces(skippingLeadingMarker: true), page: pageIndex, box: line.box)
                         assembly.draft = draft
@@ -149,6 +187,15 @@ public struct LayoutAnalyzer: Sendable {
         flush(&assembly, metrics: metrics)
         promoteBodySizeHeadings(in: &assembly.blocks)
         return NoteLinker(markers: markers).layout(of: assembly.blocks, sources: assembly.sources)
+    }
+
+    /// Where unindented lines start on `page`: its own margin for paper
+    /// scans, the document's for clean pages (see
+    /// ``Options/measuresMarginPerPage``).
+    private func margin(of page: [PageElement], metrics: Metrics) -> PageMargin {
+        options.measuresMarginPerPage
+            ? PageMargin(lines: page.compactMap(\.row?.line), documentMargin: metrics.margin)
+            : PageMargin(constant: metrics.margin)
     }
 
     /// A caption never runs onto the next page, but an ordinary paragraph
@@ -198,7 +245,7 @@ public struct LayoutAnalyzer: Sendable {
     /// - Parameter step: Distance from the top of the previous line on the
     ///   same page; `nil` for the first line of a page or under a picture.
     private func continues(
-        _ draft: Draft?, with row: Row, isHeading: Bool, step: Double?, metrics: Metrics
+        _ draft: Draft?, with row: Row, isHeading: Bool, step: Double?, on measures: PageMeasures
     ) -> Bool {
         guard let draft else { return false }
         if draft.isEmpty {
@@ -222,15 +269,17 @@ public struct LayoutAnalyzer: Sendable {
         }
         // A paragraph's first line is indented; in a note set with a
         // hanging indent it is the other way round.
-        if isIndented(row.line, metrics: metrics) != draft.isHanging {
+        if isIndented(row.line, margin: measures.margin) != draft.isHanging {
             return false
         }
         // The first line of a page: the block from the previous page runs on.
-        return step.map { $0 <= options.paragraphGapFactor * metrics.lineStep } ?? true
+        return step.map { $0 <= options.paragraphGapFactor * measures.metrics.lineStep } ?? true
     }
 
-    private func isIndented(_ line: TextLine, metrics: Metrics) -> Bool {
-        Double(line.box.minX) > metrics.margin + options.indentThreshold
+    /// Measured against the page's own margin at the line's height (see
+    /// ``PageMargin``).
+    private func isIndented(_ line: TextLine, margin: PageMargin) -> Bool {
+        Double(line.box.minX) > margin.at(Double(line.box.minY)) + options.indentThreshold
     }
 
     /// Ends the block being assembled: it becomes the caption of the figure
@@ -284,6 +333,13 @@ public struct LayoutAnalyzer: Sendable {
     private static var figureLabel: Regex<Substring> {
         /(?i)(?:figure|fig|мал|рис|іл)\.?\s*\d/
     }
+}
+
+/// The document's typical measurements together with the margin of the page at
+/// hand, which is what deciding whether a line continues a block needs.
+private struct PageMeasures {
+    let metrics: Metrics
+    let margin: PageMargin
 }
 
 /// The blocks finished so far and the one in progress.

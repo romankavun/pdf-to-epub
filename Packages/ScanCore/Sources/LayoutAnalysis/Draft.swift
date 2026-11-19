@@ -79,7 +79,11 @@ struct Draft {
     }
 
     /// Adds the content of the next line, which lies at `box` on `page`.
-    mutating func append(_ line: [Piece], page: Int, box: CGRect) {
+    ///
+    /// - Parameter removesSoftHyphens: Whether a hyphen that ends the
+    ///   previous line was added by the typesetter (see
+    ///   ``LayoutAnalyzer/Options/removesSoftHyphens``).
+    mutating func append(_ line: [Piece], page: Int, box: CGRect, removesSoftHyphens: Bool = false) {
         if source == nil {
             source = BlockSource(page: page, box: box)
         } else {
@@ -90,10 +94,13 @@ struct Draft {
         case let (.text(before), .text(next)):
             // "half-" + "baked": the line broke after a hyphen that belongs
             // to the word. clean-page sources break there without adding a hyphen of
-            // their own, so it is kept. (Paper scans with soft hyphenation
-            // need more than this.)
+            // their own, so it is kept. A printed document hyphenates words to
+            // fill its lines, "con-" + "tainers", and that hyphen goes; one
+            // before a capital ("Anglo-" + "Saxon") is part of the word.
             let brokeAfterHyphen = before.hasSuffix("-") && before.dropLast().last?.isLetter == true
-            pieces[pieces.count - 1] = .text(before + (brokeAfterHyphen ? "" : " ") + next)
+            let isSoftHyphen = brokeAfterHyphen && removesSoftHyphens && next.first?.isLowercase == true
+            let joined = isSoftHyphen ? String(before.dropLast()) : before
+            pieces[pieces.count - 1] = .text(joined + (brokeAfterHyphen ? "" : " ") + next)
         case let (.reference, .text(next)):
             pieces.append(.text((next.isClosingPunctuation ? "" : " ") + next))
         default:

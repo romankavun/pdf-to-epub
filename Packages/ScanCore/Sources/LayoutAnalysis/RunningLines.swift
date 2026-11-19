@@ -65,7 +65,9 @@ extension LayoutAnalyzer {
         if text.wholeMatch(of: /[ivxlcdm]{1,8}/) != nil {
             return "#"
         }
-        let key = text.replacing(/[0-9]+/, with: "#")
+        // Spaces are left out: in small or spaced capitals the engine reads
+        // the same name with and without them ("ANDY WEIR", "ANDYWEIR").
+        let key = text.replacing(/[0-9]+/, with: "#").replacing(/\s+/, with: "")
         return key.contains { $0.isLetter || $0 == "#" } ? key : nil
     }
 }
