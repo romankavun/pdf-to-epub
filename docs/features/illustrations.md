@@ -14,15 +14,22 @@ every page.
 of pixels, so it is tested on pages built in code.
 
 1. The page background is the most common colour on the page border.
-2. The page is cut into horizontal **bands**: runs of consecutive rows that
+2. **Thin vertical lines are erased**: ink at most 1.5% of the page width
+   wide that runs down the page for at least 5% of its height, straight,
+   slightly slanted, or broken into pieces. On a paper scan these are the
+   edges of the document page and the gutter shadow; left in place, they put ink
+   in every row and the whole page would become one picture.
+3. The page is cut into horizontal **bands**: runs of consecutive rows that
    contain any non-background pixel. Lines of text are separated by blank
    rows, so each gives a low band.
-3. A band at least 5% of the page height (about three body lines) is a
+4. A band at least 5% of the page height (about three body lines) is a
    picture, **unless** at least 70% of its ink lies inside recognized text
    lines. That exception keeps a large title whose lines touch from being
    taken for a picture, while lettering inside a real picture covers only a
-   small share of its ink.
-4. The picture's box is the band's rows and the columns its ink spans.
+   small share of its ink. Ink is weighed by how dark it is, so faint text
+   showing through from the back of the leaf and grey specks count for
+   little.
+5. The picture's box is the band's rows and the columns its ink spans.
 
 `ImagePictureExtractor` (`Conversion`) loads the page file, runs the
 detector, and crops each box from the original image as PNG at full
@@ -83,3 +90,13 @@ document A alone had several bogus chapters made of text inside pictures.
   (document B: 17 MB).
 - Line drawings on the page's own background with blank rows inside are
   split into several pictures or missed if each part is low.
+- The sides of a **frame** around a picture and long thin vertical strokes
+  of a sparse drawing are erased with the page edges. A framed drawing with
+  blank rows inside its frame can come out smaller than the frame, in parts,
+  or not at all.
+- **Paper scans**: a page edge or gutter shadow no longer turns the page into
+  a picture (on a 4-page sample of a scanned paperback: 4 whole-page figures
+  before, none after). A page whose paper is darker than the scanner bed is
+  still one big band of ink and needs cropping first. Vision also reads
+  little text on an uncropped scan where the document page is small in the
+  image.
