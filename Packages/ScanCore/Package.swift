@@ -74,8 +74,8 @@ let package = Package(
         .testTarget(
             name: "AppModelTests",
             dependencies: [
-                "AppModel", "Conversion", "DocumentModel", "Importing", "LayoutAnalysis", "TextReview",
-                "Corrections", "ProjectStore",
+                "AppModel", "Conversion", "DocumentModel", "Importing", "Preprocessing", "LayoutAnalysis",
+                "TextReview", "Corrections", "ProjectStore",
             ]
         ),
         .testTarget(name: "ImportingTests", dependencies: ["Importing"]),
