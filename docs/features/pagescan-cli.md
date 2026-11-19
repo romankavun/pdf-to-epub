@@ -8,7 +8,8 @@ checking results without the UI.
 
 ```bash
 swift run --package-path Packages/ScanCore -c release pagescan <folder-or-file.pdf> \
-    [--output <file.epub>] [--title <title>] [--author <author>] [--language <tag>]
+    [--output <file.epub>] [--title <title>] [--author <author>] [--language <tag>] \
+    [--prepared-pages <folder>]
 ```
 
 | Option | Default |
@@ -17,12 +18,14 @@ swift run --package-path Packages/ScanCore -c release pagescan <folder-or-file.p
 | `--title` | The folder name, or the PDF's name without `.pdf` |
 | `--author` | None |
 | `--language` | `uk`. English is always added as a second recognition language. |
+| `--prepared-pages` | None: pages of a paper scan are prepared in a temporary folder that is deleted. With a folder, they are kept there for inspection. |
 
 The first page takes up to a minute while Vision loads its model; after that
 a page takes well under a second. A 380-page sample set converts in about
 100 seconds.
 
-Progress is printed every 25 pages. It ends with a summary: chapters, headings, paragraphs, figures, whether a
+Progress is printed every 25 pages. It ends with how many pages were
+prepared as a paper scan (0 for clean pages) and a summary: chapters, headings, paragraphs, figures, whether a
 cover was found, the notes linked, and the references and note texts that
 could not be linked.
 
@@ -33,19 +36,22 @@ could not be linked.
    For a folder, takes the `png`, `jpg`, `jpeg`, `tif`, `tiff`
    and `heic` files directly inside the folder, ordered the way Finder sorts
    names (`page_2` before `page_10`). Hidden files and subfolders are ignored.
-2. **OCR** (`OCR`): recognizes text lines with Apple Vision, on device.
-3. **Pictures** (`Conversion`, `LayoutAnalysis`): illustrations are cut out
+2. **Preprocessing** (`Preprocessing`): when the document is a paper scan, each
+   page is cropped off the scanner bed, cleaned and levelled before
+   anything reads it; see [paper scans](scan-preprocessing.md).
+3. **OCR** (`OCR`): recognizes text lines with Apple Vision, on device.
+4. **Pictures** (`Conversion`, `LayoutAnalysis`): illustrations are cut out
    and the cover is taken from the first page; see
    [illustrations](illustrations.md).
-4. **Layout** (`LayoutAnalysis`): see [layout analysis](layout-analysis.md).
+5. **Layout** (`LayoutAnalysis`): see [layout analysis](layout-analysis.md).
    The weight of each line's ink is measured from the page image to tell
    bold headings from text.
-   Note markers are located by colour, erased before step 2 and linked to
+   Note markers are located by colour, erased before step 3 and linked to
    the note texts here; see [notes](notes.md).
-5. **Chapters** (`Conversion`): a new chapter starts at every level 1
+6. **Chapters** (`Conversion`): a new chapter starts at every level 1
    heading. Text before the first heading becomes a chapter named after the
    document.
-6. **Export**: see [EPUB export](epub-export.md).
+7. **Export**: see [EPUB export](epub-export.md).
 
 ## Known limits
 

@@ -13,7 +13,10 @@ it (block types, text, ignoring, applying a fix to similar blocks, undo),
 save the EPUB (`AppModel` + `App/`). Every conversion is kept as a project
 bundle beside the scans, with the corrections stored apart from the
 recognized document (`Corrections`, `ProjectStore`). PDF input works too: pages are drawn to PNG files (`Importing`), the
-project keeps them in its bundle (ADR 0009). See
+project keeps them in its bundle (ADR 0009). Paper scans (a page on a
+scanner bed) are detected per document and their pages cropped, cleaned and
+deskewed before recognition; the project keeps the prepared pages and the
+review shows them (`Preprocessing`, ADR 0010). See
 `docs/features/` for what each piece does and its limits. Modules listed
 below that do not exist yet are created when a test first needs them.
 
@@ -58,7 +61,11 @@ Import -> Preprocess -> OCR -> Layout analysis -> Document model -> EPUB export
 ```
 
 1. **Import** - PDF (CoreGraphics, drawn to page images) or image folder becomes an ordered list of pages.
-2. **Preprocess** - deskew, crop margins, split a two-page spread into pages.
+2. **Preprocess** - only for documents profiled as paper scans (grainy paper on
+   a scanner bed; clean pages are never touched): crop the page off the bed,
+   whiten the paper and remove edges, shadow and show-through, deskew.
+   Pixel-based, no Vision. Writes prepared PNGs that every later stage and
+   the review read (ADR 0010). Spread splitting is not built.
 3. **OCR** - `RecognizeDocumentsRequest` with explicit languages. We use only
    its lines and word boxes; its paragraph grouping, `title`, and confidence
    proved unreliable (ADR 0001). The first request in a process takes over a
@@ -104,7 +111,7 @@ Packages/ScanCore/          Swift package, no UI imports
   Sources/
     DocumentModel/          value types; no dependencies
     Importing/              PDF (drawn to page images) and image folder import
-    Preprocessing/          deskew, crop, spread splitting
+    Preprocessing/          scan profile, page crop, cleanup, deskew; no dependencies
     OCR/                    Vision adapter behind OCREngine protocol
     LayoutAnalysis/         block classification heuristics
     EPUBExport/             EPUB 3 writer
@@ -245,3 +252,6 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
    `docs/backlog.md`.
 8. ~~Project persistence and correction propagation~~ (done; ADR 0005).
    Merging and splitting blocks done (ADR 0008). Still open: redrawing regions.
+9. ~~Paper scan preprocessing: crop, cleanup, deskew, input profile~~ (done;
+   ADR 0010). Upscaling measured and not needed. Still open: spread
+   splitting, dewarping curved lines.
