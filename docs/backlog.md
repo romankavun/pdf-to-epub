@@ -148,37 +148,25 @@ of a scanner bed: pure white glass with a small document page in the middle
 show-through from the back of the leaf, and on some pages skewed lines.
 `PDFImporter` is not at fault: each page is one embedded JPEG drawn 1:1.
 
-Measured the same day: cropping a page image to the document page by hand and
-converting it gave page 9 0 -> 356 words (about 2% misspelled, by
-`NSSpellChecker`), and pages 2 and 8 together 23% -> 4% misspelled words. So
-the bed is the main cause; upscaling is not needed at this resolution, and
-the remaining errors are probably skew. A Preprocess stage and the fixes
-below are being built in parallel sessions; remove each item once merged.
+Fixed since: the page is cropped, cleaned and levelled before recognition
+([scan preprocessing](features/scan-preprocessing.md), ADR 0010), the
+picture detector ignores page edges, the review flags misrecognized blocks
+and pages that lost their text, each page measures its own drifting margin,
+running footers are found although they drift from page to page, and soft
+hyphens are removed on scans
+([layout analysis](features/layout-analysis.md)). What is left:
 
-13. **Whole pages become one illustration and their text is lost** (pages
-    3, 6, 7, 9; 12 figures for 23 pages). `PictureDetector` counts every pixel
-    that differs from the bed's white as ink, so the page edge gives ink in
-    every row of the document page; the page is one tall band whose ink is mostly
-    outside text boxes, so it is a picture, and text inside a picture is
-    dropped (ADR 0002). Fix: crop to the document page (Preprocess) and make the
-    detector robust to edges, shadows and specks.
-14. **OCR text is garbled** (pages 2 and 8, 23% misspelled words). Caused by
-    the bed around the page; see the measurement above.
-15. **Skewed lines mix paragraphs** (page 8): block outlines overlap, lines
-    of neighbouring paragraphs are grouped together, and a short piece of a
-    line becomes a level 1 heading. Fix: deskew before OCR.
 16. **Short quoted lines and attributions become headings or are glued to
     the quotes** (page 2, a page of review quotes, each followed by a right
-    aligned attribution line). Check again after cropping and deskewing;
-    a right aligned attribution has no rule yet.
-17. **The review does not show the garbling**: "Suspicious words: 1" on
-    every page while about a quarter of the words are wrong, and nothing
-    warns that a page became an illustration with no text. See also defect
-    12. Fix: a rule for blocks with a high share of misspelled words, a
-    warning for pages that are one full-page figure, and the counter.
-18. **The page preview is small**: the review shows the whole scanner bed,
-    so the document page and its outlines are tiny. Fixed by the crop if the
-    review shows the cropped page.
+    aligned attribution line). Not checked again since the crop; a right
+    aligned attribution has no rule yet.
+19. **The misrecognized-text rule flags foreign quotations** (test document
+    `test/weinachten`: about 100 blocks of Russian bibliography and dialect
+    quotes in a Ukrainian document). The spell checker cannot tell them from OCR
+    errors; "Ignore This Word" helps one word at a time. Found again
+    2026-11-19 on review page 16: a quoted folk saying with dialect words is
+    flagged although the scan was read correctly (its only real error is the
+    doubled dash of defect 3). See *Mark a block as read correctly* below.
 
 ## Improvements
 
@@ -197,6 +185,11 @@ below are being built in parallel sessions; remove each item once merged.
 - **Section of manual changes in the review.** An optional section, not always
   visible (shown and hidden on request), listing every change made by hand
   (type changes, edited text, ignored blocks, applied fixes).
+- **Mark a block as read correctly.** A one-click action on a block flagged
+  *Text probably misrecognized* (next to Edit Text and Type) that clears the
+  flag for that block and keeps it cleared, stored with the corrections so
+  it survives a re-run. Quicker than ignoring its unknown words one by one;
+  needed for dialect, archaic and foreign quotations (defect 19).
 - **Navigate the review by headings.** A list or outline of the document's
   headings in the review screen to jump to the page of a chapter or section.
 - **Locate unlinked references and notes.** *References without a note* and
