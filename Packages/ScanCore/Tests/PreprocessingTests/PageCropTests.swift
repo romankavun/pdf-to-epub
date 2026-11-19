@@ -31,10 +31,12 @@ struct PageCropTests {
         #expect(PageCrop().cropped(shot) == shot)
     }
 
-    @Test("leaves a clean page without a status bar alone: its margins are not a scanner bed")
-    func cleanPageWithMarginsUntouched() {
-        let shot = SyntheticScans.cleanPage(statusBar: false)
-        #expect(PageCrop().pageBox(in: shot) == nil)
+    @Test("crops a dark cover lying on the bed although it has no grain")
+    func cropsCover() throws {
+        var scan = ScanBitmap(width: 600, height: 800, gray: 255)
+        scan.fill(.init(x: 150, y: 200, width: 300, height: 400), gray: 40)
+        let box = try #require(PageCrop().pageBox(in: scan))
+        #expect(box.x <= 150 && box.x >= 130 && box.width <= 340)
     }
 
     @Test("leaves a page alone when the page fills the image")

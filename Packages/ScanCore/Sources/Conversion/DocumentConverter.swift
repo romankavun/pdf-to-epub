@@ -83,7 +83,8 @@ public struct DocumentConverter: Sendable {
 
     /// Converts the pages at `pageURLs`, given in reading order.
     ///
-    /// With a preparer, each page is prepared first and every stage reads
+    /// With a preparer, the document's ``InputProfile`` is decided first, then
+    /// each page is prepared before anything reads it, and every stage reads
     /// the prepared image; the result's ``Conversion/pageURLs`` are the
     /// prepared images, so block boxes refer to what the review shows.
     ///
@@ -112,10 +113,11 @@ public struct DocumentConverter: Sendable {
         var coverImageID: ImageResource.ID?
         var preparedURLs: [URL] = []
         preparedURLs.reserveCapacity(pageURLs.count)
+        let profile = try preparer?.profile(ofDocumentWith: pageURLs)
 
         for original in pageURLs {
             try Task.checkCancellation()
-            let url = try preparer?.prepare(pageAt: original) ?? original
+            let url = try profile.flatMap { try preparer?.prepare(pageAt: original, as: $0) } ?? original
             preparedURLs.append(url)
             let (lines, markers) = try await recognize(pageAt: url)
             let lineInk = try inkMeasurer.ink(inImageAt: url, lines: lines)

@@ -49,7 +49,8 @@ public final class ConversionModel {
     /// conversion starts, and those files belong to the project afterwards.
     private var pdf: URL?
     private var pdfPageCount = 0
-    /// Where the pages of the PDF were drawn until a project takes them over.
+    /// Where the pages of the PDF were drawn, and pages of scans prepared,
+    /// until a project takes them over.
     private var stagingFolder: URL?
     /// Identifies the current run, so that progress and results arriving
     /// from a cancelled run are dropped.
@@ -127,8 +128,9 @@ public final class ConversionModel {
             let conversion = loaded.conversion
             let metadata = conversion.document.metadata
             pages = conversion.pageURLs
-            // A project that holds its own pages came from a PDF; the document is
-            // then named after the project, otherwise after the scans' folder.
+            // A project that holds its own pages came from a PDF or from
+            // prepared scans; the document is then named after the project,
+            // otherwise after the scans' folder.
             let holdsPages = conversion.pageURLs.first.map {
                 $0.deletingLastPathComponent().deletingLastPathComponent().lastPathComponent
                     == url.lastPathComponent
@@ -204,8 +206,12 @@ public final class ConversionModel {
                 if let renderFirst {
                     try await render(renderFirst, run: run)
                 }
+                // An open project's pages were prepared when it was created.
+                let preparedFolder = project == nil ? try makePreparedFolder() : nil
                 outcome = try await .finished(
-                    pipeline.convert(pageURLs: pages, metadata: metadata, progress: progress)
+                    pipeline.convert(
+                        pageURLs: pages, metadata: metadata, preparingPagesIn: preparedFolder, progress: progress
+                    )
                 )
             } catch {
                 outcome = .failed(Self.failure(for: error))
@@ -227,10 +233,7 @@ public final class ConversionModel {
     /// Draws the pages of `pdf` into a folder of their own, which stays until
     /// a project takes the files over.
     private func render(_ pdf: URL, run: Int) async throws {
-        let folder = FileManager.default.temporaryDirectory
-            .appendingPathComponent("PDFToEPUB-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        stagingFolder = folder
+        let folder = try makeStagingFolder()
         let drawn = try await pipeline.renderPages(of: pdf, into: folder) { [weak self] done, total in
             Task { @MainActor in self?.report(rendered: done, total: total, run: run) }
         }
@@ -281,19 +284,26 @@ public final class ConversionModel {
         }
         var stored = conversion
         var location: URL?
+        // Pages drawn from a PDF or prepared from scans exist only in the
+        // staging folder and move into the project; scans read as they are
+        // stay where the user keeps them.
+        let movingPages = stagingFolder.map { staging in
+            let prefix = staging.standardizedFileURL.path + "/"
+            return conversion.pageURLs.allSatisfy { $0.standardizedFileURL.path.hasPrefix(prefix) }
+        } ?? false
         if let input {
             do {
                 let created = try storage.createProject(
                     for: conversion, named: Self.documentName(for: input),
-                    in: input.deletingLastPathComponent(), movingPages: stagingFolder != nil
+                    in: input.deletingLastPathComponent(), movingPages: movingPages
                 )
                 location = created.location
                 stored = created.conversion
                 projectError = nil
-                if stagingFolder != nil {
+                if movingPages {
                     pages = stored.pageURLs
-                    discardStaging()
                 }
+                discardStaging()
             } catch {
                 projectError = String(describing: error)
             }
@@ -304,12 +314,6 @@ public final class ConversionModel {
 
     private var projectLocation: URL? {
         project?.location
-    }
-
-    private func discardStaging() {
-        guard let stagingFolder else { return }
-        try? FileManager.default.removeItem(at: stagingFolder)
-        self.stagingFolder = nil
     }
 
     private func cancelRun() {
@@ -335,5 +339,36 @@ public final class ConversionModel {
 
     private func trimmed(_ text: String) -> String {
         text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+// MARK: - Staging
+
+private extension ConversionModel {
+    /// The temporary folder for files that become the project's, made once
+    /// per conversion.
+    func makeStagingFolder() throws -> URL {
+        if let stagingFolder {
+            return stagingFolder
+        }
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PDFToEPUB-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        stagingFolder = folder
+        return folder
+    }
+
+    /// Where pages of a paper scan are prepared: inside the staging folder,
+    /// apart from pages drawn from a PDF, which have the same names.
+    func makePreparedFolder() throws -> URL {
+        let folder = try makeStagingFolder().appendingPathComponent("prepared", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        return folder
+    }
+
+    func discardStaging() {
+        guard let stagingFolder else { return }
+        try? FileManager.default.removeItem(at: stagingFolder)
+        self.stagingFolder = nil
     }
 }

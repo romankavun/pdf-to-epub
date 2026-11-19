@@ -7,9 +7,9 @@
 /// while almost every pixel of the bed is. Text alone would not do, because
 /// the page's edges and the space around the text belong to the page too.
 ///
-/// a clean-page source clean page also has a frame of one exact colour, its margins,
-/// but nothing between its lines is grainy: its "paper" is the same exact
-/// colour. Requiring grain inside the page keeps clean pages untouched.
+/// a clean-page source clean page may also have a frame of one exact colour, its
+/// margins, so a page box alone does not make a scan; ``InputProfile``
+/// decides that, and only pages of scanned documents are cropped.
 public struct PageCrop: Sendable {
     /// A row or column belongs to the page when more than this share of its
     /// pixels differs from the bed. Low enough for a page a third the width
@@ -19,8 +19,9 @@ public struct PageCrop: Sendable {
     /// A pixel is grain rather than ink when it differs from the bed by at
     /// most this much, summed over the three channels.
     static let grainLimit = 12
-    /// The page must be grainy: at least this share of its pixels must be
+    /// A scanned page is grainy: at least this share of its pixels is
     /// grain. Scanned pages measured 0.21-0.48, clean pages at most 0.07.
+    /// Used by ``InputProfile``.
     static let minimumGrain = 0.15
     /// The bed must show on every side, at least this share of the image's
     /// size, or the image is not a page lying on a bed.
@@ -32,7 +33,8 @@ public struct PageCrop: Sendable {
     public init() {}
 
     /// The rectangle of the document page with a small margin, or `nil` when the
-    /// image is not a page on a scanner bed.
+    /// image is not a page lying on a bed of one colour with the bed
+    /// showing on every side.
     ///
     /// The bed colour is the most common colour on the image's border.
     public func pageBox(in bitmap: ScanBitmap) -> PixelRect? {
@@ -66,7 +68,6 @@ public struct PageCrop: Sendable {
         else { return nil }
 
         let page = PixelRect(x: left, y: top, width: right - left + 1, height: bottom - top + 1)
-        guard bitmap.grainShare(in: page, against: bed) >= Self.minimumGrain else { return nil }
 
         let margin = max(2, Int((Self.margin * Double(page.width)).rounded()))
         let x = max(0, page.x - margin), y = max(0, page.y - margin)

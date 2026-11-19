@@ -4,6 +4,7 @@ import EPUBExport
 import Foundation
 import Importing
 import OCR
+import Preprocessing
 
 /// Everything ``ConversionModel`` needs from the rest of the package, as one
 /// seam, so the model can be tested without touching files or Vision.
@@ -24,11 +25,17 @@ public protocol ConversionPipeline: Sendable {
 
     /// Converts the pages into a document. Honours task cancellation.
     ///
-    /// - Parameter progress: Called from any thread after each page with the
-    ///   number of pages done and the total.
+    /// - Parameters:
+    ///   - preparedFolder: An existing folder where pages of a paper scan
+    ///     are prepared (cropped, cleaned, deskewed) before recognition;
+    ///     the result's page URLs then point into it. `nil` reads the pages
+    ///     as they are.
+    ///   - progress: Called from any thread after each page with the number
+    ///     of pages done and the total.
     func convert(
         pageURLs: [URL],
         metadata: DocumentMetadata,
+        preparingPagesIn preparedFolder: URL?,
         progress: @escaping @Sendable (_ done: Int, _ total: Int) -> Void
     ) async throws -> Conversion
 
@@ -36,7 +43,8 @@ public protocol ConversionPipeline: Sendable {
     func export(_ document: Document, to url: URL) async throws
 }
 
-/// The real pipeline: image folder or PDF, Vision OCR, layout analysis, EPUB.
+/// The real pipeline: image folder or PDF, preparation of paper scans, Vision
+/// OCR, layout analysis, EPUB.
 public struct LivePipeline: ConversionPipeline {
     public init() {}
 
@@ -67,10 +75,11 @@ public struct LivePipeline: ConversionPipeline {
     public func convert(
         pageURLs: [URL],
         metadata: DocumentMetadata,
+        preparingPagesIn preparedFolder: URL?,
         progress: @escaping @Sendable (_ done: Int, _ total: Int) -> Void
     ) async throws -> Conversion {
         let engine = VisionOCREngine(languages: Self.recognitionLanguages(for: metadata.language))
-        return try await DocumentConverter(engine: engine)
+        return try await DocumentConverter(engine: engine, preparer: preparedFolder.map { ScanPagePreparer(folder: $0) })
             .analyze(pageURLs: pageURLs, metadata: metadata, progress: progress)
     }
 

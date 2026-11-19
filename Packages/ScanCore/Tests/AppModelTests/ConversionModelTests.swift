@@ -65,6 +65,11 @@ struct FakePipeline: ConversionPipeline {
     var renderFailure: PDFImportError?
     /// Whether the conversion records the pages it was given, as the real one does.
     var echoPages = false
+    /// Whether the conversion prepares the pages, as the real one does for
+    /// scans: they come back as files in the folder it was given.
+    var prepares = false
+    /// The folders given for prepared pages, one per conversion.
+    let preparedInto = Recorder<URL?>()
     /// When set, rendering reports page 1 and then waits.
     var renderGate: Gate?
     let renderedInto = Recorder<URL>()
@@ -109,9 +114,11 @@ struct FakePipeline: ConversionPipeline {
     func convert(
         pageURLs: [URL],
         metadata: DocumentMetadata,
+        preparingPagesIn preparedFolder: URL?,
         progress: @escaping @Sendable (Int, Int) -> Void
     ) async throws -> Conversion {
         self.metadata.record(metadata)
+        preparedInto.record(preparedFolder)
         if let failure {
             throw failure
         }
@@ -125,6 +132,9 @@ struct FakePipeline: ConversionPipeline {
         var conversion = fakeConversion(title: metadata.title)
         if echoPages {
             conversion.pageURLs = pageURLs
+        }
+        if prepares, let preparedFolder {
+            conversion.pageURLs = pageURLs.map { preparedFolder.appendingPathComponent($0.lastPathComponent) }
         }
         return conversion
     }

@@ -25,7 +25,10 @@ private struct RecognitionFreePipeline: ConversionPipeline {
     }
 
     func convert(
-        pageURLs: [URL], metadata: DocumentMetadata, progress _: @escaping @Sendable (Int, Int) -> Void
+        pageURLs: [URL],
+        metadata: DocumentMetadata,
+        preparingPagesIn _: URL?,
+        progress _: @escaping @Sendable (Int, Int) -> Void
     ) async throws -> Conversion {
         let document = Document(metadata: metadata, chapters: [Chapter(title: "T", blocks: [.paragraph(["Text."])])])
         return Conversion(document: document, pageURLs: pageURLs)

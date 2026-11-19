@@ -37,8 +37,8 @@ let package = Package(
         .target(
             name: "AppModel",
             dependencies: [
-                "DocumentModel", "OCR", "Importing", "LayoutAnalysis", "Conversion", "EPUBExport", "TextReview",
-                "Corrections", "ProjectStore",
+                "DocumentModel", "OCR", "Importing", "Preprocessing", "LayoutAnalysis", "Conversion", "EPUBExport",
+                "TextReview", "Corrections", "ProjectStore",
             ]
         ),
         .executableTarget(

@@ -59,8 +59,12 @@ private final class Recorder<Value: Sendable>: @unchecked Sendable {
 
 /// Pretends to prepare each page into a folder of its own.
 private struct FakePreparer: PagePreparing {
-    func prepare(pageAt url: URL) throws -> URL {
-        URL(fileURLWithPath: "/prepared").appendingPathComponent(url.lastPathComponent)
+    func profile(ofDocumentWith _: [URL]) throws -> InputProfile {
+        .paperScan
+    }
+
+    func prepare(pageAt url: URL, as profile: InputProfile) throws -> URL {
+        profile == .paperScan ? URL(fileURLWithPath: "/prepared").appendingPathComponent(url.lastPathComponent) : url
     }
 }
 
