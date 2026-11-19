@@ -40,6 +40,14 @@ struct ScanPagePreparerTests {
         #expect(bitmap.color(x: 21, y: 20) == ScanColor(red: 255, green: 255, blue: 255))
     }
 
+    @Test("levels a skewed scan")
+    func levelsSkewedScan() throws {
+        let original = try write(SyntheticScans.scan(skew: 2), named: "skewed.png")
+        let prepared = try ScanPagePreparer(folder: folder).prepare(pageAt: original)
+        let bitmap = try #require(ScanImageFile.read(prepared))
+        #expect(abs(Deskew().skewAngle(of: bitmap)) <= 0.15)
+    }
+
     @Test("returns a clean page's own file and writes nothing")
     func cleanPageUntouched() throws {
         let original = try write(SyntheticScans.cleanPage(), named: "shot.png")

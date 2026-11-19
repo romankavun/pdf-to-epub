@@ -1,3 +1,4 @@
+import Foundation
 import Preprocessing
 
 /// Pages built in code that imitate the two kinds of input: a document page
@@ -19,13 +20,15 @@ enum SyntheticScans {
 
     /// A white scanner bed with a smaller document page on it. The page has
     /// grainy paper and dark text lines, 12 px tall every 24 px, inset by
-    /// `textInset` from the page's sides.
+    /// `textInset` from the page's sides, descending to the right by
+    /// `skew` degrees.
     static func scan(
         width: Int = 600,
         height: Int = 800,
         page: Rect = Rect(x: 150, y: 200, width: 300, height: 400),
         textInset: Int = 30,
-        lineHeight: Int = 12
+        lineHeight: Int = 12,
+        skew: Double = 0
     ) -> ScanBitmap {
         var bitmap = ScanBitmap(width: width, height: height, gray: 255)
         for y in page.y ..< page.y + page.height {
@@ -35,10 +38,11 @@ enum SyntheticScans {
         }
         var top = page.y + textInset
         while top + lineHeight <= page.y + page.height - textInset {
-            bitmap.fill(
-                Rect(x: page.x + textInset, y: top, width: page.width - 2 * textInset, height: lineHeight),
-                gray: 30
-            )
+            let slope = tan(skew * .pi / 180)
+            for x in page.x + textInset ..< page.x + page.width - textInset where (x - page.x) % 28 < 20 {
+                let shift = Int((Double(x - page.x - page.width / 2) * slope).rounded())
+                bitmap.fill(Rect(x: x, y: top + shift, width: 1, height: lineHeight), gray: 30)
+            }
             top += 2 * lineHeight
         }
         return bitmap
