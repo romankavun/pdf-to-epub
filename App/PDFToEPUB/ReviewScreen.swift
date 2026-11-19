@@ -64,14 +64,18 @@ struct ReviewScreen: View {
 
     @ViewBuilder private var issueNavigation: some View {
         if model.flaggedItemCount == 0 {
-            Label("No suspicious words", systemImage: "checkmark.circle")
+            Label("No issues found", systemImage: "checkmark.circle")
                 .foregroundStyle(.secondary)
         } else {
             if let position = model.issuePosition {
                 Text("Issue \(position) of \(model.flaggedItemCount)")
                     .monospacedDigit()
             } else {
-                Text("Suspicious words: \(model.issueCount)")
+                // The page's own number first: a document total alone looks the
+                // same on every page.
+                Text("Issues: \(model.issueCountOnPage) on this page, \(model.flaggedItemCount) in the document")
+                    .monospacedDigit()
+                    .help("Suspicious words, text probably misrecognized and pages that may have lost text.")
             }
             Button("Previous Issue", systemImage: "chevron.up", action: model.goToPreviousIssue)
                 .labelStyle(.iconOnly)

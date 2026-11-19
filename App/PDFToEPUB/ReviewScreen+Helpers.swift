@@ -15,6 +15,7 @@ extension ReviewModel.Item {
     /// Flagged blocks stand out; note texts are told apart from the body.
     var outlineColor: Color {
         switch outline {
+        case .unreliable: .red
         case .flagged: .orange
         case .note: .teal
         case .ignored: .gray

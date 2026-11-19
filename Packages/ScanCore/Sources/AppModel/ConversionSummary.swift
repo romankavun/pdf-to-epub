@@ -23,6 +23,14 @@ public struct ConversionSummary: Sendable, Equatable {
     /// Words the spell checker does not know: a noisier signal, kept apart
     /// from ``suspiciousWords``.
     public var misspelledWords = 0
+    /// Blocks and note texts whose text was probably misrecognized as a
+    /// whole: too many of their words are unknown (see
+    /// ``SuspiciousWordDetector/SpellingTally/isProbablyMisrecognized``).
+    /// Zero unless counted with a detector that has a dictionary.
+    public var misrecognizedBlocks = 0
+    /// Pages whose only content is a figure over the text area: their text
+    /// was probably taken for a picture and never read.
+    public var pagesThatMayHideText = 0
 
     public init(
         chapters: Int,
@@ -51,12 +59,16 @@ public struct ConversionSummary: Sendable, Equatable {
     public init(_ conversion: Conversion, detector: SuspiciousWordDetector) {
         self.init(conversion)
         let document = conversion.document
+        let language = SpellLanguage(languageCode: document.metadata.language)
         var contents: [[Inline]] = document.notes.map(\.content)
         for block in document.blocks {
             switch block {
             case let .heading(_, content), let .paragraph(content): contents.append(content)
             case let .figure(figure): contents.append(figure.caption)
             }
+        }
+        misrecognizedBlocks = contents.count {
+            detector.spellingTally(of: $0, in: language, ignoring: []).isProbablyMisrecognized
         }
         let texts = contents.flatMap { content in
             content.compactMap { inline -> String? in
@@ -90,5 +102,6 @@ public struct ConversionSummary: Sendable, Equatable {
             unlinkedReferences: conversion.unlinkedReferences,
             unlinkedNotes: conversion.unlinkedNotes
         )
+        pagesThatMayHideText = LostText.figures(in: conversion).count
     }
 }
