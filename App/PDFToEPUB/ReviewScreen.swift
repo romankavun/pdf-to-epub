@@ -70,17 +70,20 @@ struct ReviewScreen: View {
             if let position = model.issuePosition {
                 Text("Issue \(position) of \(model.flaggedItemCount)")
                     .monospacedDigit()
+                    .accessibilityIdentifier("issueCounter")
             } else {
                 // The page's own number first: a document total alone looks the
                 // same on every page.
                 Text("Issues: \(model.issueCountOnPage) on this page, \(model.flaggedItemCount) in the document")
                     .monospacedDigit()
                     .help("Suspicious words, text probably misrecognized and pages that may have lost text.")
+                    .accessibilityIdentifier("issueCounter")
             }
             Button("Previous Issue", systemImage: "chevron.up", action: model.goToPreviousIssue)
                 .labelStyle(.iconOnly)
                 .keyboardShortcut("g", modifiers: [.command, .shift])
             Button("Next Issue", systemImage: "chevron.down", action: model.goToNextIssue)
+                .accessibilityIdentifier("nextIssueButton")
                 .keyboardShortcut("g")
         }
         Divider().frame(height: 16)

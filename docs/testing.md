@@ -73,6 +73,8 @@ Current cases:
 | `cover` | a picture-only first page becomes the cover and adds no blocks; the snapshot records `hasCover`: passes |
 | `picture-page` | a page that is only a picture with a caption: known issue, backlog defect 10 |
 | `pdf-basic` | the `basic` document drawn into a PDF (`viaPDF`) and imported through `PDFImporter`: passes |
+| `paper-scan` | six pages laid on a scanner bed (`scan:` placements in `TestSupport/ScannerBed.swift`: white glass, grainy paper, page edge and gutter shadow, each page off centre and turned by up to 1.5°) and converted through `ScanPagePreparer`, as the app does: the document is detected as a scan, cropped and levelled; three paragraphs per page, a soft hyphen removed (`har-` + `bour`), running footers alternating between left and right pages dropped: passes |
+| `framed-clipping` | a newspaper clipping in a thin frame (`.framedPrint`) whose print Vision reads, with a `Fig. 1.` caption: one figure with its caption between two paragraphs: passes |
 
 ## Property tests
 
@@ -85,7 +87,8 @@ those come first.
 |---|---|
 | `ProjectStoreInvariantTests` | save then load returns an equal document, block and note sources, page URLs, corrections of every kind and ignored words (unicode, markup and control characters in the text); converting again keeps the corrections; pages moved into the bundle are readable after loading |
 | `CorrectionsInvariantTests` | after random retypes, edits, word replacements, merges, splits, resets and undo/redo, converting again (boxes moved by a fraction of a line, note labels recounted) gives the same document with nothing unapplied; undo right after a change restores the exact earlier corrections, document and ignored blocks, and redo the later ones; proposing a type to similar blocks and applying it twice changes nothing the second time and one undo takes the whole propagation back |
-| `JoiningInvariantTests` | a draft built from lines, and whole pages run through `LayoutAnalyzer`, contain exactly the letters of the input (hyphens, spaces and digits are ignored: joining may add a space and a page number is dropped on purpose) |
+| `JoiningInvariantTests` | a draft built from lines, and whole pages run through `LayoutAnalyzer` with the clean page and the paper-scan options, contain exactly the letters of the input (hyphens, spaces and digits are ignored: joining may add a space and a page number is dropped on purpose); on paper scans a line-end hyphen goes exactly when a lowercase letter follows a letter |
+| `PageGeometryInvariantTests` | a page of prose (paragraphs of one to six lines, short last lines, blank lines) laid out with the paper-scan options gives exactly its paragraphs, both upright and shifted sideways by up to 0.2 and slanted by up to 0.15 of the width per page height. It found three defects in the per-page margin before they shipped (a median slope pulled aside by first lines, the margin taken from long lines only, the document margin taken as the most common edge) |
 | `EPUBInvariantTests` | in the exported package every `href`/`src`/fragment points at an existing file and id; ids are unique per document; every file of the archive is in the manifest and every manifest item is in the archive; the spine refers to manifest items; every noteref has a footnote and every footnote a noteref and a back link; the table of contents has one working entry per chapter; all XML is well-formed |
 
 ### How they work
@@ -172,7 +175,10 @@ the scan overlay in `PageScan`), the text selection and cursor handling in the
 editor (`TextSelection` in `BlockCard`), the file panels, and the position of
 the quick-fix row (a known defect, `docs/backlog.md`). The sheet that picks
 which similar blocks to change (`CandidateSheet`) has no UI test either: it
-needs similar blocks, which the synthetic pages do not reliably give.
+needs similar blocks, which the synthetic pages do not reliably give. The
+*Text probably misrecognized* warning has no UI test: it needs garbled
+recognition, which clean synthetic pages do not give; its rule and
+navigation are unit tested in `ReviewQualityTests`.
 
 ## What covers the views
 
@@ -194,7 +200,9 @@ EPUB, and check that the file exists and contains `<h3`.
 `ReviewScenarioTests` are short, independent scenarios, each launching the app
 on its own folder: an empty folder shows the failure screen (no Vision, a few
 seconds); ignore a block and undo; open the text editor of a block and cancel it; merge with the next block and undo; make a block a heading and
-dismiss the offer to repeat it. Vision decides which blocks exist, so these
+dismiss the offer to repeat it; a page that is one large picture without a
+caption counts as an issue, Next Issue stops on it and shows the *Page may
+contain text that was not recognized* warning. Vision decides which blocks exist, so these
 assert on what a click does, not on recognized text. The merge and offer
 scenarios are **skipped** (not failed) when the synthetic pages give no second
 block or no similar block. Each converting scenario pays the conversion again

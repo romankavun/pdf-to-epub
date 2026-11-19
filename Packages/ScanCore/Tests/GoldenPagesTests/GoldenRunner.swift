@@ -5,6 +5,7 @@ import Foundation
 import ImageIO
 import Importing
 import OCR
+import Preprocessing
 import Testing
 import TestSupport
 
@@ -24,6 +25,9 @@ struct GoldenCase: Sendable {
     /// Draw the pages into one PDF and convert that through ``PDFImporter``
     /// instead of converting the page images directly.
     var viaPDF = false
+    /// Lay each page on a scanner bed as given, one placement per page, and
+    /// convert with the preprocessing stage, as the app does.
+    var scan: [ScannerPlacement]?
 }
 
 /// Draws each page image as one page of a PDF, as a scanner would.
@@ -66,7 +70,17 @@ func runGolden(_ golden: GoldenCase) async throws {
         author: nil,
         language: "en"
     )
-    let conversion = try await DocumentConverter(engine: VisionOCREngine()).analyze(pageURLs: urls, metadata: metadata)
+    var preparer: ScanPagePreparer?
+    if let placements = golden.scan {
+        for (url, placement) in zip(urls, placements) {
+            try placement.placeOnBed(imageAt: url)
+        }
+        let prepared = folder.appendingPathComponent("prepared", isDirectory: true)
+        try FileManager.default.createDirectory(at: prepared, withIntermediateDirectories: true)
+        preparer = ScanPagePreparer(folder: prepared)
+    }
+    let conversion = try await DocumentConverter(engine: VisionOCREngine(), preparer: preparer)
+        .analyze(pageURLs: urls, metadata: metadata)
     let actual = DocumentSnapshot(
         document: conversion.document, unlinkedReferences: conversion.unlinkedReferences,
         unlinkedNotes: conversion.unlinkedNotes

@@ -60,7 +60,9 @@ let package = Package(
         ),
         .testTarget(
             name: "GoldenPagesTests",
-            dependencies: ["TestSupport", "Conversion", "DocumentModel", "Importing", "LayoutAnalysis", "OCR"]
+            dependencies: [
+                "TestSupport", "Conversion", "DocumentModel", "Importing", "LayoutAnalysis", "OCR", "Preprocessing",
+            ]
         ),
         .testTarget(name: "TextReviewTests", dependencies: ["TextReview"]),
         .testTarget(

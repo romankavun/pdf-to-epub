@@ -1,3 +1,4 @@
+import CoreGraphics
 import Testing
 import TestSupport
 
@@ -263,4 +264,70 @@ struct GoldenCoverageTests {
             ]),
         ], viaPDF: true))
     }
+
+    @Test(
+        "paper scans: pages lying askew on a scanner bed keep their paragraphs, lose their footers and soft hyphens",
+        .timeLimit(.minutes(10))
+    )
+    func paperScan() async throws {
+        let placements = [
+            ScannerPlacement(offset: CGPoint(x: 0.03, y: -0.02), angle: 1.2),
+            ScannerPlacement(offset: CGPoint(x: -0.04, y: 0.03), angle: -0.8),
+            ScannerPlacement(offset: CGPoint(x: 0.02, y: 0.04), angle: 1.5),
+            ScannerPlacement(offset: CGPoint(x: -0.02, y: -0.03), angle: -1.0),
+            ScannerPlacement(offset: CGPoint(x: 0.05, y: 0.01), angle: 0.6),
+            ScannerPlacement(offset: CGPoint(x: -0.03, y: 0.02), angle: -1.4),
+        ]
+        try await runGolden(GoldenCase(
+            name: "paper-scan", knownIssue: nil, pages: (1 ... 6).map(scannedPage), scan: placements
+        ))
+    }
+
+    @Test("a framed clipping of printed text is an illustration with its caption", .timeLimit(.minutes(10)))
+    func framedClipping() async throws {
+        try await runGolden(GoldenCase(name: "framed-clipping", knownIssue: nil, pages: [
+            prose,
+            SyntheticPage([
+                .line("> The village paper printed the news of the bridge on the"),
+                .line("first morning of winter, and the baker kept the page."),
+                .gap(0.5),
+                .framedPrint([
+                    "THE NEW BRIDGE IS OPEN TO ALL TRAFFIC FROM TODAY",
+                    "The council met on Monday and agreed that the bridge",
+                    "over the river is safe for carts, coaches and walkers.",
+                    "The mayor thanked the builders and the stone masons",
+                    "for their work through the long and difficult autumn.",
+                    "A band will play on the bank on Sunday afternoon.",
+                ]),
+                .line("Fig. 1. The page from the village paper."),
+                .gap(2),
+                .line("> Everyone in the square read it twice and agreed that"),
+                .line("the news was good for the market and for the mill."),
+                .pageNumber("2"),
+            ]),
+        ]))
+    }
+}
+
+/// A page of a printed document for the paper-scan case: three paragraphs, a
+/// word broken by the typesetter with a hyphen, and a running footer that
+/// differs on left and right pages and carries the page number.
+private func scannedPage(_ number: Int) -> SyntheticPage {
+    let words = ["river", "stone", "lantern", "winter", "orchard", "bridge", "morning", "meadow", "violin", "mill"]
+    func text(_ line: Int) -> String {
+        (0 ..< 8).map { words[(line * 3 + $0 * 7 + number) % words.count] }.joined(separator: " ")
+    }
+    var elements: [SyntheticPage.Element] = []
+    for line in 0 ..< 15 {
+        let start = line.isMultiple(of: 5)
+        var body = text(line)
+        if line == 6 {
+            body += " har-"
+        } else if line == 7 {
+            body = "bour " + body
+        }
+        elements.append(.line(start ? "> " + body : body))
+    }
+    elements.append(.footer(number.isMultiple(of: 2) ? "\(number) AUTHOR NAME" : "THE ORCHARD \(number)"))
+    return SyntheticPage(elements)
 }

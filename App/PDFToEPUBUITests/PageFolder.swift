@@ -46,17 +46,25 @@ enum PageFolder {
 
     /// Writes `page-001.png`, `page-002.png`… into a new folder inside `parent`
     /// and returns the folder.
-    static func make(in parent: URL) throws -> URL {
+    ///
+    /// - Parameter picturePage: Adds a third page that is one large grey
+    ///   picture without a caption, which the review flags as a page that may
+    ///   have lost its text.
+    static func make(in parent: URL, picturePage: Bool = false) throws -> URL {
         let folder = parent.appendingPathComponent("UITest Document", isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         for (index, lines) in pages.enumerated() {
             let url = folder.appendingPathComponent(String(format: "page-%03d.png", index + 1))
             try write(render(lines), to: url)
         }
+        if picturePage {
+            let url = folder.appendingPathComponent(String(format: "page-%03d.png", pages.count + 1))
+            try write(render([], picture: CGRect(x: 120, y: 200, width: 960, height: 1300)), to: url)
+        }
         return folder
     }
 
-    private static func render(_ lines: [String]) throws -> CGImage {
+    private static func render(_ lines: [String], picture: CGRect? = nil) throws -> CGImage {
         let width = Int(size.width)
         let height = Int(size.height)
         guard let context = CGContext(
@@ -66,6 +74,10 @@ enum PageFolder {
         ) else { throw PageFolderError.drawing }
         context.setFillColor(CGColor(gray: 1, alpha: 1))
         context.fill(CGRect(origin: .zero, size: size))
+        if let picture {
+            context.setFillColor(CGColor(gray: 0.55, alpha: 1))
+            context.fill(picture)
+        }
         let font = CTFontCreateWithName("Times New Roman" as CFString, 40, nil)
         let attributes: [CFString: Any] = [
             kCTFontAttributeName: font,

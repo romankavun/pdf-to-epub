@@ -41,12 +41,14 @@ struct BlockCard: View {
                     .font(.caption)
                     .foregroundStyle(.red)
                     .help(misrecognizedHelp)
+                    .accessibilityIdentifier("misrecognizedWarning")
             }
             if item.mayHideText {
                 Label("Page may contain text that was not recognized", systemImage: "text.page.slash")
                     .font(.caption)
                     .foregroundStyle(.red)
                     .help("Taken whole for an illustration: any text on it is missing. Compare with the scan.")
+                    .accessibilityIdentifier("lostTextWarning")
             }
             if let image {
                 Image(nsImage: image)

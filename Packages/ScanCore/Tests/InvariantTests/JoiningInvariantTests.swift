@@ -53,6 +53,27 @@ struct JoiningInvariantTests {
         }
     }
 
+    @Test("on paper scans a line-end hyphen before a lowercase letter goes and every letter stays")
+    func softHyphenBreaks() {
+        Property.check("soft hyphen breaks", cases: 300) { random in
+            var draft = Draft(headingStyle: nil)
+            let first = generator.words(&random, count: 1 ... 3) + "-"
+            let second = generator.words(&random, count: 1 ... 3)
+            draft.append([.text(first)], page: 0, box: CGRect(x: 0.05, y: 0.1, width: 0.9, height: 0.017))
+            draft.append(
+                [.text(second)], page: 0, box: CGRect(x: 0.05, y: 0.12, width: 0.9, height: 0.017),
+                removesSoftHyphens: true
+            )
+            let joined = draft.text
+            let expected = first.dropLast().last?.isLetter == true
+                ? (second.first?.isLowercase == true ? first.dropLast() + second : first + second)
+                : first + " " + second
+            try Property.requireEqual(
+                joined, expected, "joining of \(first.debugDescription) and \(second.debugDescription)"
+            )
+        }
+    }
+
     @Test("a hyphen kept at a line break is only a hyphen: joining never glues in or drops a letter next to it")
     func hyphenBreaks() {
         Property.check("hyphen breaks", cases: 300) { random in
@@ -69,10 +90,13 @@ struct JoiningInvariantTests {
         }
     }
 
-    @Test("a whole page of generated lines comes out with exactly the letters it went in with")
-    func analyzerKeepsLetters() {
-        let analyzer = LayoutAnalyzer()
-        Property.check("analyzer letters", cases: 150) { random in
+    @Test(
+        "a whole page of generated lines comes out with exactly the letters it went in with",
+        arguments: [("clean pages", LayoutAnalyzer.Options()), ("paper scans", .paperScan)]
+    )
+    func analyzerKeepsLetters(kind: String, options: LayoutAnalyzer.Options) {
+        let analyzer = LayoutAnalyzer(options: options)
+        Property.check("analyzer letters (\(kind))", cases: 150) { random in
             var input = ""
             var pages: [RecognizedPage] = []
             for _ in 0 ..< random.int(1 ... 4) {

@@ -34,6 +34,13 @@ public struct SyntheticPage: Sendable {
         /// Moves the drawing position to a fraction of the page height from
         /// the top, to place notes at the bottom of a page.
         case moveTo(Double)
+        /// A running footer in small capitals at the bottom left, such as
+        /// "12 AUTHOR NAME", at `height` (a fraction of the page height).
+        case footer(String, height: Double = 0.95)
+        /// A clipping of printed matter in a thin frame inside the text
+        /// column: lines of small type, set close together, that the
+        /// engine can read, as a newspaper cutting reproduced in a document.
+        case framedPrint([String])
     }
 
     /// Canvas size in pixels; a portrait page like a clean-page source clean page.
@@ -120,27 +127,7 @@ public struct SyntheticPage: Sendable {
             draw(line, centredAtTop: top, size: size, in: context)
             top += size * 1.9
         case let .picture(heightFraction, caption):
-            let band = CGRect(
-                x: Self.size.width * 0.18, y: Self.size.height - top - Self.size.height * heightFraction,
-                width: Self.size.width * 0.64, height: Self.size.height * heightFraction
-            )
-            context.setFillColor(CGColor(gray: 0.55, alpha: 1))
-            context.fill(band)
-            top += Self.size.height * heightFraction + Self.bodySize * 0.6
-            if let caption {
-                let size = Self.bodySize * 0.75
-                let line = Self.line(
-                    caption,
-                    size: size,
-                    bold: false,
-                    italic: true,
-                    color: CGColor(gray: 0, alpha: 1)
-                )
-                draw(line, centredAtTop: top, size: size, in: context)
-                // Layout analysis attaches a caption by the wide step
-                // that follows it (ADR 0002), as sample sets have.
-                top += pitch * 3.8
-            }
+            top = drawPicture(height: heightFraction, caption: caption, top: top, in: context)
         case .rule:
             context.setFillColor(CGColor(gray: 0.3, alpha: 1))
             context.fill(CGRect(
@@ -154,8 +141,67 @@ public struct SyntheticPage: Sendable {
             draw(line, centredAtTop: Self.size.height * 0.95, size: size, in: context)
         case let .moveTo(fraction):
             top = Self.size.height * fraction
+        case let .footer(text, height):
+            let size = Self.bodySize * 0.6
+            let line = Self.line(text, size: size, bold: true, italic: false, color: CGColor(gray: 0, alpha: 1))
+            context.textPosition = CGPoint(x: Self.leftMargin, y: Self.size.height * (1 - height) - size)
+            CTLineDraw(line, context)
+        case let .framedPrint(lines):
+            top = drawFramedPrint(lines, top: top, in: context)
         }
         return top
+    }
+
+    /// Draws ``Element/picture(height:caption:)`` and returns where the next
+    /// element starts.
+    private func drawPicture(
+        height heightFraction: Double, caption: String?, top start: CGFloat, in context: CGContext
+    ) -> CGFloat {
+        var top = start
+        let pitch = Self.bodySize * 1.6
+        let band = CGRect(
+            x: Self.size.width * 0.18, y: Self.size.height - top - Self.size.height * heightFraction,
+            width: Self.size.width * 0.64, height: Self.size.height * heightFraction
+        )
+        context.setFillColor(CGColor(gray: 0.55, alpha: 1))
+        context.fill(band)
+        top += Self.size.height * heightFraction + Self.bodySize * 0.6
+        if let caption {
+            let size = Self.bodySize * 0.75
+            let line = Self.line(
+                caption,
+                size: size,
+                bold: false,
+                italic: true,
+                color: CGColor(gray: 0, alpha: 1)
+            )
+            draw(line, centredAtTop: top, size: size, in: context)
+            // Layout analysis attaches a caption by the wide step
+            // that follows it (ADR 0002), as sample sets have.
+            top += pitch * 3.8
+        }
+        return top
+    }
+
+    /// Draws ``Element/framedPrint(_:)`` and returns where the next element
+    /// starts.
+    private func drawFramedPrint(_ lines: [String], top start: CGFloat, in context: CGContext) -> CGFloat {
+        let size = Self.bodySize * 0.55
+        let pitch = size * 1.15
+        let left = Self.size.width * 0.2, right = Self.size.width * 0.8
+        let height = pitch * CGFloat(lines.count) + size
+        let black = CGColor(gray: 0, alpha: 1)
+        for (index, text) in lines.enumerated() {
+            let line = Self.line(text, size: size, bold: false, italic: false, color: black)
+            context.textPosition = CGPoint(
+                x: left + size * 0.6, y: Self.size.height - start - size * 0.5 - pitch * CGFloat(index + 1)
+            )
+            CTLineDraw(line, context)
+        }
+        context.setStrokeColor(black)
+        context.setLineWidth(3)
+        context.stroke(CGRect(x: left, y: Self.size.height - start - height, width: right - left, height: height))
+        return start + height + Self.bodySize * 0.6
     }
 
     private func drawLine(_ text: String, size: CGFloat, top: CGFloat, in context: CGContext) {

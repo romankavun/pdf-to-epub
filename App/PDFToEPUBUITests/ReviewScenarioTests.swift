@@ -106,12 +106,30 @@ final class ReviewScenarioTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Heading 3"].exists, "dismissing the offer undid the change")
     }
 
+    /// A page that became one picture with no caption is an issue: the
+    /// counter includes it and Next Issue stops on it with the warning.
+    @MainActor
+    func testLostTextPageIsAnIssue() throws {
+        let app = try launchReview(picturePage: true)
+        let counter = element("issueCounter", in: app)
+        XCTAssertTrue(counter.waitForExistence(timeout: 30), "the review has no issue counter")
+        let next = element("nextIssueButton", in: app)
+        XCTAssertTrue(next.isEnabled, "Next Issue is disabled although a page lost its text")
+        next.click()
+        let warning = element("lostTextWarning", in: app)
+        XCTAssertTrue(warning.waitForExistence(timeout: 10), "Next Issue did not reach the picture page's warning")
+        XCTAssertTrue(
+            waitFor { (counter.value as? String ?? counter.label).hasPrefix("Issue ") },
+            "the counter does not show the issue's position: \(counter.label)"
+        )
+    }
+
     // MARK: Helpers
 
     /// Opens the review of a converted folder of synthetic pages.
     @MainActor
-    private func launchReview() throws -> XCUIApplication {
-        let folder = try PageFolder.make(in: workDirectory)
+    private func launchReview(picturePage: Bool = false) throws -> XCUIApplication {
+        let folder = try PageFolder.make(in: workDirectory, picturePage: picturePage)
         let app = XCUIApplication()
         app.launchArguments = ["-UITestFolder", folder.path]
         app.launch()
