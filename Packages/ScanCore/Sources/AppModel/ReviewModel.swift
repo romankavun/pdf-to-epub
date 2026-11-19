@@ -45,7 +45,7 @@ public final class ReviewModel {
     public var draft = ""
     public internal(set) var proposal: Proposal?
 
-    /// Blocks and notes with at least one flagged word, in the order of
+    /// Blocks and notes to look at (see ``Item/isIssue``), in the order of
     /// the pages they start on, top to bottom. A block on two pages is one
     /// stop, on the page it starts on.
     private var flagged: [(itemID: ItemID, page: Int)] = []
@@ -76,7 +76,7 @@ public final class ReviewModel {
         pages = Self.pages(showing: shown, urls: project.conversion.pageURLs)
         issueCount = shown.reduce(0) { $0 + $1.item.issueCount }
         misspellingCount = shown.reduce(0) { $0 + $1.item.misspellingCount }
-        flagged = Self.stops(of: shown) { $0.issueCount > 0 }
+        flagged = Self.stops(of: shown) { $0.isIssue }
         misspelled = Self.stops(of: shown) { $0.misspellingCount > 0 }
         selectedItemID = selectedAnchor.flatMap { anchor in
             currentPage?.items.first { $0.anchor == anchor }?.id
@@ -91,6 +91,8 @@ public final class ReviewModel {
     /// it starts on.
     private func items() -> [(item: Item, source: BlockSource)] {
         let document = project.conversion.document
+        let language = SpellLanguage(languageCode: document.metadata.language)
+        let lostText = LostText.figures(in: project.conversion)
         let labels = Dictionary(project.base.document.notes.map { ($0.id, $0.label) }) { first, _ in first }
         func item(
             _ id: ItemID, _ kind: Kind, _ content: [Inline], _ source: BlockSource, flagging: Bool = true
@@ -108,6 +110,9 @@ public final class ReviewModel {
                 id: id, kind: kind, anchor: BlockAnchor(source), runs: runs, box: source.box, issueCount: issues
             )
             item.misspellingCount = runs.count { $0.reason == .misspelled }
+            if flagging {
+                item.spelling = detector.spellingTally(of: content, in: language, ignoring: ignoredWords)
+            }
             return (item, source)
         }
         let blocks = zip(document.blocks, project.conversion.blockSources).enumerated().map { index, pair in
@@ -115,7 +120,10 @@ public final class ReviewModel {
             return switch block {
             case let .heading(level, content): item(.block(index), .heading(level: level), content, source)
             case let .paragraph(content): item(.block(index), .paragraph, content, source)
-            case let .figure(figure): item(.block(index), .figure(imageID: figure.imageID), figure.caption, source)
+            case let .figure(figure):
+                with(item(.block(index), .figure(imageID: figure.imageID), figure.caption, source)) {
+                    $0.0.mayHideText = lostText.contains(index)
+                }
             }
         }
         let notes = zip(document.notes, project.conversion.noteSources).map { note, source in
@@ -176,10 +184,17 @@ public final class ReviewModel {
         currentPage?.items.first { $0.id == selectedItemID }
     }
 
-    /// The number of blocks and note texts that contain flagged words: the stops of
-    /// ``goToNextIssue()``.
+    /// The number of blocks and note texts to look at in the whole document:
+    /// the stops of ``goToNextIssue()``.
     public var flaggedItemCount: Int {
         flagged.count
+    }
+
+    /// How many stops of ``goToNextIssue()`` start on the page being viewed.
+    /// The toolbar shows it beside the document's total, so that a page full of
+    /// problems does not look like the rest.
+    public var issueCountOnPage: Int {
+        flagged.count { $0.page == pageIndex }
     }
 
     /// Which stop the selected block is, counting from 1; `nil` when the
@@ -290,6 +305,12 @@ public final class ReviewModel {
     }
 
     // MARK: - Helpers
+
+    private func with<Value>(_ value: Value, _ change: (inout Value) -> Void) -> Value {
+        var value = value
+        change(&value)
+        return value
+    }
 
     /// The items that pass `isFlagged`, in the order of the pages they start
     /// on, top to bottom.

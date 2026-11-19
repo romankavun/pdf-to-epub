@@ -710,17 +710,6 @@
         }
       }
     },
-    "No suspicious words" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Підозрілих слів немає"
-          }
-        }
-      }
-    },
     "No text on this page" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1064,17 +1053,6 @@
       }
     },
     "Suspicious words: %@" : {},
-    "Suspicious words: %lld" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Підозрілих слів: %lld"
-          }
-        }
-      }
-    },
     "Text recognition stopped responding. Try again." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1342,6 +1320,138 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ігнорувати це слово"
+          }
+        }
+      }
+    },
+    "No issues found" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проблем не знайдено"
+          }
+        }
+      }
+    },
+    "Issues: %lld on this page, %lld in the document" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проблем: %1$lld на цій сторінці, %2$lld у книзі"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Issues: %1$lld on this page, %2$lld in the document"
+          }
+        }
+      }
+    },
+    "Suspicious words, text probably misrecognized and pages that may have lost text." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Підозрілі слова, імовірно хибно розпізнаний текст і сторінки, на яких міг загубитися текст."
+          }
+        }
+      }
+    },
+    "Text probably misrecognized" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текст, імовірно, розпізнано хибно"
+          }
+        }
+      }
+    },
+    "Page may contain text that was not recognized" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "На сторінці може бути нерозпізнаний текст"
+          }
+        }
+      }
+    },
+    "Pages that may have lost their text" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сторінки, на яких міг загубитися текст"
+          }
+        }
+      }
+    },
+    "Pages taken whole for an illustration. Opens the review at the first issue." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сторінки, цілком прийняті за ілюстрацію. Відкриває перегляд на першій проблемі."
+          }
+        }
+      }
+    },
+    "Blocks with text probably misrecognized" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Блоки з імовірно хибно розпізнаним текстом"
+          }
+        }
+      }
+    },
+    "Opens the review at the first issue." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відкриває перегляд на першій проблемі."
+          }
+        }
+      }
+    },
+    "%lld of %lld words are unknown. Compare with the scan." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld з %2$lld слів невідомі словнику. Порівняйте зі сканом."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld words are unknown. Compare with the scan."
+          }
+        }
+      }
+    },
+    "Taken whole for an illustration: any text on it is missing. Compare with the scan." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сторінку цілком прийнято за ілюстрацію: текст на ній, якщо він є, втрачено. Порівняйте зі сканом."
+          }
+        }
+      }
+    },
+    "Too many of their words are unknown. Opens the review at the first issue." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Забагато їхніх слів невідомі словнику. Відкриває перегляд на першій проблемі."
           }
         }
       }

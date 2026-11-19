@@ -25,11 +25,22 @@ levelled, because that is the image the blocks were found on; see
   on, as a *Note N* card with its label, outlined in teal. (A note text that
   nothing refers to stays an ordinary paragraph in the document, and in review.)
 - **Suspicious words** are highlighted in the text, and a block that has
-  any is outlined in orange with a count on its card. The toolbar shows how
-  many there are in the document.
-- **Next Issue** (⌘G) and **Previous Issue** (⇧⌘G) jump between blocks
-  and note texts with suspicious words, across pages, wrapping around at the
-  ends. A block on two pages is one stop, shown on the page it starts on.
+  any is outlined in orange with a count on its card.
+- **Text probably misrecognized**: a block whose words are largely unknown
+  to the dictionary is outlined in red and says so on its card; the tooltip
+  gives the numbers ("9 of 31 words are unknown"). See
+  [below](#text-probably-misrecognized).
+- **Page may contain text that was not recognized**: a page whose only
+  content is an uncaptioned figure over the text area is flagged on the
+  figure's card, outlined in red. See [below](#pages-that-may-have-lost-their-text).
+- **Issues** are all three: blocks with suspicious words, misrecognized
+  blocks and figures that may hide a page of text. The toolbar shows how many
+  start on the page being viewed and how many there are in the document
+  ("Issues: 1 on this page, 51 in the document"), or "Issue 2 of 51" while one is
+  selected.
+- **Next Issue** (⌘G) and **Previous Issue** (⇧⌘G) jump between issues,
+  across pages, wrapping around at the ends. A block on two pages is one
+  stop, shown on the page it starts on.
 - **Corrections**: select a block to change its type, edit its text or
   ignore it, and use *Undo* (⌘Z) and *Redo* (⇧⌘Z; a new correction drops what could be redone; both are off while a text is being edited); the bar below offers the same change for
   similar blocks. See [corrections](corrections.md).
@@ -92,6 +103,61 @@ fragments works. It skips words of one or two letters, all-capital words,
 and a capitalized word that does not begin a sentence (taken for a name).
 See ADR 0007.
 
+## Text probably misrecognized
+
+On a poor scan OCR returns near-words ("thc", "rcady") throughout a block.
+Each is only a misspelling, which the review keeps off by default, and
+none is an OCR suspect, so word rules alone left such a document looking clean:
+on a garbled paper scan the toolbar used to read "Suspicious words: 1" on
+every page (the one OCR suspect in the whole document, while about a fifth of
+all words were unknown to the dictionary).
+
+The block rule counts, per block or note text, the words the spelling rule
+judges (the same skips: short words, names, acronyms, words with digits) and
+how many of them the dictionary does not know
+(`SuspiciousWordDetector.SpellingTally`, `TextReview`). A block is
+**probably misrecognized** when at least **8** words were judged and
+**more than 20 %** of them are unknown. Only words in the document's own
+language (`DocumentMetadata.language`: `en` or `uk`) are counted: a Ukrainian
+document's German or English fragments are unknown by nature, not misread. A
+word the user ignored counts as known. The rule needs a dictionary; without
+one it never fires.
+
+The threshold comes from measurements with the system dictionaries
+(blocks with at least 8 judged words):
+
+| Sample | Blocks | Median unknown share | Blocks above 20 % |
+|---|---|---|---|
+| Garbled English paper scan (23 pages) | 69 | 0.23 | 40 (58 %) |
+| Clean English pages | 32 | 0.03 | 0 |
+| Ukrainian clean-page document, mostly modern prose | 744 | 0.03 | 4 (0.5 %) after the language filter |
+| Ukrainian clean-page document with dialect quotes and Russian references | 956 | 0.04 | 100 (7 %) after the language filter |
+
+20 % catches most of the garbled blocks and none of the clean English ones;
+a lower threshold adds many Ukrainian false alarms, a higher one loses half
+the garbled blocks. The minimum of 8 words keeps short headings, where one
+name is already a quarter of the words, out of it.
+
+The summary lists *Blocks with text probably misrecognized* under *Needs
+attention*; the number opens the review at the first issue.
+
+## Pages that may have lost their text
+
+When picture detection takes a whole scanned page for an illustration, its
+text never reaches OCR and the document silently misses a page. A page is
+flagged when its only content is one figure that has no caption and covers
+at least **60 %** of the document's text area. The text area is where the
+document's text blocks and notes lie: the 5th to 95th percentile of their
+edges, so a scan with wide margins gets a small one; with fewer than three
+text blocks it is the whole page. A lost text page on the garbled sample
+covers 0.71 to 1.0 of it.
+
+The summary lists *Pages that may have lost their text* under *Needs
+attention*, and *Next Issue* stops at the figure. Giving the figure a
+caption or ignoring it answers the warning. A real full-page illustration
+without a caption is flagged too (two pages of 148 in one clean clean-page source
+document, five of 161 in another, one of which did hide a line of text).
+
 ## How it is built
 
 Layout analysis records where each block comes from: `DocumentLayout.sources`
@@ -120,6 +186,14 @@ that state.
   are numbers only: layout analysis does not record where they are, so they
   cannot open the review at the problem yet.
 - False positives are expected for formulas and codes ("H2O").
+- The misrecognized-text rule flags blocks in another language written in
+  the document's own script (Russian quotes in a Ukrainian document), dialect and
+  archaic text: the dictionary cannot tell them from misreadings. Ignoring
+  the words brings the block under the threshold. A garbled block with fewer
+  than 8 judged words is not flagged.
+- A full-page illustration without a caption is reported as a page that may
+  have lost its text, and so is a scanned cover the converter did not take
+  for the cover.
 - The review itself is rebuilt each time it is opened; the corrections are
   kept in the [project](projects.md).
 

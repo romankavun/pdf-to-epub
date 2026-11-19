@@ -36,6 +36,18 @@ struct BlockCard: View {
                         .foregroundStyle(.blue)
                 }
             }
+            if item.isProbablyMisrecognized {
+                Label("Text probably misrecognized", systemImage: "exclamationmark.octagon.fill")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .help(misrecognizedHelp)
+            }
+            if item.mayHideText {
+                Label("Page may contain text that was not recognized", systemImage: "text.page.slash")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .help("Taken whole for an illustration: any text on it is missing. Compare with the scan.")
+            }
             if let image {
                 Image(nsImage: image)
                     .resizable()
@@ -88,6 +100,11 @@ struct BlockCard: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("blockCard")
         .onHover { isHovered = $0 }
+    }
+
+    private var misrecognizedHelp: LocalizedStringKey {
+        let spelling = item.spelling
+        return "\(spelling.misspelled) of \(spelling.checked) words are unknown. Compare with the scan."
     }
 
     private var isEditing: Bool {

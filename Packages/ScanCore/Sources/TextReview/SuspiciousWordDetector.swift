@@ -54,22 +54,47 @@ public struct SuspiciousWordDetector: Sendable {
     public func segments(of text: String) -> [Segment] {
         var segments: [Segment] = []
         var plain = ""
-        var atSentenceStart = true
-        func add(_ word: Substring) {
-            defer { atSentenceStart = false }
-            if let reason = reason(for: word, atSentenceStart: atSentenceStart) {
-                if !plain.isEmpty {
-                    segments.append(Segment(text: plain))
-                    plain = ""
+        forEachPiece(of: text) { piece, atSentenceStart in
+            switch piece {
+            case let .separator(character):
+                plain.append(character)
+            case let .word(word):
+                if let reason = reason(for: word, atSentenceStart: atSentenceStart) {
+                    if !plain.isEmpty {
+                        segments.append(Segment(text: plain))
+                        plain = ""
+                    }
+                    segments.append(Segment(text: String(word), reason: reason))
+                } else {
+                    plain += word
                 }
-                segments.append(Segment(text: String(word), reason: reason))
-            } else {
-                plain += word
             }
         }
+        if !plain.isEmpty {
+            segments.append(Segment(text: plain))
+        }
+        return segments
+    }
 
+    /// A word, or a character between words.
+    enum Piece {
+        case word(Substring)
+        case separator(Character)
+    }
+
+    /// Calls `body` with every word and every character between words of
+    /// `text`, in order, telling whether a word begins a sentence.
+    func forEachPiece(of text: String, _ body: (Piece, _ atSentenceStart: Bool) -> Void) {
+        var atSentenceStart = true
         var wordStart: String.Index?
         var index = text.startIndex
+        func endWord(at end: String.Index) {
+            if let start = wordStart {
+                body(.word(text[start ..< end]), atSentenceStart)
+                atSentenceStart = false
+                wordStart = nil
+            }
+        }
         while index < text.endIndex {
             let character = text[index]
             let next = text.index(after: index)
@@ -79,24 +104,15 @@ public struct SuspiciousWordDetector: Sendable {
             if inWord {
                 wordStart = wordStart ?? index
             } else {
-                if let start = wordStart {
-                    add(text[start ..< index])
-                    wordStart = nil
-                }
-                plain.append(character)
+                endWord(at: index)
+                body(.separator(character), atSentenceStart)
                 if Self.sentenceEnds.contains(character) {
                     atSentenceStart = true
                 }
             }
             index = next
         }
-        if let start = wordStart {
-            add(text[start...])
-        }
-        if !plain.isEmpty {
-            segments.append(Segment(text: plain))
-        }
-        return segments
+        endWord(at: text.endIndex)
     }
 
     /// The number of OCR-suspect words in `text` (see ``Reason/isOCRSuspect``);
@@ -133,7 +149,7 @@ public struct SuspiciousWordDetector: Sendable {
         return Array(result.filter { seen.insert($0).inserted }.prefix(5))
     }
 
-    private static func language(of word: String) -> SpellLanguage {
+    static func language(of word: some StringProtocol) -> SpellLanguage {
         word.unicodeScalars.contains { (0x400 ... 0x52F).contains($0.value) } ? .ukrainian : .english
     }
 
@@ -166,7 +182,7 @@ public struct SuspiciousWordDetector: Sendable {
 
     private static let sentenceEnds: Set<Character> = [".", "!", "?", "…"]
 
-    private func reason(for word: Substring, atSentenceStart: Bool) -> Reason? {
+    func reason(for word: Substring, atSentenceStart: Bool) -> Reason? {
         var hasLatin = false, hasCyrillic = false
         for scalar in word.unicodeScalars {
             switch scalar.value {
@@ -193,13 +209,20 @@ public struct SuspiciousWordDetector: Sendable {
     /// skipped. Every skip trades a missed error for fewer false alarms,
     /// which would otherwise drown the real ones in a document full of names.
     private func isMisspelled(_ word: Substring, isCyrillic: Bool, atSentenceStart: Bool) -> Bool {
-        guard let spellChecker, word.count(where: \.isLetter) >= 3,
+        guard let spellChecker, isJudged(word, atSentenceStart: atSentenceStart) else { return false }
+        return spellChecker.isMisspelled(String(word), language: isCyrillic ? .ukrainian : .english)
+    }
+
+    /// Whether the spelling rule asks the dictionary about `word`: true only
+    /// when there is a dictionary and none of the skips above applies.
+    func isJudged(_ word: Substring, atSentenceStart: Bool) -> Bool {
+        guard spellChecker != nil, word.count(where: \.isLetter) >= 3,
               !word.contains(where: \.isNumber),
               word.allSatisfy({ $0.isLetter || Self.apostrophes.contains($0) })
         else { return false }
         if word.first?.isUppercase == true, !atSentenceStart || word == word.uppercased() {
             return false
         }
-        return spellChecker.isMisspelled(String(word), language: isCyrillic ? .ukrainian : .english)
+        return true
     }
 }

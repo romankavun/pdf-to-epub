@@ -68,6 +68,9 @@ public extension ReviewModel {
 
     /// The look of a block's frame.
     enum Outline: Sendable, Equatable {
+        /// The block as a whole is in doubt: its text was probably
+        /// misrecognized, or it is a figure that may hide a page of text.
+        case unreliable
         case flagged
         case note
         case ignored
@@ -94,6 +97,14 @@ public extension ReviewModel {
         public var issueCount: Int
         /// The number of words in ``runs`` that the dictionary does not know.
         public var misspellingCount = 0
+        /// The words of the document's language that the spelling rule judged
+        /// in ``runs``, and how many it did not know; empty for an ignored
+        /// block and without a dictionary.
+        public var spelling = SuspiciousWordDetector.SpellingTally()
+        /// Whether the block is a figure that is all there is on its page,
+        /// over the text area and without a caption: the page's text was
+        /// probably taken for a picture and never read.
+        public var mayHideText = false
         /// Whether the block starts on an earlier page.
         public var continuesFromPreviousPage = false
         /// Whether the block runs on to a later page.
@@ -115,9 +126,26 @@ public extension ReviewModel {
             textType != nil || kind.isNote
         }
 
-        /// How the block's frame is told apart from others: flagged words win.
+        /// Whether so many words are unknown that the whole text was
+        /// probably misrecognized (see
+        /// ``SuspiciousWordDetector/SpellingTally/isProbablyMisrecognized``).
+        public var isProbablyMisrecognized: Bool {
+            spelling.isProbablyMisrecognized
+        }
+
+        /// Whether the block is a stop of ``ReviewModel/goToNextIssue()``:
+        /// it has OCR-suspect words, its text was probably misrecognized, or
+        /// it may hide text.
+        public var isIssue: Bool {
+            issueCount > 0 || isProbablyMisrecognized || mayHideText
+        }
+
+        /// How the block's frame is told apart from others: doubt about the
+        /// whole block wins, then flagged words.
         public var outline: Outline {
-            if issueCount > 0 {
+            if isProbablyMisrecognized || mayHideText {
+                .unreliable
+            } else if issueCount > 0 {
                 .flagged
             } else if kind.isNote {
                 .note
@@ -157,6 +185,12 @@ public extension ReviewModel {
         public var url: URL
         /// Top to bottom. Empty for a cover or a blank page.
         public var items: [Item]
+
+        /// Whether the page's only content is a figure that may hide text
+        /// (see ``Item/mayHideText``).
+        public var mayHideText: Bool {
+            items.contains(where: \.mayHideText)
+        }
     }
 
     /// A block that a correction could be applied to as well.

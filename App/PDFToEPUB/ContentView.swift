@@ -46,7 +46,7 @@ struct ContentView: View {
                         switch start {
                         case .top:
                             break
-                        case .suspiciousWord:
+                        case .issue:
                             opened.goToNextIssue()
                         case .misspelledWord:
                             opened.showsSpelling = true
@@ -240,8 +240,8 @@ private struct PagePreview: View {
 
 /// Where the review opens: at the first page, or at the first block with a
 /// problem the summary counts.
-private enum ReviewStart {
-    case top, suspiciousWord, misspelledWord
+enum ReviewStart {
+    case top, issue, misspelledWord
 }
 
 /// What the conversion produced, and saving it as an EPUB.
@@ -266,19 +266,7 @@ private struct ResultScreen: View {
                     Text(summary.hasCover ? "Yes" : "No")
                 }
             }
-            if summary.unlinkedReferences > 0 || summary.unlinkedNotes > 0 || (counted?.suspiciousWords ?? 0) > 0 {
-                Section("Needs attention") {
-                    if let counted, counted.suspiciousWords > 0 {
-                        LabeledContent("Suspicious words") {
-                            Button(counted.suspiciousWords.formatted()) { review(.suspiciousWord) }
-                                .buttonStyle(.link)
-                                .help("Opens the review at the first one.")
-                        }
-                    }
-                    LabeledContent("References without a note", value: summary.unlinkedReferences.formatted())
-                    LabeledContent("Notes without a reference", value: summary.unlinkedNotes.formatted())
-                }
-            }
+            AttentionSection(summary: summary, counted: counted, review: review)
             if let counted, counted.misspelledWords > 0 {
                 // Apart from "Needs attention": spelling is noisy and comes second.
                 Section("For a second pass") {

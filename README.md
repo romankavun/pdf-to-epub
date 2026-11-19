@@ -61,8 +61,9 @@ sample sets.
    illustrations and notes were found. *Needs attention* lists note
    references and note texts that could not be linked.
 5. *Review…* (⌘R) shows each page scan next to what was recognized on it,
-   with suspicious words (likely OCR misreadings) highlighted; *Next Issue*
-   (⌘G) jumps between them. Click a highlighted word for quick fixes, or
+   with suspicious words (likely OCR misreadings) highlighted, blocks whose
+   text was probably misrecognized and pages that may have lost their text
+   outlined in red; *Next Issue* (⌘G) jumps between them. Click a highlighted word for quick fixes, or
    turn on *Spelling* to mark words the dictionary does not know too. See
    [docs/features/review.md](docs/features/review.md).
    Select a block to change its type, edit its text or ignore it (⌘Z
