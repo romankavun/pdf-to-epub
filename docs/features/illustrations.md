@@ -18,12 +18,16 @@ of pixels, so it is tested on pages built in code.
    wide that runs down the page for at least 5% of its height, straight,
    slightly slanted, or broken into pieces. On a paper scan these are the
    edges of the document page and the gutter shadow; left in place, they put ink
-   in every row and the whole page would become one picture.
+   in every row and the whole page would become one picture. Only the parts
+   beside the recognized text are erased (all of them on a page without
+   text), so the sides of a frame round a picture in the text column stay.
 3. The page is cut into horizontal **bands**: runs of consecutive rows that
    contain any non-background pixel. Lines of text are separated by blank
    rows, so each gives a low band.
 4. A band at least 5% of the page height (about three body lines) is a
-   picture, **unless** at least 70% of its ink lies inside recognized text
+   picture if a thin line runs down both its sides for four fifths of its
+   height (a frame); otherwise it is a picture **unless** at least 70% of its
+   ink lies inside recognized text
    lines. That exception keeps a large title whose lines touch from being
    taken for a picture, while lettering inside a real picture covers only a
    small share of its ink. Ink is weighed by how dark it is, so faint text
@@ -90,10 +94,15 @@ document A alone had several bogus chapters made of text inside pictures.
   (document B: 17 MB).
 - Line drawings on the page's own background with blank rows inside are
   split into several pictures or missed if each part is low.
-- The sides of a **frame** around a picture and long thin vertical strokes
-  of a sparse drawing are erased with the page edges. A framed drawing with
-  blank rows inside its frame can come out smaller than the frame, in parts,
-  or not at all.
+- Thin vertical lines are erased only beside the recognized text, where a
+  scan's page edges and gutter shadow lie. A **frame** inside the text
+  column stays, and a band with a thin line down both its sides for four
+  fifths of its height is a picture even when the engine reads text inside
+  it (a framed newspaper clipping). On a page with no recognized text any
+  long thin line is erased, so the sides of a frame and long thin strokes of
+  a sparse drawing can go, and such a drawing can come out smaller, in
+  parts, or not at all. A clipping without a frame whose print the engine
+  reads well is text.
 - **Paper scans**: a page edge or gutter shadow no longer turns the page into
   a picture (on a 4-page sample of a scanned paperback: 4 whole-page figures
   before, none after). A page whose paper is darker than the scanner bed is

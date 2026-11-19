@@ -59,10 +59,13 @@ public struct PictureDetector: Sendable {
         guard bitmap.width > 0, bitmap.height > 0 else { return [] }
         let minimumRows = Int((options.minimumHeight * Double(bitmap.height)).rounded(.up))
         var ink = InkMap(bitmap: bitmap, tolerance: options.backgroundTolerance)
-        ink.eraseThinVerticalLines(
-            maximumWidth: max(1, Int(options.maximumLineWidth * Double(bitmap.width))),
-            minimumLength: minimumRows
-        )
+        // Page edges and the gutter shadow lie beside the text; the sides of
+        // a frame round a picture lie within the text column and are kept.
+        let textColumns = lines.isEmpty ? nil
+            : Int(Double(lines.map(\.box.minX).min() ?? 0) * Double(bitmap.width)) ..<
+            Int((Double(lines.map(\.box.maxX).max() ?? 0) * Double(bitmap.width)).rounded(.up))
+        let lineWidth = max(1, Int(options.maximumLineWidth * Double(bitmap.width)))
+        ink.eraseThinVerticalLines(maximumWidth: lineWidth, minimumLength: minimumRows, outside: textColumns)
         let spans = ink.spans()
 
         var regions: [CGRect] = []
@@ -77,7 +80,10 @@ public struct PictureDetector: Sendable {
                 end += 1
             }
             let band = Band(rows: row ..< end, columns: left ..< right)
-            if band.rows.count >= minimumRows, !isText(band, ink: ink, lines: lines) {
+            if band.rows.count >= minimumRows,
+               ink.isFramed(rows: band.rows, columns: band.columns, lineWidth: lineWidth)
+               || !isText(band, ink: ink, lines: lines)
+            {
                 regions.append(CGRect(
                     x: Double(left) / Double(bitmap.width),
                     y: Double(row) / Double(bitmap.height),
@@ -178,9 +184,12 @@ private struct InkMap {
     ///
     /// Text and pictures keep their ink where it matters: a glyph's strokes
     /// are short and lie in rows with other ink, and a picture's rows are
-    /// wide. Thin strokes of a sparse drawing or the sides of a frame can be
-    /// erased too (see the illustrations feature page).
-    mutating func eraseThinVerticalLines(maximumWidth: Int, minimumLength: Int) {
+    /// wide. Only runs outside `textColumns`, the columns the recognized
+    /// text spans, are erased, so the sides of a frame round a picture in
+    /// the text column stay; with no text, any line goes, and thin strokes
+    /// of a sparse drawing can then be erased too (see the illustrations
+    /// feature page).
+    mutating func eraseThinVerticalLines(maximumWidth: Int, minimumLength: Int, outside textColumns: Range<Int>?) {
         var chains = Chains()
         // The latest narrow run that covered each column.
         var latest = [Int?](repeating: nil, count: width)
@@ -201,11 +210,36 @@ private struct InkMap {
                 }
             }
         }
-        for run in chains.runs(inChainsSpanning: minimumLength) {
+        // Glyph strokes join chains too, across the gaps between lines, so a
+        // chain may reach into the text; only its runs beside the text go.
+        for run in chains.runs(inChainsSpanning: minimumLength) where !(textColumns?.overlaps(run.columns) ?? false) {
             for column in run.columns {
                 weights[run.row * width + column] = 0
             }
         }
+    }
+
+    /// Whether a thin line runs down the left and the right edge of the
+    /// area for at least four fifths of its rows: a frame round a picture,
+    /// such as a clipping of printed text, which is a picture however well
+    /// the engine reads its print. Counted column by column rather than by
+    /// chains, as the chains of glyph strokes run into each other.
+    func isFramed(rows: Range<Int>, columns: Range<Int>, lineWidth: Int) -> Bool {
+        guard !rows.isEmpty, !columns.isEmpty else { return false }
+        let edges = [
+            max(0, columns.lowerBound - lineWidth) ..< min(width, columns.lowerBound + lineWidth),
+            max(0, columns.upperBound - lineWidth) ..< min(width, columns.upperBound + lineWidth),
+        ]
+        var counts = [Int](repeating: 0, count: width)
+        for row in rows {
+            for run in runs(inRow: row) where run.count <= lineWidth && edges.contains(where: { $0.overlaps(run) }) {
+                for column in run {
+                    counts[column] += 1
+                }
+            }
+        }
+        let needed = (rows.count * 4 + 4) / 5
+        return edges.allSatisfy { edge in edge.contains { counts[$0] >= needed } }
     }
 
     /// The runs of consecutive ink pixels in a row, left to right.

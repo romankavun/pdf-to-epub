@@ -149,6 +149,89 @@ struct PictureDetectorTests {
         #expect(isClose(regions[0], CGRect(x: 0.1, y: 0.1, width: 0.5, height: 0.3)))
     }
 
+    @Test("a framed picture of printed text inside the text column stays a picture")
+    func framedClipping() throws {
+        var page = blankPage()
+        var lines: [TextLine] = []
+        // Body text above and below, as wide as the column.
+        for top in [20, 30, 40, 300, 310, 320] {
+            page.fill(x: 10, y: top, width: 180, height: 6, with: ink)
+            lines.append(TextLine(
+                text: "line", box: CGRect(x: 0.05, y: Double(top) / 400, width: 0.9, height: 6.0 / 400)
+            ))
+        }
+        // A newspaper clipping: a thin frame around rows of small print
+        // that the engine does not read. Without its sides the rows would
+        // fall apart into bands lower than a picture.
+        page.fill(x: 40, y: 100, width: 122, height: 2, with: ink)
+        page.fill(x: 40, y: 258, width: 122, height: 2, with: ink)
+        page.fill(x: 40, y: 100, width: 2, height: 160, with: ink)
+        page.fill(x: 160, y: 100, width: 2, height: 160, with: ink)
+        for row in 0 ..< 15 {
+            page.fill(x: 46, y: 106 + row * 10, width: 110, height: 5, with: ink)
+        }
+        let regions = detector.pictureRegions(in: page, lines: lines)
+        try #require(regions.count == 1)
+        #expect(isClose(regions[0], CGRect(x: 0.2, y: 0.25, width: 0.61, height: 0.4)))
+    }
+
+    @Test("a framed clipping stays a picture even when the engine reads the print inside it")
+    func framedClippingWithReadText() throws {
+        var page = blankPage()
+        var lines: [TextLine] = []
+        func text(x: Int, y: Int, width: Int) {
+            page.fill(x: x, y: y, width: width, height: 6, with: ink)
+            lines.append(TextLine(text: "line", box: CGRect(
+                x: Double(x) / 200, y: Double(y) / 400, width: Double(width) / 200, height: 6.0 / 400
+            )))
+        }
+        for top in [20, 30, 40, 300, 310, 320] {
+            text(x: 10, y: top, width: 180)
+        }
+        page.fill(x: 40, y: 100, width: 2, height: 160, with: ink)
+        page.fill(x: 160, y: 100, width: 2, height: 160, with: ink)
+        // Lines of print touching each other, all read by the engine.
+        for row in 0 ..< 26 {
+            text(x: 46, y: 102 + row * 6, width: 110)
+        }
+        let regions = detector.pictureRegions(in: page, lines: lines)
+        try #require(regions.count == 1)
+        #expect(isClose(regions[0], CGRect(x: 0.2, y: 0.25, width: 0.61, height: 0.4)))
+    }
+
+    @Test("a page edge beside text set in thin strokes is ignored")
+    func pageEdgeBesideStrokes() {
+        var page = blankPage()
+        var lines: [TextLine] = []
+        // Glyphs are thin vertical strokes; across the gaps between lines
+        // their chains run into the page edge's.
+        for row in 0 ..< 30 {
+            let top = 20 + row * 10
+            for stroke in 0 ..< 34 {
+                page.fill(x: 10 + stroke * 5, y: top, width: 2, height: 6, with: ink)
+            }
+            lines.append(TextLine(
+                text: "line", box: CGRect(x: 0.05, y: Double(top) / 400, width: 0.85, height: 6.0 / 400)
+            ))
+        }
+        page.fill(x: 190, y: 10, width: 2, height: 380, with: ink)
+        #expect(detector.pictureRegions(in: page, lines: lines).isEmpty)
+    }
+
+    @Test("a page edge beside recognized text is ignored")
+    func pageEdgeBesideText() {
+        var page = blankPage()
+        var lines: [TextLine] = []
+        for row in 0 ..< 30 {
+            page.fill(x: 10, y: 20 + row * 10, width: 170, height: 6, with: ink)
+            lines.append(TextLine(
+                text: "line", box: CGRect(x: 0.05, y: Double(20 + row * 10) / 400, width: 0.85, height: 6.0 / 400)
+            ))
+        }
+        page.fill(x: 190, y: 10, width: 2, height: 380, with: ink)
+        #expect(detector.pictureRegions(in: page, lines: lines).isEmpty)
+    }
+
     @Test("faint show-through around recognized text does not make the text a picture")
     func showThrough() {
         var page = blankPage()
