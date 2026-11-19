@@ -11,15 +11,19 @@ enum CommandLineError: Error, Equatable {
 
 /// Parsed `pagescan` arguments.
 ///
-/// Parsed by hand: the tool has four options, which does not justify a
+/// Parsed by hand: the tool has five options, which does not justify a
 /// dependency on an argument-parsing package.
 struct CommandLineOptions: Equatable {
     static let usage = """
     Usage: pagescan <folder-with-page-images | file.pdf> [--output <file.epub>]
                     [--title <title>] [--author <author>] [--language <bcp47-tag>]
+                    [--prepared-pages <folder>]
 
     Defaults: output is <name>.epub next to the input, title is the name of the
     folder or of the PDF without its extension, language is uk.
+    --prepared-pages keeps the page images of a paper scan as they were
+    prepared for recognition (cropped, cleaned, deskewed) in <folder>;
+    without it they are deleted after the run.
     """
 
     var input: URL
@@ -27,6 +31,9 @@ struct CommandLineOptions: Equatable {
     var title: String
     var author: String?
     var language: String
+    /// Where to keep pages prepared for recognition; `nil` keeps them only
+    /// for the run.
+    var preparedPages: URL?
 
     /// Whether the input is a PDF file rather than a folder of page images.
     var inputIsPDF: Bool {
@@ -46,7 +53,7 @@ struct CommandLineOptions: Equatable {
         var remaining = arguments[...]
         while let argument = remaining.popFirst() {
             if argument.hasPrefix("--") {
-                guard ["--output", "--title", "--author", "--language"].contains(argument) else {
+                guard ["--output", "--title", "--author", "--language", "--prepared-pages"].contains(argument) else {
                     throw CommandLineError.unknownOption(argument)
                 }
                 guard let value = remaining.popFirst() else { throw CommandLineError.missingValue(argument) }
@@ -65,5 +72,6 @@ struct CommandLineOptions: Equatable {
         title = values["--title"] ?? name
         author = values["--author"]
         language = values["--language"] ?? "uk"
+        preparedPages = values["--prepared-pages"].map { URL(fileURLWithPath: $0, isDirectory: true) }
     }
 }

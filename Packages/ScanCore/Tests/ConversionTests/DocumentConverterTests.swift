@@ -3,6 +3,7 @@ import DocumentModel
 import Foundation
 import LayoutAnalysis
 import OCR
+import Preprocessing
 import Testing
 
 /// Returns canned pages keyed by file name instead of looking at pixels.
@@ -53,6 +54,17 @@ private final class Recorder<Value: Sendable>: @unchecked Sendable {
 
     var values: [Value] {
         lock.withLock { storage }
+    }
+}
+
+/// Pretends to prepare each page into a folder of its own.
+private struct FakePreparer: PagePreparing {
+    func profile(ofDocumentWith _: [URL]) throws -> InputProfile {
+        .paperScan
+    }
+
+    func prepare(pageAt url: URL, as profile: InputProfile) throws -> URL {
+        profile == .paperScan ? URL(fileURLWithPath: "/prepared").appendingPathComponent(url.lastPathComponent) : url
     }
 }
 
@@ -359,5 +371,26 @@ private final class ProgressRecorder: @unchecked Sendable {
 
     var values: [String] {
         lock.withLock { storage }
+    }
+}
+
+@Suite("DocumentConverter with a page preparer")
+struct DocumentConverterPreparerTests {
+    @Test("recognizes the prepared pages and keeps them for review")
+    func preparedPages() async throws {
+        let engine = FakeEngine(pages: [
+            "1.png": RecognizedPage(lines: body(["one a", "one b"])),
+            "2.png": RecognizedPage(lines: body(["two a", "two b"])),
+        ])
+        let conversion = try await DocumentConverter(
+            engine: engine, pictureExtractor: FakeExtractor(), markerLocator: FakeLocator(), inkMeasurer: FakeInk(),
+            preparer: FakePreparer()
+        ).analyze(
+            pageURLs: ["1.png", "2.png"].map { URL(fileURLWithPath: "/pages/\($0)") },
+            metadata: DocumentMetadata(title: "Prepared", author: nil, language: "en")
+        )
+
+        #expect(conversion.pageURLs.map(\.path) == ["/prepared/1.png", "/prepared/2.png"])
+        #expect(conversion.document.blocks.count == 2)
     }
 }

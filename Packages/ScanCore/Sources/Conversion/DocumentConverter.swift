@@ -2,6 +2,7 @@ import DocumentModel
 import Foundation
 import LayoutAnalysis
 import OCR
+import Preprocessing
 
 /// The outcome of converting a document: the document and what could not be
 /// resolved on the way, for the user to review.
@@ -50,14 +51,19 @@ public struct DocumentConverter: Sendable {
     private let markerLocator: any NoteMarkerLocator
     private let inkMeasurer: any LineInkMeasurer
     private let analyzer: LayoutAnalyzer
+    private let preparer: (any PagePreparing)?
 
+    /// - Parameter preparer: Prepares each page image before anything reads
+    ///   it, for paper scans; `nil` reads the pages as they are.
     public init(
         engine: any OCREngine,
         pictureExtractor: any PictureExtractor = ImagePictureExtractor(),
         markerLocator: any NoteMarkerLocator = ImageNoteMarkerLocator(),
         inkMeasurer: any LineInkMeasurer = ImageLineInkMeasurer(),
-        analyzer: LayoutAnalyzer = LayoutAnalyzer()
+        analyzer: LayoutAnalyzer = LayoutAnalyzer(),
+        preparer: (any PagePreparing)? = nil
     ) {
+        self.preparer = preparer
         self.engine = engine
         self.pictureExtractor = pictureExtractor
         self.markerLocator = markerLocator
@@ -76,6 +82,11 @@ public struct DocumentConverter: Sendable {
     }
 
     /// Converts the pages at `pageURLs`, given in reading order.
+    ///
+    /// With a preparer, the document's ``InputProfile`` is decided first, then
+    /// each page is prepared before anything reads it, and every stage reads
+    /// the prepared image; the result's ``Conversion/pageURLs`` are the
+    /// prepared images, so block boxes refer to what the review shows.
     ///
     /// Pages are processed one after another. The call honours task
     /// cancellation between pages.
@@ -100,15 +111,15 @@ public struct DocumentConverter: Sendable {
         pages.reserveCapacity(pageURLs.count)
         var images: [ImageResource] = []
         var coverImageID: ImageResource.ID?
+        var preparedURLs: [URL] = []
+        preparedURLs.reserveCapacity(pageURLs.count)
+        let profile = try preparer?.profile(ofDocumentWith: pageURLs)
 
-        for url in pageURLs {
+        for original in pageURLs {
             try Task.checkCancellation()
-            let markerBoxes = try markerLocator.markers(inImageAt: url)
-            let lines = try await engine.recognize(imageAt: url, erasing: markerBoxes).lines
-            let labels = markerBoxes.isEmpty ? [] : try await engine.readLabels(inImageAt: url, regions: markerBoxes)
-            let markers = markerBoxes.enumerated().map { index, box in
-                NoteMarker(box: box, label: index < labels.count ? labels[index] : "")
-            }
+            let url = try profile.flatMap { try preparer?.prepare(pageAt: original, as: $0) } ?? original
+            preparedURLs.append(url)
+            let (lines, markers) = try await recognize(pageAt: url)
             let lineInk = try inkMeasurer.ink(inImageAt: url, lines: lines)
             let extracted = try pictureExtractor.pictures(inImageAt: url, lines: lines)
                 .sorted { $0.box.minY < $1.box.minY }
@@ -144,8 +155,19 @@ public struct DocumentConverter: Sendable {
         )
         return Conversion(
             document: document, unlinkedReferences: layout.unlinkedReferences, unlinkedNotes: layout.unlinkedNotes,
-            pageURLs: pageURLs, blockSources: layout.sources, noteSources: layout.noteSources
+            pageURLs: preparedURLs, blockSources: layout.sources, noteSources: layout.noteSources
         )
+    }
+
+    /// The text lines of a page and its note markers with their labels.
+    private func recognize(pageAt url: URL) async throws -> (lines: [TextLine], markers: [NoteMarker]) {
+        let markerBoxes = try markerLocator.markers(inImageAt: url)
+        let lines = try await engine.recognize(imageAt: url, erasing: markerBoxes).lines
+        let labels = markerBoxes.isEmpty ? [] : try await engine.readLabels(inImageAt: url, regions: markerBoxes)
+        let markers = markerBoxes.enumerated().map { index, box in
+            NoteMarker(box: box, label: index < labels.count ? labels[index] : "")
+        }
+        return (lines, markers)
     }
 
     private static func image(id: ImageResource.ID, data: Data) -> ImageResource {

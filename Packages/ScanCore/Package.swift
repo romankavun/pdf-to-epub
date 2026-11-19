@@ -13,6 +13,7 @@ let package = Package(
                 "OCR",
                 "LayoutAnalysis",
                 "Importing",
+                "Preprocessing",
                 "Conversion",
                 "TextReview",
                 "Corrections",
@@ -28,20 +29,21 @@ let package = Package(
         .target(name: "OCR"),
         .target(name: "LayoutAnalysis", dependencies: ["DocumentModel", "OCR"]),
         .target(name: "Importing"),
-        .target(name: "Conversion", dependencies: ["DocumentModel", "OCR", "LayoutAnalysis"]),
+        .target(name: "Preprocessing"),
+        .target(name: "Conversion", dependencies: ["DocumentModel", "OCR", "LayoutAnalysis", "Preprocessing"]),
         .target(name: "TextReview"),
         .target(name: "Corrections", dependencies: ["DocumentModel", "LayoutAnalysis", "Conversion"]),
         .target(name: "ProjectStore", dependencies: ["DocumentModel", "LayoutAnalysis", "Conversion", "Corrections"]),
         .target(
             name: "AppModel",
             dependencies: [
-                "DocumentModel", "OCR", "Importing", "LayoutAnalysis", "Conversion", "EPUBExport", "TextReview",
-                "Corrections", "ProjectStore",
+                "DocumentModel", "OCR", "Importing", "Preprocessing", "LayoutAnalysis", "Conversion", "EPUBExport",
+                "TextReview", "Corrections", "ProjectStore",
             ]
         ),
         .executableTarget(
             name: "pagescan",
-            dependencies: ["DocumentModel", "OCR", "Importing", "Conversion", "EPUBExport"]
+            dependencies: ["DocumentModel", "OCR", "Importing", "Preprocessing", "Conversion", "EPUBExport"]
         ),
         // Test-only helpers: synthetic page rendering and golden-file comparison.
         .target(
@@ -72,12 +74,13 @@ let package = Package(
         .testTarget(
             name: "AppModelTests",
             dependencies: [
-                "AppModel", "Conversion", "DocumentModel", "Importing", "LayoutAnalysis", "TextReview",
-                "Corrections", "ProjectStore",
+                "AppModel", "Conversion", "DocumentModel", "Importing", "Preprocessing", "LayoutAnalysis",
+                "TextReview", "Corrections", "ProjectStore",
             ]
         ),
         .testTarget(name: "ImportingTests", dependencies: ["Importing"]),
-        .testTarget(name: "ConversionTests", dependencies: ["Conversion", "DocumentModel", "OCR"]),
+        .testTarget(name: "PreprocessingTests", dependencies: ["Preprocessing"]),
+        .testTarget(name: "ConversionTests", dependencies: ["Conversion", "DocumentModel", "OCR", "Preprocessing"]),
         .testTarget(name: "OCRTests", dependencies: ["OCR"]),
         .testTarget(name: "pagescanTests", dependencies: ["pagescan"]),
         .testTarget(name: "LayoutAnalysisTests", dependencies: ["LayoutAnalysis", "DocumentModel", "OCR"]),

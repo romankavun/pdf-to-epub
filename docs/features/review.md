@@ -6,6 +6,10 @@ the right. It is for checking the result before saving and for
 [correcting](corrections.md) it: changing a block's type, editing its text,
 leaving it out.
 
+For a paper scan, the page shown is the prepared one, cropped, cleaned and
+levelled, because that is the image the blocks were found on; see
+[paper scans](scan-preprocessing.md).
+
 ## Usage
 
 - **Pages**: the arrows in the toolbar, or ⌘[ and ⌘].

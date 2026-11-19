@@ -16,6 +16,13 @@ struct CommandLineOptionsTests {
         #expect(options.language == "en")
     }
 
+    @Test("keeps prepared pages in a folder only when asked")
+    func preparedPages() throws {
+        #expect(try CommandLineOptions(arguments: ["/in/document"]).preparedPages == nil)
+        let options = try CommandLineOptions(arguments: ["/in/document", "--prepared-pages", "/out/pages"])
+        #expect(options.preparedPages?.path == "/out/pages")
+    }
+
     @Test("defaults the title to the folder name, the output next to the folder, and the language to Ukrainian")
     func defaults() throws {
         let options = try CommandLineOptions(arguments: ["/in/my_document/"])
