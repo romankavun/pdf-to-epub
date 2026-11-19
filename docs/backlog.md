@@ -138,6 +138,48 @@ page in question. Defects 4 and 5 are not changed by it.
     "Notes without a reference" (4) may be stale in the same way. Expected:
     the summary and the review agree and both update after a correction.
 
+## Defects found on a paper scan
+
+Found 2026-11-19 on the first real paper scan: test PDF `sample_scan.pdf`,
+23 pages, an English document. Page N below is review page N of 23. Unlike the
+clean pages the app was designed for, every PDF page is one photo
+of a scanner bed: pure white glass with a small document page in the middle
+(about 12% of the image), dark page edges, a gutter shadow, corner ticks,
+show-through from the back of the leaf, and on some pages skewed lines.
+`PDFImporter` is not at fault: each page is one embedded JPEG drawn 1:1.
+
+Measured the same day: cropping a page image to the document page by hand and
+converting it gave page 9 0 -> 356 words (about 2% misspelled, by
+`NSSpellChecker`), and pages 2 and 8 together 23% -> 4% misspelled words. So
+the bed is the main cause; upscaling is not needed at this resolution, and
+the remaining errors are probably skew. A Preprocess stage and the fixes
+below are being built in parallel sessions; remove each item once merged.
+
+13. **Whole pages become one illustration and their text is lost** (pages
+    3, 6, 7, 9; 12 figures for 23 pages). `PictureDetector` counts every pixel
+    that differs from the bed's white as ink, so the page edge gives ink in
+    every row of the document page; the page is one tall band whose ink is mostly
+    outside text boxes, so it is a picture, and text inside a picture is
+    dropped (ADR 0002). Fix: crop to the document page (Preprocess) and make the
+    detector robust to edges, shadows and specks.
+14. **OCR text is garbled** (pages 2 and 8, 23% misspelled words). Caused by
+    the bed around the page; see the measurement above.
+15. **Skewed lines mix paragraphs** (page 8): block outlines overlap, lines
+    of neighbouring paragraphs are grouped together, and a short piece of a
+    line becomes a level 1 heading. Fix: deskew before OCR.
+16. **Short quoted lines and attributions become headings or are glued to
+    the quotes** (page 2, a page of review quotes, each followed by a right
+    aligned attribution line). Check again after cropping and deskewing;
+    a right aligned attribution has no rule yet.
+17. **The review does not show the garbling**: "Suspicious words: 1" on
+    every page while about a quarter of the words are wrong, and nothing
+    warns that a page became an illustration with no text. See also defect
+    12. Fix: a rule for blocks with a high share of misspelled words, a
+    warning for pages that are one full-page figure, and the counter.
+18. **The page preview is small**: the review shows the whole scanner bed,
+    so the document page and its outlines are tiny. Fixed by the crop if the
+    review shows the cropped page.
+
 ## Improvements
 
 ### Review screen and summary (ideas from hands-on use, 2026-11-14)
@@ -188,6 +230,10 @@ page in question. Defects 4 and 5 are not changed by it.
   editor, and a "set this and the following pages" way to drop page
   numbers and running headers. See [corrections](features/corrections.md)
   for what exists.
+- **Adjust the crop of a scanned page by hand.** If the automatic per-page
+  crop misses, let the user correct that page's crop frame in the review.
+  One frame for the whole document does not work: scanned leaves lie
+  differently on the glass on every page.
 - **Copy the scans into the project** (or store a reference) so that a
   moved scan folder does not leave the review without page images.
 - **Save the undo history** with the project.
