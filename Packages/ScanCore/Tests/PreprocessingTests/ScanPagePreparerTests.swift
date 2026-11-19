@@ -36,6 +36,8 @@ struct ScanPagePreparerTests {
         #expect(prepared == output.appendingPathComponent("page-0001.png"))
         let bitmap = try #require(ScanImageFile.read(prepared))
         #expect(bitmap.width < 340 && bitmap.height < 440)
+        // Cleaned: the grainy paper is white.
+        #expect(bitmap.color(x: 21, y: 20) == ScanColor(red: 255, green: 255, blue: 255))
     }
 
     @Test("returns a clean page's own file and writes nothing")

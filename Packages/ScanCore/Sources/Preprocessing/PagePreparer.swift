@@ -20,7 +20,8 @@ public enum PreprocessingError: Error, Equatable {
 }
 
 /// Prepares scanned pages for recognition and writes them as PNG files into
-/// a folder.
+/// a folder: crops the page off the scanner bed (``PageCrop``), then whitens
+/// its paper and removes debris around the text (``BackgroundCleaner``).
 ///
 /// Every later stage (recognition, note-marker colours, ink weight,
 /// picture crops, the review) reads the prepared file, so all of them agree
@@ -28,19 +29,21 @@ public enum PreprocessingError: Error, Equatable {
 public struct ScanPagePreparer: PagePreparing {
     private let folder: URL
     private let crop: PageCrop
+    private let cleaner: BackgroundCleaner
 
     /// - Parameter folder: Where prepared pages are written, under the name
     ///   of the original file with a `.png` extension. It must exist; a file
     ///   of the same name is replaced.
-    public init(folder: URL, crop: PageCrop = PageCrop()) {
+    public init(folder: URL, crop: PageCrop = PageCrop(), cleaner: BackgroundCleaner = BackgroundCleaner()) {
         self.folder = folder
         self.crop = crop
+        self.cleaner = cleaner
     }
 
     public func prepare(pageAt url: URL) throws -> URL {
         guard let bitmap = ScanImageFile.read(url) else { throw PreprocessingError.unreadableImage(url) }
-        let prepared = crop.cropped(bitmap)
-        guard prepared != bitmap else { return url }
+        guard let box = crop.pageBox(in: bitmap) else { return url }
+        let prepared = cleaner.cleaned(bitmap.cropped(to: box))
         let target = folder.appendingPathComponent(url.deletingPathExtension().lastPathComponent + ".png")
         guard ScanImageFile.writePNG(prepared, to: target) else { throw PreprocessingError.cannotWrite(target) }
         return target
