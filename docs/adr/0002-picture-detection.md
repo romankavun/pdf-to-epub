@@ -55,3 +55,38 @@ Two OCR quirks surfaced while measuring and are handled in `LayoutAnalyzer`:
 - Running several conversions at once made one Vision request hang. (The
   same hang was later seen with a single conversion; requests now have a
   time limit and retries, see ADR 0003.)
+
+## Amendment (2026-11-19): paper scans
+
+A paper scan of a document (a small page on a white scanner bed) became a
+whole-page picture on 12 of 23 pages. The paper itself matched the bed, but
+the page edges and the gutter shadow are thin dark lines along the whole
+page height, so every row of the page had ink and the page was one tall
+band. Vision read almost nothing on these uncropped pages, so the
+"ink inside text lines" exception could not save them.
+
+Kept row bands, and added two steps before and after them:
+
+- **Thin vertical lines are erased** before bands are built: runs of ink at
+  most 1.5% of the page width wide, chained down the page through the same
+  or a neighbouring column, are dropped when the chain spans at least the
+  minimum picture height (5%). A run may join a chain up to that height
+  below the chain's last run, because a faint edge breaks into pieces (on
+  the sample, pieces of 20-130 rows with gaps up to about 100).
+- **Ink is weighed by its darkness** in the text-share test: faint
+  show-through from the back of the leaf and grey specks count for little
+  against recognized text.
+
+Rejected for now:
+
+- *Background from the paper under the text lines*: on the cover or a
+  page that is mostly a picture, the lines lie inside the picture, and its
+  ground would become the background. Not needed on the sample, whose paper
+  is as white as the bed; a grey page on a white bed is left to the
+  Preprocess stage (cropping).
+- *A row with a few ink pixels counts as blank*: would split sparse line
+  drawings on clean pages; the pixels between lines on the sample turned
+  out to be pieces of the page edge, which the chain step removes.
+
+Cost: the sides of a frame and long thin strokes of a sparse drawing are
+erased too, so such a picture can come out smaller or in parts.

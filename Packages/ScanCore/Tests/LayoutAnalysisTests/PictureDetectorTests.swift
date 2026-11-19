@@ -101,6 +101,75 @@ struct PictureDetectorTests {
         #expect(detector.pictureRegions(in: page).count == 1)
     }
 
+    // Paper scans: the document page lies on a scanner bed, its edges and the
+    // gutter shadow are thin dark lines along the whole page, and the back of
+    // the leaf shows through as faint grey text.
+
+    @Test("a thin line along the page edge does not join lines of text into a picture")
+    func pageEdge() {
+        var page = blankPage()
+        for row in 0 ..< 30 {
+            page.fill(x: 10, y: 20 + row * 10, width: 170, height: 6, with: ink)
+        }
+        page.fill(x: 190, y: 10, width: 2, height: 380, with: ink)
+        #expect(detector.pictureRegions(in: page).isEmpty)
+    }
+
+    @Test("a slanted page edge of a skewed scan is ignored too")
+    func slantedPageEdge() {
+        var page = blankPage()
+        for row in 0 ..< 30 {
+            page.fill(x: 10, y: 20 + row * 10, width: 170, height: 6, with: ink)
+        }
+        for step in 0 ..< 10 {
+            page.fill(x: 186 + step, y: 10 + step * 38, width: 3, height: 38, with: ink)
+        }
+        #expect(detector.pictureRegions(in: page).isEmpty)
+    }
+
+    @Test("a page edge broken into short pieces by a faint scan is ignored as a whole")
+    func brokenPageEdge() {
+        var page = blankPage()
+        // Lines of text with two blank rows between them, each bridged by a
+        // piece of the edge; the pieces are far lower than a picture.
+        for row in 0 ..< 30 {
+            page.fill(x: 10, y: 20 + row * 10, width: 170, height: 8, with: ink)
+            page.fill(x: 190, y: 27 + row * 10, width: 2, height: 4, with: ink)
+        }
+        #expect(detector.pictureRegions(in: page).isEmpty)
+    }
+
+    @Test("a picture beside a page edge line is found without the line")
+    func pictureBesidePageEdge() throws {
+        var page = blankPage()
+        page.fill(x: 190, y: 0, width: 2, height: 400, with: ink)
+        page.fill(x: 20, y: 40, width: 100, height: 120, with: ink)
+        let regions = detector.pictureRegions(in: page)
+        try #require(regions.count == 1)
+        #expect(isClose(regions[0], CGRect(x: 0.1, y: 0.1, width: 0.5, height: 0.3)))
+    }
+
+    @Test("faint show-through around recognized text does not make the text a picture")
+    func showThrough() {
+        var page = blankPage()
+        let faint = PageBitmap.Color(red: 238, green: 238, blue: 238)
+        var lines: [TextLine] = []
+        // Real text, its blank rows bridged by faint specks.
+        for row in 0 ..< 20 {
+            let top = 20 + row * 10
+            page.fill(x: 10, y: top, width: 180, height: 6, with: ink)
+            page.fill(x: 10, y: top + 6, width: 180, height: 4, with: faint)
+            lines.append(TextLine(
+                text: "line", box: CGRect(x: 0.05, y: Double(top) / 400, width: 0.9, height: 6.0 / 400)
+            ))
+        }
+        // Text from the back of the leaf, which the OCR engine does not read.
+        for row in 0 ..< 15 {
+            page.fill(x: 10, y: 220 + row * 10, width: 180, height: 10, with: faint)
+        }
+        #expect(detector.pictureRegions(in: page, lines: lines).isEmpty)
+    }
+
     @Test("a bitmap rejects pixel data of the wrong size")
     func bitmapSize() {
         #expect(PageBitmap(width: 2, height: 2, pixels: [UInt8](repeating: 0, count: 15)) == nil)
