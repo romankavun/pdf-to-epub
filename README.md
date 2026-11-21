@@ -80,3 +80,8 @@ sample sets.
   and the backlog.
 - [CLAUDE.md](CLAUDE.md): product decisions, architecture, development
   process and code standards.
+
+## License
+
+[MIT](LICENSE). The license covers this code only. The documents you convert
+remain the property of their rights holders.
