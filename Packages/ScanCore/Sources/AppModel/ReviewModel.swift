@@ -17,9 +17,11 @@ import TextReview
 @MainActor
 @Observable
 public final class ReviewModel {
+    /// The project being reviewed, which receives every correction.
     public let project: ProjectModel
     /// The document's embedded images, for showing figures.
     public let images: [ImageResource.ID: Data]
+    /// The document as reviewable pages, rebuilt after every correction.
     public private(set) var pages: [Page] = []
     /// The total number of OCR-suspect words in the document.
     public private(set) var issueCount = 0
@@ -43,6 +45,7 @@ public final class ReviewModel {
     public internal(set) var editingItemID: Item.ID?
     /// The text in the editor while editing; see ``Item/editableText``.
     public var draft = ""
+    /// A correction offered for similar blocks, waiting for the user's answer; `nil` when none is pending.
     public internal(set) var proposal: Proposal?
 
     /// Blocks and notes to look at (see ``Item/isIssue``), in the order of
@@ -53,6 +56,7 @@ public final class ReviewModel {
     private var misspelled: [(itemID: ItemID, page: Int)] = []
     let detector: SuspiciousWordDetector
 
+    /// Opens the review of `project`, flagging words with `detector`.
     public init(project: ProjectModel, detector: SuspiciousWordDetector = SuspiciousWordDetector()) {
         self.project = project
         self.detector = detector
@@ -203,10 +207,12 @@ public final class ReviewModel {
         flagged.firstIndex { $0.itemID == selectedItemID }.map { $0 + 1 }
     }
 
+    /// Whether a page follows the one being viewed.
     public var canGoToNextPage: Bool {
         pageIndex + 1 < pages.count
     }
 
+    /// Whether a page precedes the one being viewed.
     public var canGoToPreviousPage: Bool {
         pageIndex > 0
     }
@@ -220,10 +226,12 @@ public final class ReviewModel {
         selectedItemID = nil
     }
 
+    /// Shows the next page; stays put on the last one.
     public func goToNextPage() {
         goToPage(pageIndex + 1)
     }
 
+    /// Shows the previous page; stays put on the first one.
     public func goToPreviousPage() {
         goToPage(pageIndex - 1)
     }

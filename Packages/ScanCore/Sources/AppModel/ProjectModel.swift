@@ -22,6 +22,7 @@ public final class ProjectModel {
     public let location: URL?
     /// What the pipeline produced, without corrections.
     public private(set) var base: Conversion
+    /// The user's corrections, kept apart from ``base``.
     public private(set) var corrections: CorrectionSet
     /// The document with the corrections applied: what is reviewed and exported.
     public private(set) var conversion: Conversion
@@ -43,6 +44,7 @@ public final class ProjectModel {
     private var undone: [CorrectionSet] = []
     private let storage: any ProjectPersisting
 
+    /// Wraps `base` with its `corrections`, saving to `location` through `storage`.
     public init(
         base: Conversion,
         corrections: CorrectionSet = CorrectionSet(),
@@ -59,10 +61,12 @@ public final class ProjectModel {
         recompute()
     }
 
+    /// Whether a correction can be taken back.
     public var canUndo: Bool {
         !history.isEmpty
     }
 
+    /// Whether an undone correction can be applied again.
     public var canRedo: Bool {
         !undone.isEmpty
     }

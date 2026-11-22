@@ -1,5 +1,7 @@
 # Tests decode fixture bytes leniently on purpose; a nil would only hide the real assertion failure.
 disabled_rules:
+  - force_unwrapping # the production-code rule; a nil in a test fails the test anyway
+  - missing_docs # test support is public only for the test targets
   - optional_data_string_conversion
   - large_tuple
   - line_length # expected-XHTML literals are clearer on one line

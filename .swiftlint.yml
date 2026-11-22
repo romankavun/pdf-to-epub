@@ -26,3 +26,31 @@ type_name:
 
 todo:
   severity: warning
+
+opt_in_rules:
+  - force_unwrapping
+  - missing_docs
+
+force_try:
+  severity: error
+
+# Module boundaries from CLAUDE.md, enforced mechanically.
+custom_rules:
+  vision_only_in_ocr:
+    name: "Vision outside OCR"
+    regex: '^\s*(@preconcurrency\s+)?import\s+Vision\b'
+    included: '(Packages/ScanCore/Sources/(?!OCR/)|App/)'
+    message: "Only the OCR module imports Vision."
+    severity: error
+  no_ui_in_scancore:
+    name: "UI import in ScanCore"
+    regex: '^\s*(@preconcurrency\s+)?import\s+(SwiftUI|AppKit|UIKit)\b'
+    included: 'Packages/ScanCore/Sources/'
+    message: "ScanCore never imports SwiftUI, AppKit or UIKit."
+    severity: error
+  pdf_only_in_importing:
+    name: "CGPDF outside Importing"
+    regex: '\bCGPDF[A-Za-z]*\b'
+    included: '(Packages/ScanCore/Sources/(?!Importing/)|App/)'
+    message: "Only the Importing module reads PDFs."
+    severity: error

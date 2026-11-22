@@ -15,6 +15,7 @@ import OCR
 @MainActor
 @Observable
 public final class ConversionModel {
+    /// Where the run is: nothing opened, converting, finished or failed.
     public private(set) var phase: Phase = .empty
     /// The open folder of scans, PDF or project; `nil` until one was opened
     /// successfully.
@@ -25,6 +26,7 @@ public final class ConversionModel {
         pdf != nil && pages.isEmpty ? pdfPageCount : pages.count
     }
 
+    /// The outcome of the last EPUB export, if any.
     public private(set) var exportResult: ExportResult?
 
     /// The document being worked on, with the user's corrections, once a
@@ -34,7 +36,9 @@ public final class ConversionModel {
     /// still there, but its corrections are kept in memory only.
     public private(set) var projectError: String?
 
+    /// The title written into the EPUB metadata.
     public var title = ""
+    /// The author written into the EPUB metadata.
     public var author = ""
     /// BCP 47 tag of the document's main language.
     public var language = "uk"
@@ -56,6 +60,7 @@ public final class ConversionModel {
     /// from a cancelled run are dropped.
     private var run = 0
 
+    /// Creates a model that converts with `pipeline` and saves projects through `storage`.
     public init(
         pipeline: any ConversionPipeline = LivePipeline(),
         storage: any ProjectPersisting = LiveProjectStorage()

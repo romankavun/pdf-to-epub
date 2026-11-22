@@ -91,10 +91,11 @@ enum ZipWriter {
         // A destination as large as the source is enough: a result that does
         // not fit would not be worth using anyway.
         var destination = [UInt8](repeating: 0, count: data.count)
-        let written = data.withUnsafeBytes { source in
-            compression_encode_buffer(
+        let written = data.withUnsafeBytes { source -> Int in
+            guard let base = source.bindMemory(to: UInt8.self).baseAddress else { return 0 }
+            return compression_encode_buffer(
                 &destination, destination.count,
-                source.bindMemory(to: UInt8.self).baseAddress!, data.count,
+                base, data.count,
                 nil, COMPRESSION_ZLIB
             )
         }

@@ -13,6 +13,7 @@ public extension ReviewModel {
 
     // MARK: - Corrections
 
+    /// Whether a correction can be taken back.
     var canUndo: Bool {
         project.canUndo
     }
@@ -26,6 +27,7 @@ public extension ReviewModel {
         rebuild()
     }
 
+    /// Whether an undone correction can be applied again.
     var canRedo: Bool {
         project.canRedo
     }
@@ -104,12 +106,14 @@ public extension ReviewModel {
         rebuild()
     }
 
+    /// Drops the pending proposal without applying it.
     func dismissProposal() {
         proposal = nil
     }
 
     // MARK: Editing text
 
+    /// Whether a block or note text is open in the editor.
     var isEditing: Bool {
         editingItemID != nil
     }
@@ -122,6 +126,7 @@ public extension ReviewModel {
         editingItemID = item.id
     }
 
+    /// Closes the editor and discards the draft.
     func cancelEditing() {
         editingItemID = nil
     }
