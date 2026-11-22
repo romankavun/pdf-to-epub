@@ -4,6 +4,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+echo "== no sample material tracked"
+scripts/check-no-samples.sh
 echo "== swiftformat --lint"
 swiftformat --lint .
 echo "== swiftlint"

@@ -2,9 +2,8 @@
 import Foundation
 import Testing
 
-/// The folder of sample sets, when the developer has one; see CLAUDE.md.
-private let samplesDirectory = ProcessInfo.processInfo.environment["PAGESCAN_SAMPLES_DIR"]
-    .map { URL(fileURLWithPath: $0) }
+/// The folder of sample sets, when the developer has one; see ``SampleSets``.
+private let samplesDirectory = SampleSets.directory
 
 @MainActor
 @Suite("ConversionModel with the live pipeline")

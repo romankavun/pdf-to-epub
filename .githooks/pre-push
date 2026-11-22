@@ -1,0 +1,3 @@
+#!/bin/bash
+# Last line of defence before samples leave the machine.
+exec "$(git rev-parse --show-toplevel)/scripts/check-no-samples.sh"

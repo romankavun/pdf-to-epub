@@ -44,8 +44,8 @@ Before committing, run `scripts/check.sh` (format, lint, fast tests); see
 
 The `epubcheck` test is skipped with a warning when `epubcheck` is not
 installed; `REQUIRE_EPUBCHECK=1` turns that into a failure. Tests on
-real documents run only when `PAGESCAN_SAMPLES_DIR` points to a folder of
-sample sets.
+real documents run only when sample sets are in the git-ignored `Samples/`
+folder (or `PAGESCAN_SAMPLES_DIR` points to one).
 
 ## Usage walkthrough
 
