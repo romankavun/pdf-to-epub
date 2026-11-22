@@ -10,7 +10,7 @@ Pipeline in `Packages/ScanCore` (CLI `pagescan`), SwiftUI app in `App/`.
 - Pipeline stages, module layout, module boundaries: `docs/architecture.md`
 - What each feature does and its limits: `docs/features/`; index in `docs/README.md`
 - Why a design is the way it is: `docs/adr/`
-- Known defects, next work, postponed ideas: `docs/backlog.md`
+- Known defects, next work, postponed ideas: GitHub Issues (open one with `gh issue create`, close with `Fixes #N`); `docs/backlog.md` is only an index, and maps the old "backlog defect N" numbers in `docs/testing.md` to issues
 - Terms: `GLOSSARY.md`. Use them in code, docs and conversation; update the glossary in the same change as a new or renamed term.
 - Review rules: `CODING_STANDARDS.md`
 - Tests, golden pages: `docs/testing.md`

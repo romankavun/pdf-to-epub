@@ -14,7 +14,7 @@ Build, run and a usage walkthrough are in the [project README](../README.md).
   - [0008 - Merging and splitting blocks are corrections applied before edits](adr/0008-merge-and-split-corrections.md)
   - [0009 - A PDF is drawn into page images once, and the project keeps them](adr/0009-pdf-drawn-to-page-images.md)
   - [0010 - Prepared scan pages replace the originals as the project's pages](adr/0010-prepared-pages-are-the-project-pages.md)
-- [Backlog: known defects, the next improvement (page preview while converting) and postponed ideas](backlog.md)
+- [Backlog: index of the GitHub issues for known defects, improvements and postponed ideas](backlog.md)
 - [Coding standards: the judgement rules a review checks](../CODING_STANDARDS.md)
 - [Glossary: the project's shared vocabulary](../GLOSSARY.md)
 - Proposals: [proposals/](proposals/) - designs agreed in direction but not built.
