@@ -258,3 +258,17 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
 9. ~~Scanned page preprocessing: crop, cleanup, deskew, input profile~~ (done;
    ADR 0010). Upscaling measured and not needed. Still open: spread
    splitting, dewarping curved lines.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues for `romankavun/pdf-to-epub` (via the `gh` CLI). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
