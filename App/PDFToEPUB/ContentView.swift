@@ -1,3 +1,6 @@
+// PROTOTYPE (style overview): lint relaxed on the prototype branch only.
+// swiftlint:disable:next blanket_disable_command
+// swiftlint:disable file_length multiple_closures_with_trailing_closure
 import AppModel
 import Corrections
 import ImageIO
@@ -13,6 +16,8 @@ struct ContentView: View {
     @State private var isChoosingFolder = false
     /// The review of the finished conversion, while its screen is open.
     @State private var review: ReviewModel?
+    /// PROTOTYPE: the style overview, while open; the review returns to it.
+    @State private var overview: ReviewModel?
     /// Suspicious words in the corrected document, counted off the main thread;
     /// `nil` until counted.
     @State private var counted: ConversionSummary?
@@ -33,13 +38,25 @@ struct ContentView: View {
             case let .finished(conversion):
                 if let review {
                     ReviewScreen(model: review) { self.review = nil }
+                } else if let overview {
+                    StyleOverviewPrototype(model: overview, done: { self.overview = nil }) { page, itemID in
+                        overview.goToPage(page)
+                        if let itemID {
+                            overview.select(itemID: itemID)
+                        }
+                        review = overview
+                    }
                 } else {
                     // The summary counts the document as it will be exported, with
                     // the corrections applied.
                     let corrected = model.project?.conversion ?? conversion
                     ResultScreen(
                         model: model, hooks: hooks, summary: ConversionSummary(corrected), counted: counted,
-                        chooseFolder: chooseFolder
+                        chooseFolder: chooseFolder,
+                        openStyles: {
+                            overview = model.project.map { ReviewModel(project: $0, detector: detector) }
+                                ?? ReviewModel(conversion: conversion, detector: detector)
+                        }
                     ) { start in
                         let opened = model.project.map { ReviewModel(project: $0, detector: detector) }
                             ?? ReviewModel(conversion: conversion, detector: detector)
@@ -76,7 +93,10 @@ struct ContentView: View {
             }
         }
         // A review belongs to one conversion; any change of phase ends it.
-        .onChange(of: model.phase) { review = nil }
+        .onChange(of: model.phase) {
+            review = nil
+            overview = nil
+        }
         // A folder of scans and a saved project are both folders; the model
         // tells them apart from each other and from a PDF.
         .fileImporter(isPresented: $isChoosingFolder, allowedContentTypes: [.folder, .pdf]) { result in
@@ -252,6 +272,8 @@ private struct ResultScreen: View {
     /// The summary with suspicious and misspelled words counted; `nil` until counted.
     var counted: ConversionSummary?
     var chooseFolder: () -> Void
+    /// PROTOTYPE: opens the style overview.
+    var openStyles: () -> Void = {}
     var review: (ReviewStart) -> Void
 
     var body: some View {
@@ -287,6 +309,9 @@ private struct ResultScreen: View {
                 HStack {
                     Button("Choose Another Folder or PDF…", action: chooseFolder)
                     Spacer()
+                    #if DEBUG
+                        Button(String("Style Overview (Prototype)"), action: openStyles)
+                    #endif
                     Button("Convert Again", action: model.start)
                         .disabled(!model.canStart)
                     Button("Review…") { review(.top) }

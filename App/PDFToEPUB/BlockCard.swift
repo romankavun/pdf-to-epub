@@ -1,3 +1,6 @@
+// PROTOTYPE (style overview): lint relaxed on the prototype branch only.
+// swiftlint:disable:next blanket_disable_command
+// swiftlint:disable large_tuple
 import AppModel
 import SwiftUI
 
@@ -8,6 +11,8 @@ struct BlockCard: View {
     var item: ReviewModel.Item
     var image: NSImage?
     var isSelected: Bool
+    /// PROTOTYPE: the block's style and how to show it in the styles sidebar.
+    var styleLink: (name: String, color: Color, open: () -> Void)?
     /// The run whose quick fixes are open.
     @State private var fixingRun: Int?
     @State private var isHovered = false
@@ -157,6 +162,17 @@ struct BlockCard: View {
     private var actions: some View {
         HStack {
             ForEach(item.actions, id: \.self, content: actionButton)
+            if let styleLink {
+                Spacer()
+                Button(action: styleLink.open) {
+                    Label {
+                        Text(verbatim: styleLink.name)
+                    } icon: {
+                        Image(systemName: "circle.fill").foregroundStyle(styleLink.color)
+                    }
+                }
+                .help("Show this block's style in the styles sidebar")
+            }
         }
         .controlSize(.small)
     }

@@ -1,3 +1,6 @@
+// PROTOTYPE (style overview): lint relaxed on the prototype branch only.
+// swiftlint:disable:next blanket_disable_command
+// swiftlint:disable large_tuple
 import AppModel
 import Corrections
 import SwiftUI
@@ -7,6 +10,12 @@ import SwiftUI
 struct ReviewScreen: View {
     @Bindable var model: ReviewModel
     var done: () -> Void
+    #if DEBUG
+        /// PROTOTYPE: the styles sidebar, off each time the review opens.
+        @State private var showsStyles = false
+        @State private var styles: [ProtoStyle] = []
+        @State private var selectedStyle: ProtoStyle.ID?
+    #endif
 
     var body: some View {
         VStack(spacing: 12) {
@@ -15,10 +24,31 @@ struct ReviewScreen: View {
                 // Equal halves rather than a split view: a split view lets the
                 // long text column squeeze the scan down to its minimum width.
                 HStack(spacing: 16) {
-                    PageScan(page: page, selectedItemID: model.selectedItemID, select: model.select)
+                    #if DEBUG
+                        if showsStyles {
+                            ProtoStyleSidebar(styles: styles, selection: $selectedStyle)
+                                .frame(width: 230)
+                        }
+                        PageScan(
+                            page: page, selectedItemID: model.selectedItemID, select: model.select,
+                            highlight: highlightedStyle.map { style in
+                                Dictionary(style.members.map { ($0.anchor, style.color) }) { first, _ in first }
+                            }
+                        )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    BlockList(page: page, model: model)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        if let style = highlightedStyle {
+                            ProtoStyleBlocks(style: style, open: openStyleMember) { selectedStyle = nil }
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        } else {
+                            BlockList(page: page, model: model, styleLink: styleLink)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                    #else
+                        PageScan(page: page, selectedItemID: model.selectedItemID, select: model.select)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        BlockList(page: page, model: model)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    #endif
                 }
             } else {
                 ContentUnavailableView("The document has no pages", systemImage: "doc")
@@ -31,13 +61,59 @@ struct ReviewScreen: View {
                     .foregroundStyle(.red)
             }
         }
+        #if DEBUG
+        // PROTOTYPE: room for the sidebar, the scan and the right column.
+        .frame(minWidth: showsStyles ? 1180 : nil)
+        .task {
+            if styles.isEmpty {
+                styles = protoRecognizedStyles(of: model)
+            }
+        }
+        #endif
     }
+
+    #if DEBUG
+        private var highlightedStyle: ProtoStyle? {
+            guard showsStyles, let selectedStyle else { return nil }
+            return styles.first { $0.id == selectedStyle }
+        }
+
+        private func styleLink(_ item: ReviewModel.Item) -> (name: String, color: Color, open: () -> Void)? {
+            guard let style = styles.first(where: { style in style.members.contains { $0.anchor == item.anchor } })
+            else { return nil }
+            return (style.name, style.color, {
+                showsStyles = true
+                selectedStyle = style.id
+            })
+        }
+
+        private func openStyleMember(_ member: ProtoMember) {
+            model.goToPage(member.pageIndex)
+            if let item = model.currentPage?.items.first(where: { $0.anchor == member.anchor }) {
+                model.select(itemID: item.id)
+            }
+            selectedStyle = nil
+        }
+    #endif
 
     private var toolbar: some View {
         HStack(spacing: 8) {
             Button("Back to Summary", systemImage: "chevron.backward", action: done)
                 // Esc belongs to the text editor while one is open.
                 .keyboardShortcut(model.editingItemID == nil ? .cancelAction : nil)
+            #if DEBUG
+                Toggle(isOn: $showsStyles) {
+                    Label { Text(verbatim: "Styles") } icon: { Image(systemName: "sidebar.left") }
+                }
+                .toggleStyle(.button)
+                .keyboardShortcut("s", modifiers: [.control, .command])
+                .help("PROTOTYPE: show the document's styles (⌃⌘S)")
+                .onChange(of: showsStyles) {
+                    if !showsStyles {
+                        selectedStyle = nil
+                    }
+                }
+            #endif
             Spacer()
             Button("Previous Page", systemImage: "chevron.left", action: model.goToPreviousPage)
                 .labelStyle(.iconOnly)
@@ -58,7 +134,15 @@ struct ReviewScreen: View {
                 .labelStyle(.iconOnly)
                 .keyboardShortcut("z", modifiers: [.command, .shift])
                 .disabled(!model.canRedo || model.isEditing)
-            issueNavigation
+            #if DEBUG
+                // PROTOTYPE: issues and spelling belong to the block list, which a
+                // style's blocks replace.
+                if highlightedStyle == nil {
+                    issueNavigation
+                }
+            #else
+                issueNavigation
+            #endif
         }
     }
 
@@ -113,6 +197,8 @@ struct ReviewScreen: View {
 private struct BlockList: View {
     var page: ReviewModel.Page
     var model: ReviewModel
+    /// PROTOTYPE: the style link of a block, if its style is known.
+    var styleLink: (ReviewModel.Item) -> (name: String, color: Color, open: () -> Void)? = { _ in nil }
 
     var body: some View {
         if page.items.isEmpty {
@@ -130,7 +216,8 @@ private struct BlockList: View {
                                 model: model,
                                 item: item,
                                 image: figureImage(for: item),
-                                isSelected: item.id == model.selectedItemID
+                                isSelected: item.id == model.selectedItemID,
+                                styleLink: styleLink(item)
                             )
                             .id(item.id)
                             .onTapGesture { model.select(itemID: item.id) }
