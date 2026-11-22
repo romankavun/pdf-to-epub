@@ -7,7 +7,7 @@
 /// while almost every pixel of the bed is. Text alone would not do, because
 /// the page's edges and the space around the text belong to the page too.
 ///
-/// a clean-page source clean page may also have a frame of one exact colour, its
+/// A clean page may also have a frame of one exact colour, its
 /// margins, so a page box alone does not make a scan; ``InputProfile``
 /// decides that, and only pages of scanned documents are cropped.
 public struct PageCrop: Sendable {

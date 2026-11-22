@@ -36,7 +36,7 @@ below that do not exist yet are created when a test first needs them.
 ### What the input really looks like
 
 The user's sample sets (`/Users/mac/scans_test`, four sets, ~850 PNG pages)
-are **clean pages of a clean-page source**, not paper scans: clean text, no skew, no
+are **clean pages**, not paper scans: clean text, no skew, no
 running headers, a page number at the bottom, note references as blue links,
 notes collected at the end of the document, illustrations with captions, a cover
 and a contents page. Design for this first; paper scans are a later case.
@@ -194,8 +194,11 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
 
 ### Language
 
-- Code, comments, commit messages, and documentation: **English**.
-- Conversation with the user: **Ukrainian**.
+- Everything is **English**: code, comments, commit messages, documentation,
+  and the conversation with the user.
+- Use the terms of [GLOSSARY.md](GLOSSARY.md) in code, docs and conversation;
+  when a term changes or a new one settles, update the glossary in the same
+  change.
 - App UI strings: localizable from the start (String Catalog), English base
   with Ukrainian localization.
 

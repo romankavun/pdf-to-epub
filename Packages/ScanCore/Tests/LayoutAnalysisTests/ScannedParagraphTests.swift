@@ -101,7 +101,7 @@ struct SoftHyphenTests {
         #expect(joined("the Anglo-", "Saxon king", softHyphens: true) == "the Anglo-Saxon king")
     }
 
-    @Test("clean-page source text keeps the hyphen, as clean-page sources add none of their own")
+    @Test("clean-page text keeps the hyphen, as digital typesetting adds none of its own")
     func cleanPageKeepsHyphen() {
         #expect(joined("small half-", "baked idea", softHyphens: false) == "small half-baked idea")
     }

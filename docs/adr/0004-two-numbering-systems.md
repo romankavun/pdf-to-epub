@@ -28,7 +28,7 @@ ten pages away, and 25 explanatory notes stayed in the body unlinked.
 Earlier ideas that turned out not to fit:
 
 - *Footnotes at the foot of the same page.* The notes under a rule are not
-  page footnotes: on the clean-page source they close a section, and their references
+  page footnotes: in the sample sets they close a section, and their references
   are on earlier pages.
 - *Smaller type below the rule.* Line heights barely differ, and section-end
   notes in documents A and B look the same as these. Nothing in the layout says

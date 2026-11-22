@@ -11,7 +11,7 @@ two kinds of notes numbered apart, [ADR 0004](../adr/0004-two-numbering-systems.
 
 ## What counts as a note marker
 
-The clean-page source the sample sets were captured from draws note markers as blue
+The sample sets draw note markers as blue
 links. `NoteMarkerDetector` (`LayoutAnalysis`) finds them from pixels:
 
 - a pixel is link-coloured when blue exceeds red and green by more than 50;

@@ -43,7 +43,7 @@ public struct SyntheticPage: Sendable {
         case framedPrint([String])
     }
 
-    /// Canvas size in pixels; a portrait page like a clean-page source clean page.
+    /// Canvas size in pixels; a portrait page like a clean page.
     public static let size = CGSize(width: 1200, height: 1700)
 
     private static let bodySize: CGFloat = 40
@@ -214,7 +214,7 @@ public struct SyntheticPage: Sendable {
         let black = CGColor(gray: 0, alpha: 1)
         for (index, (text, isMarker)) in Self.runs(of: rest).enumerated() {
             // A label that opens a line (a note text) sits on the baseline at
-            // nearly body size, as in a clean-page source's note list; a reference
+            // nearly body size, as in a digital note list; a reference
             // inside a line is smaller and raised.
             let opensLine = isMarker && index == 0
             let runSize = isMarker ? size * (opensLine ? 0.85 : 0.62) : size

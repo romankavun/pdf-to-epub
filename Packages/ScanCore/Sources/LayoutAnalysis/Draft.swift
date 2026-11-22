@@ -93,7 +93,7 @@ struct Draft {
         switch (pieces.last, first) {
         case let (.text(before), .text(next)):
             // "half-" + "baked": the line broke after a hyphen that belongs
-            // to the word. clean-page sources break there without adding a hyphen of
+            // to the word. Digital typesetting breaks there without adding a hyphen of
             // their own, so it is kept. A printed document hyphenates words to
             // fill its lines, "con-" + "tainers", and that hyphen goes; one
             // before a capital ("Anglo-" + "Saxon") is part of the word.

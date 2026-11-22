@@ -51,11 +51,11 @@ struct ScanPagePreparerTests {
     @Test("decides the profile of a document from its pages")
     func profileOfDocument() throws {
         let scans = try (1 ... 3).map { try write(SyntheticScans.scan(), named: "scan-\($0).png") }
-        let shots = try (1 ... 3)
-            .map { try write(SyntheticScans.cleanPage(statusBar: false), named: "shot-\($0).png") }
+        let cleanPages = try (1 ... 3)
+            .map { try write(SyntheticScans.cleanPage(statusBar: false), named: "clean-\($0).png") }
         let preparer = ScanPagePreparer(folder: folder)
-        #expect(try preparer.profile(ofDocumentWith: scans + [shots[0]]) == .paperScan)
-        #expect(try preparer.profile(ofDocumentWith: shots + [scans[0]]) == .cleanPage)
+        #expect(try preparer.profile(ofDocumentWith: scans + [cleanPages[0]]) == .paperScan)
+        #expect(try preparer.profile(ofDocumentWith: cleanPages + [scans[0]]) == .cleanPage)
     }
 
     @Test("in a scanned document, writes every page, even one that needs no crop")
@@ -69,7 +69,7 @@ struct ScanPagePreparerTests {
 
     @Test("in a document of clean pages, returns each page's own file and writes nothing, even for a scan-like page")
     func cleanPageUntouched() throws {
-        let original = try write(SyntheticScans.scan(), named: "shot.png")
+        let original = try write(SyntheticScans.scan(), named: "page.png")
         let output = folder.appendingPathComponent("prepared", isDirectory: true)
         try FileManager.default.createDirectory(at: output, withIntermediateDirectories: false)
 

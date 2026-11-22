@@ -9,7 +9,7 @@ Paper scans need preprocessing before recognition: the document page lies on a
 white scanner bed (about 12 % of the image), with page edges, a gutter
 shadow, show-through and skew around and in the text. Left alone, picture
 detection takes the whole page for an illustration and Vision reads less
-than half the words. clean pages need none of it.
+than half the words. Clean pages need none of it.
 
 Every stage after import (Vision, note-marker colours, ink weight, picture
 crops) reads a page as an image file, and every box the pipeline produces

@@ -2,7 +2,7 @@ import CoreGraphics
 
 /// Finds note markers on a page by their colour.
 ///
-/// clean-page sources draw a note reference, and the label that starts a note's
+/// The sample sets draw a note reference, and the label that starts a note's
 /// text, as a link: a short token in a saturated blue next to ordinary dark
 /// text. The colour is a far better signal than the recognized text, where
 /// the marker is fused into the neighbouring word and often misread

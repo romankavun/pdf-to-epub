@@ -6,7 +6,7 @@
 /// be prepared like the rest so that every page of the project is in the
 /// same place and in the same state.
 public enum InputProfile: Sendable, Equatable {
-    /// Clean pages of a clean-page source, or any clean digital page: read as is.
+    /// Clean pages (a born-digital PDF or any page with a uniform background): read as is.
     case cleanPage
     /// Paper pages scanned on a flatbed: cropped, cleaned and deskewed.
     case paperScan

@@ -2,7 +2,7 @@ import Foundation
 import Preprocessing
 
 /// Pages built in code that imitate the two kinds of input: a document page
-/// lying on a scanner bed, and a clean-page source clean page.
+/// lying on a scanner bed, and a clean page.
 enum SyntheticScans {
     /// A rectangle in pixels, for describing where things were drawn.
     struct Rect {
@@ -48,7 +48,7 @@ enum SyntheticScans {
         return bitmap
     }
 
-    /// a clean-page source clean page: one exact background colour, text lines with
+    /// A clean page: one exact background colour, text lines with
     /// margins, and a status bar along the bottom edge.
     static func cleanPage(width: Int = 600, height: Int = 800, statusBar: Bool = true) -> ScanBitmap {
         var bitmap = ScanBitmap(width: width, height: height, gray: 248)

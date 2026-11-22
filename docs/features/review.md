@@ -155,7 +155,7 @@ covers 0.71 to 1.0 of it.
 The summary lists *Pages that may have lost their text* under *Needs
 attention*, and *Next Issue* stops at the figure. Giving the figure a
 caption or ignoring it answers the warning. A real full-page illustration
-without a caption is flagged too (two pages of 148 in one clean clean-page source
+without a caption is flagged too (two pages of 148 in one clean-page
 document, five of 161 in another, one of which did hide a line of text).
 
 ## How it is built

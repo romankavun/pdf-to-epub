@@ -9,7 +9,7 @@
 
 ## Context
 
-The clean-page source draws a note reference, and the label that opens the text of a
+The sample sets draw a note reference, and the label that opens the text of a
 note, as a blue link. Vision fuses a reference into the word before it and
 often misreads it (ADR 0001), so neither the text of the word nor the label
 can be trusted as recognized in place.

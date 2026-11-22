@@ -37,7 +37,7 @@ public extension SuspiciousWordDetector {
         public static let minimumCheckedWords = 8
 
         /// The share of unknown words above which text is taken for
-        /// misrecognized. Measured per block: clean clean-page source text in English
+        /// misrecognized. Measured per block: clean-page text in English
         /// stays under 0.05 and Ukrainian prose almost always under 0.15,
         /// while a garbled paper scan has a median of 0.23. See the review
         /// feature page for the numbers.

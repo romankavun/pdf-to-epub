@@ -24,11 +24,11 @@ struct PageCropTests {
         #expect(cropped.height < 440 && cropped.height >= 400)
     }
 
-    @Test("leaves a clean-page source clean page alone")
+    @Test("leaves a clean page alone")
     func cleanPageUntouched() {
-        let shot = SyntheticScans.cleanPage()
-        #expect(PageCrop().pageBox(in: shot) == nil)
-        #expect(PageCrop().cropped(shot) == shot)
+        let page = SyntheticScans.cleanPage()
+        #expect(PageCrop().pageBox(in: page) == nil)
+        #expect(PageCrop().cropped(page) == page)
     }
 
     @Test("crops a dark cover lying on the bed although it has no grain")

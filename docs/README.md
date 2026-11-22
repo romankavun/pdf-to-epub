@@ -14,6 +14,9 @@ Build, run and a usage walkthrough are in the [project README](../README.md).
   - [0009 - A PDF is drawn into page images once, and the project keeps them](adr/0009-pdf-drawn-to-page-images.md)
   - [0010 - Prepared scan pages replace the originals as the project's pages](adr/0010-prepared-pages-are-the-project-pages.md)
 - [Backlog: known defects, the next improvement (page preview while converting) and postponed ideas](backlog.md)
+- [Glossary: the project's shared vocabulary](../GLOSSARY.md)
+- Proposals: [proposals/](proposals/) - designs agreed in direction but not built.
+  - [The document's style guide: style rules applied across a whole document](proposals/style-guide.md)
 - [Testing: unit tests, golden pages, regenerating expectations](testing.md)
 - Features: [features/](features/) - one page per user-facing feature.
   - [pagescan CLI: folder of page images or PDF to EPUB](features/pagescan-cli.md)

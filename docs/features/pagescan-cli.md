@@ -63,7 +63,7 @@ could not be linked.
   a retry recovers a stuck request has not been observed yet.
 - Headings set at body size are not detected, so a document that uses them
   comes out as a single chapter.
-- Notes are found only when their markers are drawn as blue links, as the
-  sample clean-page source does.
+- Notes are found only when their markers are drawn as blue links, as in
+  the sample sets.
 - No review step: the output is exactly what the heuristics produced. To
   look at the result against the scans, use [review](review.md) in the app.

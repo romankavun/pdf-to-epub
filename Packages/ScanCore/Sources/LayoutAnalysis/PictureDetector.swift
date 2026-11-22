@@ -19,7 +19,7 @@ import OCR
 /// recognized text.
 ///
 /// Works for pictures that span the column with text above and below, which
-/// is how clean-page sources place them. Text flowing beside a picture is not handled.
+/// is how digital layouts place them. Text flowing beside a picture is not handled.
 public struct PictureDetector: Sendable {
     /// Thresholds for the heuristics.
     public struct Options: Sendable, Equatable {

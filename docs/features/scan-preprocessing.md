@@ -82,7 +82,7 @@ pages 2, 3, 6, 7, 8 and 9, the problem pages, converted with
   2× (`sips`) gave 1246 words and 2.0 % misspelled against 1.9 % at their
   own size. At this resolution (text about 20 px tall) Vision gains nothing
   from more pixels.
-- clean pages: 12 pages from the four sample sets are profiled
+- Clean pages: 12 pages from the four sample sets are profiled
   as clean pages and left untouched; the golden pages and every existing
   test are unchanged.
 

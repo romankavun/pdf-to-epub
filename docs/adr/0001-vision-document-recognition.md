@@ -12,7 +12,7 @@ The plan assumed `RecognizeDocumentsRequest` might return enough structure
 recognition confidence could drive the "words to review" list. Both needed
 checking on real Ukrainian material before building the layout stage.
 
-The sample sets turned out to be **clean pages of a clean-page source**, not camera or
+The sample sets turned out to be **clean pages**, not camera or
 flatbed scans: clean rendering, no skew, no running headers, a page number at
 the bottom, note references drawn as blue links, notes collected at the end of
 the document, illustrations with captions, a cover and a contents page.

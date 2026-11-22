@@ -60,7 +60,7 @@ public struct LayoutAnalyzer: Sendable {
         public var boldInkFactor = 1.15
         /// Whether a hyphen at the end of a line was added by the typesetter
         /// and is dropped when the word is joined ("con-" + "tainers"). True
-        /// for printed documents; clean-page sources break lines without adding hyphens,
+        /// for printed documents; digital typesetting breaks lines without adding hyphens,
         /// so for their clean pages a line-end hyphen is part of the word.
         public var removesSoftHyphens = false
         /// Whether each page's margin is measured on its own, following a
