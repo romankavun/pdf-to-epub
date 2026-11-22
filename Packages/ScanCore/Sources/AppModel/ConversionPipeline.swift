@@ -79,8 +79,11 @@ public struct LivePipeline: ConversionPipeline {
         progress: @escaping @Sendable (_ done: Int, _ total: Int) -> Void
     ) async throws -> Conversion {
         let engine = VisionOCREngine(languages: Self.recognitionLanguages(for: metadata.language))
-        return try await DocumentConverter(engine: engine, preparer: preparedFolder.map { ScanPagePreparer(folder: $0) })
-            .analyze(pageURLs: pageURLs, metadata: metadata, progress: progress)
+        return try await DocumentConverter(
+            engine: engine,
+            preparer: preparedFolder.map { ScanPagePreparer(folder: $0) }
+        )
+        .analyze(pageURLs: pageURLs, metadata: metadata, progress: progress)
     }
 
     /// Runs off the caller's actor: zipping a document with hundreds of images

@@ -162,7 +162,11 @@ struct ReviewEditingTests {
         model.beginEditing()
         model.draft = "Body ⟦7⟧ words."
         model.commitEditing()
-        #expect(model.project.conversion.document.blocks[1] == .paragraph(["Body ", .noteReference("note-1"), " words."]))
+        #expect(model.project.conversion.document.blocks[1] == .paragraph([
+            "Body ",
+            .noteReference("note-1"),
+            " words.",
+        ]))
     }
 
     @Test("a note text can be edited")

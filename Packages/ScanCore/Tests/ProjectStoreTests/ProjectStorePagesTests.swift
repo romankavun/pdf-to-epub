@@ -106,7 +106,8 @@ struct ProjectStorePagesTests {
         let bundle = folder.appendingPathComponent("Document.scanproject")
         let missing = Conversion(
             document: Document(
-                metadata: DocumentMetadata(identifier: "urn:test", title: "T", author: nil, language: "uk"), chapters: []
+                metadata: DocumentMetadata(identifier: "urn:test", title: "T", author: nil, language: "uk"),
+                chapters: []
             ),
             pageURLs: [folder.appendingPathComponent("gone.png")]
         )

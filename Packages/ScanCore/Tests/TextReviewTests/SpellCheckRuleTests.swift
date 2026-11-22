@@ -32,7 +32,8 @@ struct SpellCheckRuleTests {
 
     @Test("a Cyrillic word is checked as Ukrainian and a Latin one as English")
     func languagePerWord() {
-        #expect(detector.segments(of: "він читав the document слово") == [Segment(text: "він читав the document слово")])
+        #expect(detector
+            .segments(of: "він читав the document слово") == [Segment(text: "він читав the document слово")])
         #expect(checker.asked.contains { $0 == ("він", .ukrainian) })
         #expect(checker.asked.contains { $0 == ("document", .english) })
     }

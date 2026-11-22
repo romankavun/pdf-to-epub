@@ -277,7 +277,11 @@ struct ProjectModelTests {
         model.replaceWord("Журавeль", with: "Журавель")
         #expect(model.conversion.document.blocks[2] == .paragraph(["Журавель is here."]))
         model.setText("Журавель is there.", for: anchor)
-        #expect(model.corrections.corrections.contains(.edit(anchor, from: "Журавeль is here.", to: "Журавель is there.")))
+        #expect(model.corrections.corrections.contains(.edit(
+            anchor,
+            from: "Журавeль is here.",
+            to: "Журавель is there."
+        )))
         #expect(model.conversion.document.blocks[2] == .paragraph(["Журавель is there."]))
     }
 

@@ -1,5 +1,5 @@
-@testable import pagescan
 import Foundation
+@testable import pagescan
 import Testing
 
 @Suite("CommandLineOptions")
@@ -7,7 +7,8 @@ struct CommandLineOptionsTests {
     @Test("reads the input folder and every option")
     func full() throws {
         let options = try CommandLineOptions(arguments: [
-            "/in/document", "--output", "/out/b.epub", "--title", "My Document", "--author", "A. B.", "--language", "en",
+            "/in/document", "--output", "/out/b.epub", "--title", "My Document", "--author", "A. B.", "--language",
+            "en",
         ])
         #expect(options.input.path == "/in/document")
         #expect(options.output.path == "/out/b.epub")

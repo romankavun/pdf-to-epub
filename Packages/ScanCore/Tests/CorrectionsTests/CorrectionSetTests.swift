@@ -58,7 +58,10 @@ struct CorrectionSetTests {
         var set = CorrectionSet()
         set.setType(.heading(level: 1), for: anchor(1, 0.1))
         let result = set.applying(to: base).conversion
-        #expect(result.document.blocks[2] == .heading(level: 1, content: ["He read ", .emphasis("Журавeль"), " aloud."]))
+        #expect(result.document.blocks[2] == .heading(
+            level: 1,
+            content: ["He read ", .emphasis("Журавeль"), " aloud."]
+        ))
         #expect(result.document.chapters.map(\.title) == ["Chapter", "He read Журавeль aloud."])
         #expect(result.blockSources == base.blockSources)
     }

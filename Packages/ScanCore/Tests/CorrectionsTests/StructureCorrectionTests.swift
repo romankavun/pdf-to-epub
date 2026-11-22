@@ -136,7 +136,11 @@ struct StructureCorrectionTests {
         let result = set.applying(to: base)
         #expect(merged.blockSources[1].areas.count == 2)
         #expect(result.unapplied.isEmpty)
-        #expect(result.conversion.document.blocks[1] == .paragraph(["Clean text", .noteReference("note-1"), " goes on."]))
+        #expect(result.conversion.document.blocks[1] == .paragraph([
+            "Clean text",
+            .noteReference("note-1"),
+            " goes on.",
+        ]))
         #expect(result.conversion.document.blocks[2] == .paragraph(["He read ", .emphasis("Журавeль"), " aloud."]))
         let sources = result.conversion.blockSources
         #expect(sources[1].areas.map(\.page) == [0])

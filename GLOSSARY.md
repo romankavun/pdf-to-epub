@@ -1,15 +1,15 @@
 # pdf-to-epub
 
-Turns a scanned document into an EPUB 3 that keeps its structure, and lets a person correct what recognition got wrong. The terms below are the shared language of the code, the docs and the conversation.
+Turns a scanned source into an EPUB 3 that keeps its structure, and lets a person correct what recognition got wrong. The terms below are the shared language of the code, the docs and the conversation.
 
 ## Input
 
-**Document**:
+**Source**:
 The thing being converted: an ordered set of pages, from one PDF or one folder of page images.
-_Avoid_: Document, scan (a scan is one kind of document)
+_Avoid_: Scan (a scan is one kind of source), input file
 
 **Page**:
-One image of the document, in reading order.
+One image of the source, in reading order.
 _Avoid_: Sheet, picture (a picture is an illustration)
 
 **Clean page**:
@@ -21,7 +21,7 @@ A page photographed or scanned on a scanner bed, with grainy paper, edges and po
 _Avoid_: Paper scan, physical scan, photo
 
 **Input profile**:
-The per-document decision whether its pages are scanned pages, taken from a sample of pages.
+The per-source decision whether its pages are scanned pages, taken from a sample of pages.
 _Avoid_: Scan mode
 
 **Prepared page**:
@@ -33,6 +33,10 @@ _Avoid_: Cleaned page, processed page
 **Line**:
 One line of text with its word boxes, as returned by OCR. Vision's own paragraph grouping is not used.
 _Avoid_: Row, text run
+
+**Document**:
+The recognized result of a conversion: the blocks and chapters that the review edits and the EPUB export reads. Only ever our own result; the parts of an EPUB are called its navigation file and package file in prose.
+_Avoid_: Text, output
 
 **Block**:
 A unit of document structure: a heading, a paragraph or a figure.
@@ -59,13 +63,13 @@ The text attached to an illustration.
 _Avoid_: Label, legend
 
 **Running header**:
-Text repeated at the top or bottom of pages, such as a page number or document title; removed from the document.
+Text repeated at the top or bottom of pages, such as a page number or the source's title; removed from the document.
 _Avoid_: Header, footer
 
 ## Notes
 
 **Note**:
-A footnote or endnote of the source document, shown in the EPUB as a pop-up.
+A footnote or endnote of the source, shown in the EPUB as a pop-up.
 _Avoid_: Footnote (too narrow), annotation
 
 **Note marker**:
@@ -85,7 +89,7 @@ The number printed on a reference and on its note text.
 _Avoid_: Note number (numbers repeat across numbering systems)
 
 **Numbering system**:
-One series of note labels in a document; a document may have two, such as explanatory notes and sources.
+One series of note labels in a source; a source may have two, such as explanatory notes and cited works.
 _Avoid_: Note type
 
 ## Review and corrections
@@ -121,11 +125,11 @@ _Avoid_: Deleted block
 ## Output and storage
 
 **Project**:
-The saved state of one document: its recognized result, prepared or rendered pages and corrections, kept as a bundle beside the source.
+The saved state of one conversion: its document, prepared or rendered pages and corrections, kept as a bundle beside the source.
 _Avoid_: Session, workspace
 
 **Conversion**:
-One run of the pipeline from pages to a recognized document.
+One run of the pipeline from a source's pages to a document.
 _Avoid_: Import, processing
 
 **Chapter**:
