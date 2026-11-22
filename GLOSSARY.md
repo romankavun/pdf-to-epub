@@ -122,6 +122,18 @@ _Avoid_: Error, typo
 A block the person left out of the document; it stays visible in review.
 _Avoid_: Deleted block
 
+**Style**:
+A group of blocks that look alike on the page and were given the same type for the same reason.
+_Avoid_: Class, category, block kind
+
+**Deciding rule**:
+The reason layout analysis gave a block its type, such as "body size and bold" or "opens with a note label".
+_Avoid_: Heuristic, reason code
+
+**Style overview**:
+The screen that lists a document's styles with samples, so a person can see what recognition made of the document at a glance.
+_Avoid_: Style map, style guide (a guide prescribes; the overview only shows)
+
 ## Output and storage
 
 **Project**:

@@ -18,7 +18,7 @@ Build, run and a usage walkthrough are in the [project README](../README.md).
 - [Coding standards: the judgement rules a review checks](../CODING_STANDARDS.md)
 - [Glossary: the project's shared vocabulary](../GLOSSARY.md)
 - Proposals: [proposals/](proposals/) - designs agreed in direction but not built.
-  - [The document's style guide: style rules applied across a whole document](proposals/style-guide.md)
+  - [The style overview: every kind of block recognition produced, in a review sidebar](proposals/style-overview.md)
 - [Testing: unit tests, golden pages, regenerating expectations](testing.md)
 - Features: [features/](features/) - one page per user-facing feature.
   - [pagescan CLI: folder of page images or PDF to EPUB](features/pagescan-cli.md)
