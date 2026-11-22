@@ -42,7 +42,7 @@ do {
         pages = try ImageFolderImporter().pageURLs(in: options.input)
     }
     defer { renderedFolder.map { try? FileManager.default.removeItem(at: $0) } }
-    // Pages of a paper scan are prepared (cropped, cleaned, deskewed) into
+    // Pages of a scanned page are prepared (cropped, cleaned, deskewed) into
     // a folder of their own; clean pages are read as they are.
     let preparedFolder = options.preparedPages ?? FileManager.default.temporaryDirectory
         .appendingPathComponent("pagescan-prepared-\(UUID().uuidString)", isDirectory: true)
@@ -63,7 +63,7 @@ do {
         }
     let document = conversion.document
     let prepared = zip(pages, conversion.pageURLs).count { $0 != $1 }
-    print("  pages prepared as a paper scan: \(prepared) of \(pages.count)")
+    print("  pages prepared as scanned pages: \(prepared) of \(pages.count)")
     try EPUBExporter().export(document, to: options.output)
 
     var headings = 0, paragraphs = 0, figures = 0

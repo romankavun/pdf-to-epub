@@ -34,13 +34,13 @@ deletes it, keeping only the EPUB.
 - A page whose picture is placed smaller than the page keeps the page's
   empty margins, which layout analysis sees as page margins. A PDF made
   that way can come out differently from the same clean pages as a folder.
-- Two-page spreads are not split. A paper scan (a page on a scanner bed)
-  is cropped, cleaned and deskewed; see [paper scans](scan-preprocessing.md).
+- Two-page spreads are not split. A scanned page (a page on a scanner bed)
+  is cropped, cleaned and deskewed; see [scanned pages](scan-preprocessing.md).
 - A PDF whose pages are clean pages inset on a white page (a grey card with
   white margins all round) comes out as one picture per page and no text:
   picture detection takes the card for an illustration. This is the layout
   analysis meeting a margin it does not crop, not something the import
-  changes. [Preprocessing](scan-preprocessing.md) crops only paper scans,
+  changes. [Preprocessing](scan-preprocessing.md) crops only scanned pages,
   which are told apart by the grain of their paper; this card has none. A
   161-page PDF of this kind was converted to an EPUB with 160 figures.
 

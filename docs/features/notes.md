@@ -126,7 +126,7 @@ with a neighbouring marker; the rest are in the list of sources.
 ## Known limits
 
 - **Colour only.** Markers must be drawn in a distinctly blue link colour.
-  Paper scans and other reader themes are not handled.
+  Scanned pages and other reader themes are not handled.
 - **Labels are short and OCR is weak on them.** The sequence repairs most
   errors, but a document whose notes are not numbered in sequence gets labels as
   read, or `*` where nothing was read.

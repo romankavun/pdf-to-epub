@@ -5,7 +5,7 @@
 
 ## Context
 
-Paper scans need preprocessing before recognition: the document page lies on a
+Scanned pages need preprocessing before recognition: the document page lies on a
 white scanner bed (about 12 % of the image), with page edges, a gutter
 shadow, show-through and skew around and in the text. Left alone, picture
 detection takes the whole page for an illustration and Vision reads less

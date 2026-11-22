@@ -21,7 +21,7 @@ struct CommandLineOptions: Equatable {
 
     Defaults: output is <name>.epub next to the input, title is the name of the
     folder or of the PDF without its extension, language is uk.
-    --prepared-pages keeps the page images of a paper scan as they were
+    --prepared-pages keeps the page images of scanned pages as they were
     prepared for recognition (cropped, cleaned, deskewed) in <folder>;
     without it they are deleted after the run.
     """

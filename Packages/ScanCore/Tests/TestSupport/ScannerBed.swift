@@ -4,7 +4,7 @@ import ImageIO
 import UniformTypeIdentifiers
 
 /// Where a synthetic page lies on the glass of a scanner, for tests of the
-/// paper-scan path: the document page is smaller than the image, sits a little
+/// scanned-page path: the document page is smaller than the image, sits a little
 /// off centre, leans by a small angle, and has grainy paper with a dark edge
 /// along one side and a gutter shadow along the other.
 public struct ScannerPlacement: Sendable {

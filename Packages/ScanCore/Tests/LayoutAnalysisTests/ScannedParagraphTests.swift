@@ -45,7 +45,7 @@ private let expected = (0 ..< 4).map { paragraph in
 
 @Suite("Paragraphs on scanned pages")
 struct ScannedParagraphTests {
-    private let analyzer = LayoutAnalyzer(options: .paperScan)
+    private let analyzer = LayoutAnalyzer(options: .scannedPage)
 
     @Test("a margin that drifts down the page does not make every line a paragraph")
     func driftingMargin() {
@@ -82,7 +82,7 @@ struct ScannedParagraphTests {
     }
 }
 
-@Suite("Soft hyphens on paper scans")
+@Suite("Soft hyphens on scanned pages")
 struct SoftHyphenTests {
     private func joined(_ first: String, _ second: String, softHyphens: Bool) -> String? {
         var options = LayoutAnalyzer.Options()

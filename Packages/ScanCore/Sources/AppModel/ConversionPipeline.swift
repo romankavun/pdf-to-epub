@@ -26,7 +26,7 @@ public protocol ConversionPipeline: Sendable {
     /// Converts the pages into a document. Honours task cancellation.
     ///
     /// - Parameters:
-    ///   - preparedFolder: An existing folder where pages of a paper scan
+    ///   - preparedFolder: An existing folder where scanned pages
     ///     are prepared (cropped, cleaned, deskewed) before recognition;
     ///     the result's page URLs then point into it. `nil` reads the pages
     ///     as they are.
@@ -43,7 +43,7 @@ public protocol ConversionPipeline: Sendable {
     func export(_ document: Document, to url: URL) async throws
 }
 
-/// The real pipeline: image folder or PDF, preparation of paper scans, Vision
+/// The real pipeline: image folder or PDF, preparation of scanned pages, Vision
 /// OCR, layout analysis, EPUB.
 public struct LivePipeline: ConversionPipeline {
     public init() {}

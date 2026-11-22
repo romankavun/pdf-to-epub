@@ -54,7 +54,7 @@ struct PageGeometryInvariantTests {
 
     @Test("where a page lies on the scanner, shifted sideways or at a slant, does not change its paragraphs")
     func shiftAndSlant() {
-        let analyzer = LayoutAnalyzer(options: .paperScan)
+        let analyzer = LayoutAnalyzer(options: .scannedPage)
         Property.check("shift and slant", cases: 200) { random in
             let (lines, paragraphs) = prose(generator, &random)
             func page(margin: Double, slope: Double) -> RecognizedPage {

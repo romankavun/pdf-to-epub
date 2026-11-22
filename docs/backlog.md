@@ -138,9 +138,9 @@ page in question. Defects 4 and 5 are not changed by it.
     "Notes without a reference" (4) may be stale in the same way. Expected:
     the summary and the review agree and both update after a correction.
 
-## Defects found on a paper scan
+## Defects found in a scanned document
 
-Found 2026-11-19 on the first real paper scan: test PDF `sample_scan.pdf`,
+Found 2026-11-19 on the first real scanned document: test PDF `sample_scan.pdf`,
 23 pages, an English document. Page N below is review page N of 23. Unlike the
 clean pages the app was designed for, every PDF page is one photo
 of a scanner bed: pure white glass with a small document page in the middle

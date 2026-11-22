@@ -4,9 +4,9 @@ import Testing
 
 @Suite("InputProfile")
 struct InputProfileTests {
-    @Test("a page on a scanner bed with grainy paper is a paper scan")
+    @Test("a page on a scanner bed with grainy paper is a scanned page")
     func scanPage() {
-        #expect(InputProfile(of: SyntheticScans.scan()) == .paperScan)
+        #expect(InputProfile(of: SyntheticScans.scan()) == .scannedPage)
     }
 
     @Test("a clean page is not a scan, with or without a status bar along the edge")
@@ -23,13 +23,13 @@ struct InputProfileTests {
     }
 
     @Test("a document is a scan when most of its pages look scanned", arguments: [
-        ([true, true, false], InputProfile.paperScan),
+        ([true, true, false], InputProfile.scannedPage),
         ([true, false, false], .cleanPage),
         ([true, false], .cleanPage),
         ([], .cleanPage),
     ])
     func majority(pages: [Bool], expected: InputProfile) {
-        #expect(InputProfile(ofDocument: pages.map { $0 ? .paperScan : .cleanPage }) == expected)
+        #expect(InputProfile(ofDocument: pages.map { $0 ? .scannedPage : .cleanPage }) == expected)
     }
 
     @Test("samples at most a handful of pages, spread over the document")

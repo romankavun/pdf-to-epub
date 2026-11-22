@@ -31,7 +31,7 @@ private func box(_ x: Double, _ y: Double, _ width: Double, _ height: Double) ->
     CGRect(x: x, y: y, width: width, height: height)
 }
 
-/// Text in the middle of each scan, as on a paper scan with wide margins:
+/// Text in the middle of each scan, as on a scanned page with wide margins:
 /// the text area is x 0.3 to 0.7, y 0.3 to about 0.65.
 ///
 /// - page 0: a heading and a garbled paragraph;
@@ -73,7 +73,7 @@ private func conversion(language: String = "en", paragraph: String = garbled) ->
 struct ReviewQualityTests {
     @Test("the issue counter counts the page being viewed, garbled text and lost text included")
     func counterFollowsThePage() {
-        // Reproduces a paper scan whose text came out garbled: the toolbar
+        // Reproduces a scanned page whose text came out garbled: the toolbar
         // showed the document's one OCR-suspect word on every page and nothing
         // about the garbled blocks or the pages that lost their text.
         let model = ReviewModel(conversion: conversion(), detector: detector)

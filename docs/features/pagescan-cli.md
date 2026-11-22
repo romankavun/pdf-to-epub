@@ -18,14 +18,14 @@ swift run --package-path Packages/ScanCore -c release pagescan <folder-or-file.p
 | `--title` | The folder name, or the PDF's name without `.pdf` |
 | `--author` | None |
 | `--language` | `uk`. English is always added as a second recognition language. |
-| `--prepared-pages` | None: pages of a paper scan are prepared in a temporary folder that is deleted. With a folder, they are kept there for inspection. |
+| `--prepared-pages` | None: scanned pages are prepared in a temporary folder that is deleted. With a folder, they are kept there for inspection. |
 
 The first page takes up to a minute while Vision loads its model; after that
 a page takes well under a second. A 380-page sample set converts in about
 100 seconds.
 
 Progress is printed every 25 pages. It ends with how many pages were
-prepared as a paper scan (0 for clean pages) and a summary: chapters, headings, paragraphs, figures, whether a
+prepared as scanned pages (0 for clean pages) and a summary: chapters, headings, paragraphs, figures, whether a
 cover was found, the notes linked, and the references and note texts that
 could not be linked.
 
@@ -36,9 +36,9 @@ could not be linked.
    For a folder, takes the `png`, `jpg`, `jpeg`, `tif`, `tiff`
    and `heic` files directly inside the folder, ordered the way Finder sorts
    names (`page_2` before `page_10`). Hidden files and subfolders are ignored.
-2. **Preprocessing** (`Preprocessing`): when the document is a paper scan, each
+2. **Preprocessing** (`Preprocessing`): when the document is made of scanned pages, each
    page is cropped off the scanner bed, cleaned and levelled before
-   anything reads it; see [paper scans](scan-preprocessing.md).
+   anything reads it; see [scanned pages](scan-preprocessing.md).
 3. **OCR** (`OCR`): recognizes text lines with Apple Vision, on device.
 4. **Pictures** (`Conversion`, `LayoutAnalysis`): illustrations are cut out
    and the cover is taken from the first page; see

@@ -25,8 +25,8 @@ struct DocumentConverterPreparerTests {
         #expect(conversion.document.blocks.count == 2)
     }
 
-    @Test("a document of paper scans is laid out as print: soft hyphens at line ends are removed")
-    func paperScanLayout() async throws {
+    @Test("a document of scanned pages is laid out as print: soft hyphens at line ends are removed")
+    func scannedPageLayout() async throws {
         func converted(as profile: InputProfile) async throws -> [Block] {
             let engine = FakeEngine(pages: ["1.png": RecognizedPage(lines: body(["small con-", "tainers here"]))])
             return try await DocumentConverter(
@@ -37,7 +37,7 @@ struct DocumentConverterPreparerTests {
                 metadata: DocumentMetadata(title: "Scan", author: nil, language: "en")
             ).document.blocks
         }
-        #expect(try await converted(as: .paperScan) == [.paragraph(["small containers here"])])
+        #expect(try await converted(as: .scannedPage) == [.paragraph(["small containers here"])])
         #expect(try await converted(as: .cleanPage) == [.paragraph(["small con-tainers here"])])
     }
 }

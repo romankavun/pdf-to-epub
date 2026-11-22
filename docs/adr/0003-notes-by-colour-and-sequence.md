@@ -66,7 +66,7 @@ can be trusted as recognized in place.
   loosely and only directly before a marker.
 - The link colour is fixed to "distinctly blue". Another reader theme needs
   the threshold exposed, or a learned link colour.
-- Paper scans have no coloured markers; superscript detection by size and
+- Scanned pages have no coloured markers; superscript detection by size and
   position is a separate piece of work.
 - Two numbering systems interleaved in one document (letters for one kind of
   note, numbers for another, collected in different places) were not told

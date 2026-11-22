@@ -16,16 +16,16 @@ _Avoid_: Sheet, picture (a picture is an illustration)
 A page with one exact background colour, no skew and no scanner edges; it is read as it is and never prepared.
 _Avoid_: Digital page, plain page
 
-**Paper scan**:
+**Scanned page**:
 A page photographed or scanned on a scanner bed, with grainy paper, edges and possible skew.
-_Avoid_: Physical scan, photo
+_Avoid_: Paper scan, physical scan, photo
 
 **Input profile**:
-The per-document decision whether its pages are paper scans, taken from a sample of pages.
+The per-document decision whether its pages are scanned pages, taken from a sample of pages.
 _Avoid_: Scan mode
 
 **Prepared page**:
-A paper-scan page after crop, cleanup and deskew; it replaces the original everywhere downstream.
+A scanned-page page after crop, cleanup and deskew; it replaces the original everywhere downstream.
 _Avoid_: Cleaned page, processed page
 
 ## Recognition

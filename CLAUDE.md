@@ -13,7 +13,7 @@ it (block types, text, ignoring, applying a fix to similar blocks, undo),
 save the EPUB (`AppModel` + `App/`). Every conversion is kept as a project
 bundle beside the scans, with the corrections stored apart from the
 recognized document (`Corrections`, `ProjectStore`). PDF input works too: pages are drawn to PNG files (`Importing`), the
-project keeps them in its bundle (ADR 0009). Paper scans (a page on a
+project keeps them in its bundle (ADR 0009). Scanned pages (a page on a
 scanner bed) are detected per document and their pages cropped, cleaned and
 deskewed before recognition; the project keeps the prepared pages and the
 review shows them (`Preprocessing`, ADR 0010). See
@@ -36,10 +36,10 @@ below that do not exist yet are created when a test first needs them.
 ### What the input really looks like
 
 The user's sample sets (`/Users/mac/scans_test`, four sets, ~850 PNG pages)
-are **clean pages**, not paper scans: clean text, no skew, no
+are **clean pages**, not scanned pages: clean text, no skew, no
 running headers, a page number at the bottom, note references as blue links,
 notes collected at the end of the document, illustrations with captions, a cover
-and a contents page. Design for this first; paper scans are a later case.
+and a contents page. Design for this first; scanned pages are a later case.
 
 These documents are commercial material. Never copy their pages or text into the
 repository, tests, docs, or commit messages. Tests that need them read the
@@ -61,7 +61,7 @@ Import -> Preprocess -> OCR -> Layout analysis -> Document model -> EPUB export
 ```
 
 1. **Import** - PDF (CoreGraphics, drawn to page images) or image folder becomes an ordered list of pages.
-2. **Preprocess** - only for documents profiled as paper scans (grainy paper on
+2. **Preprocess** - only for documents profiled as scanned pages (grainy paper on
    a scanner bed; clean pages are never touched): crop the page off the bed,
    whiten the paper and remove edges, shadow and show-through, deskew.
    Pixel-based, no Vision. Writes prepared PNGs that every later stage and
@@ -255,6 +255,6 @@ and `Packages/ScanCore/Tests/.swiftlint.yml`.
    `docs/backlog.md`.
 8. ~~Project persistence and correction propagation~~ (done; ADR 0005).
    Merging and splitting blocks done (ADR 0008). Still open: redrawing regions.
-9. ~~Paper scan preprocessing: crop, cleanup, deskew, input profile~~ (done;
+9. ~~Scanned page preprocessing: crop, cleanup, deskew, input profile~~ (done;
    ADR 0010). Upscaling measured and not needed. Still open: spread
    splitting, dewarping curved lines.

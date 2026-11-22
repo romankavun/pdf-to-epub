@@ -31,7 +31,7 @@ struct ScanPagePreparerTests {
         let output = folder.appendingPathComponent("prepared", isDirectory: true)
         try FileManager.default.createDirectory(at: output, withIntermediateDirectories: false)
 
-        let prepared = try ScanPagePreparer(folder: output).prepare(pageAt: original, as: .paperScan)
+        let prepared = try ScanPagePreparer(folder: output).prepare(pageAt: original, as: .scannedPage)
 
         #expect(prepared == output.appendingPathComponent("page-0001.png"))
         let bitmap = try #require(ScanImageFile.read(prepared))
@@ -43,7 +43,7 @@ struct ScanPagePreparerTests {
     @Test("levels a skewed scan")
     func levelsSkewedScan() throws {
         let original = try write(SyntheticScans.scan(skew: 2), named: "skewed.png")
-        let prepared = try ScanPagePreparer(folder: folder).prepare(pageAt: original, as: .paperScan)
+        let prepared = try ScanPagePreparer(folder: folder).prepare(pageAt: original, as: .scannedPage)
         let bitmap = try #require(ScanImageFile.read(prepared))
         #expect(abs(Deskew().skewAngle(of: bitmap)) <= 0.15)
     }
@@ -54,7 +54,7 @@ struct ScanPagePreparerTests {
         let cleanPages = try (1 ... 3)
             .map { try write(SyntheticScans.cleanPage(statusBar: false), named: "clean-\($0).png") }
         let preparer = ScanPagePreparer(folder: folder)
-        #expect(try preparer.profile(ofDocumentWith: scans + [cleanPages[0]]) == .paperScan)
+        #expect(try preparer.profile(ofDocumentWith: scans + [cleanPages[0]]) == .scannedPage)
         #expect(try preparer.profile(ofDocumentWith: cleanPages + [scans[0]]) == .cleanPage)
     }
 
@@ -63,7 +63,7 @@ struct ScanPagePreparerTests {
         let blank = try write(ScanBitmap(width: 100, height: 100, gray: 250), named: "blank.png")
         let output = folder.appendingPathComponent("prepared", isDirectory: true)
         try FileManager.default.createDirectory(at: output, withIntermediateDirectories: false)
-        #expect(try ScanPagePreparer(folder: output).prepare(pageAt: blank, as: .paperScan)
+        #expect(try ScanPagePreparer(folder: output).prepare(pageAt: blank, as: .scannedPage)
             == output.appendingPathComponent("blank.png"))
     }
 
@@ -82,7 +82,7 @@ struct ScanPagePreparerTests {
         let url = folder.appendingPathComponent("note.png")
         try Data("not an image".utf8).write(to: url)
         #expect(throws: PreprocessingError.unreadableImage(url)) {
-            try ScanPagePreparer(folder: folder).prepare(pageAt: url, as: .paperScan)
+            try ScanPagePreparer(folder: folder).prepare(pageAt: url, as: .scannedPage)
         }
     }
 }

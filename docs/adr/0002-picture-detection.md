@@ -50,15 +50,15 @@ Two OCR quirks surfaced while measuring and are handled in `LayoutAnalyzer`:
   synthetic bitmaps.
 - Each page image is decoded twice (once by Vision, once for pixels). On a
   380-page document the whole conversion still takes about 100 seconds.
-- Layouts with text beside a picture, and paper scans with noise in the
+- Layouts with text beside a picture, and scanned pages with noise in the
   margins, will need more than row bands (column bands, denoising).
 - Running several conversions at once made one Vision request hang. (The
   same hang was later seen with a single conversion; requests now have a
   time limit and retries, see ADR 0003.)
 
-## Amendment (2026-11-19): paper scans
+## Amendment (2026-11-19): scanned pages
 
-A paper scan of a document (a small page on a white scanner bed) became a
+A scanned page of a document (a small page on a white scanner bed) became a
 whole-page picture on 12 of 23 pages. The paper itself matched the bed, but
 the page edges and the gutter shadow are thin dark lines along the whole
 page height, so every row of the page had ink and the page was one tall

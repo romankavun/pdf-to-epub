@@ -53,7 +53,7 @@ struct JoiningInvariantTests {
         }
     }
 
-    @Test("on paper scans a line-end hyphen before a lowercase letter goes and every letter stays")
+    @Test("on scanned pages a line-end hyphen before a lowercase letter goes and every letter stays")
     func softHyphenBreaks() {
         Property.check("soft hyphen breaks", cases: 300) { random in
             var draft = Draft(headingStyle: nil)
@@ -92,7 +92,7 @@ struct JoiningInvariantTests {
 
     @Test(
         "a whole page of generated lines comes out with exactly the letters it went in with",
-        arguments: [("clean pages", LayoutAnalyzer.Options()), ("paper scans", .paperScan)]
+        arguments: [("clean pages", LayoutAnalyzer.Options()), ("scanned pages", .scannedPage)]
     )
     func analyzerKeepsLetters(kind: String, options: LayoutAnalyzer.Options) {
         let analyzer = LayoutAnalyzer(options: options)

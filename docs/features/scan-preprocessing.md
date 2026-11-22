@@ -1,4 +1,4 @@
-# Paper scans: crop, clean and level pages before recognition
+# Scanned pages: crop, clean and level pages before recognition
 
 The app and [`pagescan`](pagescan-cli.md) notice when a document is a paper
 scan rather than clean pages and prepare its pages before

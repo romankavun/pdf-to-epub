@@ -31,7 +31,7 @@ Name.scanproject/
   project.json       the conversion: chapters, notes, where each block lies,
                      the paths of the scans (relative for `pages/`), the metadata (no image bytes)
   images/            one file per figure and the cover
-  pages/             page images drawn from a PDF or prepared from paper scans
+  pages/             page images drawn from a PDF or prepared from scanned pages
                      (absent for a folder of clean pages)
   corrections.json   the user's decisions
   ignored-words.json words the review no longer flags (optional)
@@ -48,7 +48,7 @@ crash while creating it leaves no half-written project.
 - Scans in a folder are not copied into the project; their paths are stored.
   If the folder is moved or renamed, the review shows no page images (the
   document and EPUB export still work). Pages drawn from a PDF, and pages of a
-  paper scan prepared for recognition ([scan preprocessing](scan-preprocessing.md)),
+  scanned page prepared for recognition ([scan preprocessing](scan-preprocessing.md)),
   are different: they are moved into the project's `pages/` folder and stored relative to
   it, so the project works after the PDF is moved or deleted and after the
   project itself is moved. They cost disk space (about the size of the

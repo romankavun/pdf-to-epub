@@ -6,9 +6,9 @@ the right. It is for checking the result before saving and for
 [correcting](corrections.md) it: changing a block's type, editing its text,
 leaving it out.
 
-For a paper scan, the page shown is the prepared one, cropped, cleaned and
+For a scanned page, the page shown is the prepared one, cropped, cleaned and
 levelled, because that is the image the blocks were found on; see
-[paper scans](scan-preprocessing.md).
+[scanned pages](scan-preprocessing.md).
 
 ## Usage
 
@@ -108,7 +108,7 @@ See ADR 0007.
 On a poor scan OCR returns near-words ("thc", "rcady") throughout a block.
 Each is only a misspelling, which the review keeps off by default, and
 none is an OCR suspect, so word rules alone left such a document looking clean:
-on a garbled paper scan the toolbar used to read "Suspicious words: 1" on
+on a garbled scanned page the toolbar used to read "Suspicious words: 1" on
 every page (the one OCR suspect in the whole document, while about a fifth of
 all words were unknown to the dictionary).
 
@@ -128,7 +128,7 @@ The threshold comes from measurements with the system dictionaries
 
 | Sample | Blocks | Median unknown share | Blocks above 20 % |
 |---|---|---|---|
-| Garbled English paper scan (23 pages) | 69 | 0.23 | 40 (58 %) |
+| Garbled English scanned document (23 pages) | 69 | 0.23 | 40 (58 %) |
 | Clean English pages | 32 | 0.03 | 0 |
 | Ukrainian clean-page document, mostly modern prose | 744 | 0.03 | 4 (0.5 %) after the language filter |
 | Ukrainian clean-page document with dialect quotes and Russian references | 956 | 0.04 | 100 (7 %) after the language filter |

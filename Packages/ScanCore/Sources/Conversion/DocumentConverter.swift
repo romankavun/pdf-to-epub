@@ -54,7 +54,7 @@ public struct DocumentConverter: Sendable {
     private let preparer: (any PagePreparing)?
 
     /// - Parameter preparer: Prepares each page image before anything reads
-    ///   it, for paper scans; `nil` reads the pages as they are.
+    ///   it, for scanned pages; `nil` reads the pages as they are.
     public init(
         engine: any OCREngine,
         pictureExtractor: any PictureExtractor = ImagePictureExtractor(),
@@ -87,8 +87,8 @@ public struct DocumentConverter: Sendable {
     /// each page is prepared before anything reads it, and every stage reads
     /// the prepared image; the result's ``Conversion/pageURLs`` are the
     /// prepared images, so block boxes refer to what the review shows. A document
-    /// of paper scans is laid out as print
-    /// (``LayoutAnalysis/LayoutAnalyzer/forPaperScans``): running lines may
+    /// of scanned pages is laid out as print
+    /// (``LayoutAnalysis/LayoutAnalyzer/forScannedPages``): running lines may
     /// drift between pages and line-end hyphens are the typesetter's.
     ///
     /// Pages are processed one after another. The call honours task
@@ -148,7 +148,7 @@ public struct DocumentConverter: Sendable {
             }
             progress(pages.count, pageURLs.count)
         }
-        let layout = (profile == .paperScan ? analyzer.forPaperScans : analyzer).layout(of: pages)
+        let layout = (profile == .scannedPage ? analyzer.forScannedPages : analyzer).layout(of: pages)
         let document = Document(
             metadata: metadata,
             chapters: Self.chapters(from: layout.blocks, fallbackTitle: metadata.title),

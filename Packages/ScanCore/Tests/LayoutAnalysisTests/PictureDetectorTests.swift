@@ -101,7 +101,7 @@ struct PictureDetectorTests {
         #expect(detector.pictureRegions(in: page).count == 1)
     }
 
-    // Paper scans: the document page lies on a scanner bed, its edges and the
+    // Scanned pages: the document page lies on a scanner bed, its edges and the
     // gutter shadow are thin dark lines along the whole page, and the back of
     // the leaf shows through as faint grey text.
 

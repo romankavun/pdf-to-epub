@@ -77,7 +77,7 @@ public struct LayoutAnalyzer: Sendable {
         /// Each leaf is cropped from the scanner bed on its own, so running
         /// lines drift up and down from page to page by more than on a
         /// clean page, and a printed document hyphenates words at line ends.
-        public static var paperScan: Options {
+        public static var scannedPage: Options {
             var options = Options()
             options.runningLineHeightTolerance = 0.05
             options.removesSoftHyphens = true
@@ -92,11 +92,11 @@ public struct LayoutAnalyzer: Sendable {
         self.options = options
     }
 
-    /// This analyzer with the thresholds of ``Options/paperScan`` in place of
+    /// This analyzer with the thresholds of ``Options/scannedPage`` in place of
     /// its own for the things that differ in print; its other options stay.
-    public var forPaperScans: LayoutAnalyzer {
+    public var forScannedPages: LayoutAnalyzer {
         var copy = self
-        let scan = Options.paperScan
+        let scan = Options.scannedPage
         copy.options.runningLineHeightTolerance = scan.runningLineHeightTolerance
         copy.options.removesSoftHyphens = scan.removesSoftHyphens
         copy.options.measuresMarginPerPage = scan.measuresMarginPerPage

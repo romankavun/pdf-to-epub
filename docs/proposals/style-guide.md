@@ -12,7 +12,7 @@
 Layout analysis classifies blocks by a handful of heuristics. When one of
 them is wrong for a document, it is wrong the same way on every page, but the
 review screen makes the user find and fix it block by block. Seen on a
-paper scan of an English novel:
+scanned pages of an English novel:
 
 - The running footer ("4 ANDY WEIR", read once as "6 ANDYWEIR") became a
   level 1 heading on every other page: OCR spells it differently and the
@@ -120,7 +120,7 @@ A new correction, `styleRule(signature, type)`, in `CorrectionSet`:
 - OCR noise blurs features: a line box reported two lines high, or a page
   number read as a letter, can put a block in the wrong style. Bucketing
   absorbs small shifts; the per-block switches cover the rest.
-- Paper scans vary more than clean pages (slightly different heights and
+- Scanned pages vary more than clean pages (slightly different heights and
   sizes from page to page), so they produce more, smaller styles; buckets
   may need to be wider for documents profiled as scans.
 - Italic is not measured (ADR 0006), so it does not separate styles.

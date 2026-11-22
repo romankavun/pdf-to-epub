@@ -358,7 +358,7 @@ private extension ConversionModel {
         return folder
     }
 
-    /// Where pages of a paper scan are prepared: inside the staging folder,
+    /// Where scanned pages are prepared: inside the staging folder,
     /// apart from pages drawn from a PDF, which have the same names.
     func makePreparedFolder() throws -> URL {
         let folder = try makeStagingFolder().appendingPathComponent("prepared", isDirectory: true)

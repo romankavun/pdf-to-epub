@@ -9,12 +9,12 @@ public enum InputProfile: Sendable, Equatable {
     /// Clean pages (a born-digital PDF or any page with a uniform background): read as is.
     case cleanPage
     /// Paper pages scanned on a flatbed: cropped, cleaned and deskewed.
-    case paperScan
+    case scannedPage
 
     /// How many pages are looked at to decide a document's profile.
     public static let sampleSize = 9
 
-    /// The profile of one page: a paper scan when it is a page lying on a
+    /// The profile of one page: a scanned page when it is a page lying on a
     /// scanner bed (``PageCrop``) whose paper is grainy rather than one
     /// exact colour.
     ///
@@ -26,13 +26,13 @@ public enum InputProfile: Sendable, Equatable {
             return
         }
         let grain = bitmap.grainShare(in: box, against: bitmap.borderColor)
-        self = grain >= PageCrop.minimumGrain ? .paperScan : .cleanPage
+        self = grain >= PageCrop.minimumGrain ? .scannedPage : .cleanPage
     }
 
     /// The profile of a document from the profiles of sampled pages: a paper
     /// scan when more than half of them are.
     public init(ofDocument pages: [InputProfile]) {
-        self = pages.count(where: { $0 == .paperScan }) * 2 > pages.count ? .paperScan : .cleanPage
+        self = pages.count(where: { $0 == .scannedPage }) * 2 > pages.count ? .scannedPage : .cleanPage
     }
 
     /// The indices of the pages to sample in a document of `pageCount` pages:

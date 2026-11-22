@@ -116,7 +116,7 @@ struct RunningHeaderTests {
                 : line("THE DOCUMENT \(index)", x: 0.68, y: 0.95, width: 0.2)
             return page(index, extra: [footer])
         }
-        let found = texts(LayoutAnalyzer(options: .paperScan).blocks(from: pages))
+        let found = texts(LayoutAnalyzer(options: .scannedPage).blocks(from: pages))
         #expect(!found.contains { $0.contains("ANDY") || $0.contains("THE DOCUMENT") })
         #expect(found.count == 8)
     }

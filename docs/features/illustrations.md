@@ -16,7 +16,7 @@ of pixels, so it is tested on pages built in code.
 1. The page background is the most common colour on the page border.
 2. **Thin vertical lines are erased**: ink at most 1.5% of the page width
    wide that runs down the page for at least 5% of its height, straight,
-   slightly slanted, or broken into pieces. On a paper scan these are the
+   slightly slanted, or broken into pieces. On a scanned page these are the
    edges of the document page and the gutter shadow; left in place, they put ink
    in every row and the whole page would become one picture. Only the parts
    beside the recognized text are erased (all of them on a page without
@@ -103,7 +103,7 @@ document A alone had several bogus chapters made of text inside pictures.
   a sparse drawing can go, and such a drawing can come out smaller, in
   parts, or not at all. A clipping without a frame whose print the engine
   reads well is text.
-- **Paper scans**: a page edge or gutter shadow no longer turns the page into
+- **Scanned pages**: a page edge or gutter shadow no longer turns the page into
   a picture (on a 4-page sample of a scanned paperback: 4 whole-page figures
   before, none after). A page whose paper is darker than the scanner bed is
   still one big band of ink and needs cropping first. Vision also reads

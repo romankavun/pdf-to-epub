@@ -64,7 +64,7 @@ public struct ScanPagePreparer: PagePreparing {
     }
 
     public func prepare(pageAt url: URL, as profile: InputProfile) throws -> URL {
-        guard profile == .paperScan else { return url }
+        guard profile == .scannedPage else { return url }
         guard let bitmap = ScanImageFile.read(url) else { throw PreprocessingError.unreadableImage(url) }
         let page = crop.pageBox(in: bitmap).map { bitmap.cropped(to: $0) } ?? bitmap
         // Cleaned before deskewing, so page edges do not sway the angle and

@@ -10,7 +10,7 @@ import OCR
 /// whose lines touch). Text recognized *inside* a picture does not explain
 /// the picture: most of the ink is outside the text boxes.
 ///
-/// Paper scans add marks that are not part of the page's content: the edges
+/// Scanned pages add marks that are not part of the page's content: the edges
 /// of the document page and the gutter shadow are thin lines along the whole page
 /// height, which would put ink in every row; the back of the leaf shows
 /// through as faint grey text. Thin vertical lines taller than a picture's

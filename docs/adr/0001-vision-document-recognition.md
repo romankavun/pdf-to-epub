@@ -67,7 +67,7 @@ the document, illustrations with captions, a cover and a contents page.
   re-recognition), not only to Vision output.
 - The findings come from a handful of pages of four sets from what looks like
   one reader app. They must be re-checked when a document from another source, or
-  a real paper scan, is added.
+  a real scanned page, is added.
 
 ## Not yet verified
 

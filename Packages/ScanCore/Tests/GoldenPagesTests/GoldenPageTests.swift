@@ -266,10 +266,10 @@ struct GoldenCoverageTests {
     }
 
     @Test(
-        "paper scans: pages lying askew on a scanner bed keep their paragraphs, lose their footers and soft hyphens",
+        "scanned pages: pages lying askew on a scanner bed keep their paragraphs, lose their footers and soft hyphens",
         .timeLimit(.minutes(10))
     )
-    func paperScan() async throws {
+    func scannedPages() async throws {
         let placements = [
             ScannerPlacement(offset: CGPoint(x: 0.03, y: -0.02), angle: 1.2),
             ScannerPlacement(offset: CGPoint(x: -0.04, y: 0.03), angle: -0.8),
@@ -279,7 +279,7 @@ struct GoldenCoverageTests {
             ScannerPlacement(offset: CGPoint(x: -0.03, y: 0.02), angle: -1.4),
         ]
         try await runGolden(GoldenCase(
-            name: "paper-scan", knownIssue: nil, pages: (1 ... 6).map(scannedPage), scan: placements
+            name: "scanned-page", knownIssue: nil, pages: (1 ... 6).map(scannedPage), scan: placements
         ))
     }
 
@@ -309,7 +309,7 @@ struct GoldenCoverageTests {
     }
 }
 
-/// A page of a printed document for the paper-scan case: three paragraphs, a
+/// A page of a printed document for the scanned-page case: three paragraphs, a
 /// word broken by the typesetter with a hyphen, and a running footer that
 /// differs on left and right pages and carries the page number.
 private func scannedPage(_ number: Int) -> SyntheticPage {

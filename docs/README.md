@@ -21,7 +21,7 @@ Build, run and a usage walkthrough are in the [project README](../README.md).
 - Features: [features/](features/) - one page per user-facing feature.
   - [pagescan CLI: folder of page images or PDF to EPUB](features/pagescan-cli.md)
   - [PDF import: how a PDF becomes page images](features/pdf-import.md)
-  - [Paper scans: crop, clean and level pages before recognition](features/scan-preprocessing.md)
+  - [Scanned pages: crop, clean and level pages before recognition](features/scan-preprocessing.md)
   - [App: convert a folder or PDF and save the EPUB](features/app-conversion.md)
   - [Review: the scan next to what was recognized](features/review.md)
   - [Corrections: fixing types and text, applying a fix to similar blocks](features/corrections.md)

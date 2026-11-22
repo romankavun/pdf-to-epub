@@ -12,7 +12,7 @@ Pictures and their captions are described in
 
 | Decision | Rule |
 |---|---|
-| Body margin | The leftmost left edge that at least a tenth of the document's lines (and two) start at: continuation lines and the short last lines of paragraphs; indented first lines, centred lines and the like lie to its right. For paper scans each page with at least 6 lines measures its own margin, a straight line through its left edges: the slope under which the edges bunch most tightly (candidates are the slopes through pairs of lines), then the leftmost group as above. A leaf cropped differently, lying at a slant or curving towards the gutter is thus measured as it is. Clean pages use the document margin on every page, as a page of one-line notes has no unindented line to measure |
+| Body margin | The leftmost left edge that at least a tenth of the document's lines (and two) start at: continuation lines and the short last lines of paragraphs; indented first lines, centred lines and the like lie to its right. For scanned pages each page with at least 6 lines measures its own margin, a straight line through its left edges: the slope under which the edges bunch most tightly (candidates are the slopes through pairs of lines), then the leftmost group as above. A leaf cropped differently, lying at a slant or curving towards the gutter is thus measured as it is. Clean pages use the document margin on every page, as a page of one-line notes has no unindented line to measure |
 | New paragraph | The line starts more than 1.5% of the page width right of the page's margin at its height (first-line indent), **or** the vertical step from the previous line is more than 1.5 typical steps (a blank line) |
 | Paragraph across pages | A page whose first line is not indented continues the last paragraph of the previous page |
 | Heading | A line at least 1.5 times taller than the median line, whose box does not overlap a line above or below it by more than 10% of its height (a body line that the OCR engine measured two lines high does). Consecutive tall lines directly below each other form one heading. Always level 1 |
@@ -21,12 +21,12 @@ Pictures and their captions are described in
 | Note text in a list | A paragraph that opens with a note marker at the margin has a hanging indent: its indented lines continue it, and an unindented line without a marker ends it |
 | Heading at body size | A single line, at most 70% of the page wide, not ending in `. , ; : …`, with a blank line (or the page edge) above it and either **bold** (ink density at least 1.15 times the document's typical line; the text below may follow closely) or **centered** with at most 8 words (which also needs a blank line, the page edge or a picture below). Level 2, or level 1 when the document has no larger headings. A line right under a picture, or carrying a note marker, never qualifies. Ink is measured from the page image during conversion; without measurements only centering is used. See [ADR 0006](../adr/0006-body-size-headings.md) |
 | Page number | The last line of a page, if it is in the bottom 15%, at most four characters, digits only. Dropped |
-| Running header, footer, page number by repetition | A line in the top 10% or bottom 12% of the page whose text, with digits replaced by `#` (a lone Arabic or Roman numeral is always `#`), recurs at the same height (within 2% of the page; 5% for paper scans, whose leaves are cropped one by one) on at least 3 pages and 10% of all pages. Spaces are ignored, as the engine reads small capitals with or without them (`ANDY WEIR`, `ANDYWEIR`). Dropped on those pages. A header that alternates between left and right pages recurs on every other page, which suffices. Lines without letters or digits (an ornament) are kept |
-| Line joining | Lines are joined with a space; a line ending in a letter plus hyphen is joined without one. Clean pages keep the hyphen (digital typesetting adds none of its own). Paper scans drop it when the next line starts with a lowercase letter (`con-` + `tainers`), as the typesetter added it; before a capital it is kept (`Anglo-Saxon`) |
+| Running header, footer, page number by repetition | A line in the top 10% or bottom 12% of the page whose text, with digits replaced by `#` (a lone Arabic or Roman numeral is always `#`), recurs at the same height (within 2% of the page; 5% for scanned pages, whose leaves are cropped one by one) on at least 3 pages and 10% of all pages. Spaces are ignored, as the engine reads small capitals with or without them (`ANDY WEIR`, `ANDYWEIR`). Dropped on those pages. A header that alternates between left and right pages recurs on every other page, which suffices. Lines without letters or digits (an ornament) are kept |
+| Line joining | Lines are joined with a space; a line ending in a letter plus hyphen is joined without one. Clean pages keep the hyphen (digital typesetting adds none of its own). Scanned pages drop it when the next line starts with a lowercase letter (`con-` + `tainers`), as the typesetter added it; before a capital it is kept (`Anglo-Saxon`) |
 
-Thresholds live in `LayoutAnalyzer.Options`; `Options.paperScan` holds the
+Thresholds live in `LayoutAnalyzer.Options`; `Options.scannedPage` holds the
 values that differ for printed pages, applied by the converter when the
-document is detected as a paper scan ([scan preprocessing](scan-preprocessing.md)).
+document is detected as scanned pages ([scan preprocessing](scan-preprocessing.md)).
 
 ## Where each block comes from
 
@@ -45,7 +45,7 @@ its figure.
   detected. Only two heading levels are produced.
 - A paragraph that starts at the top of a page without an indent is merged
   into the previous page's paragraph.
-- On paper scans a compound word broken at its own hyphen before a
+- On scanned pages a compound word broken at its own hyphen before a
   lowercase letter loses the hyphen (`well-` + `known` gives `wellknown`).
   On clean pages line-end hyphens are always kept.
 - A page margin that curves (rather than drifts in a straight line) by more
