@@ -6,8 +6,8 @@ linked notes. Recognition runs on device with Apple Vision; nothing is sent
 over the network.
 
 The input is a **PDF** or a **folder of page images** (one image per page);
-see [docs/features/pdf-import.md](docs/features/pdf-import.md). The milestone
-list is in [CLAUDE.md](CLAUDE.md), known defects in [docs/backlog.md](docs/backlog.md).
+see [docs/features/pdf-import.md](docs/features/pdf-import.md). The architecture
+is in [docs/architecture.md](docs/architecture.md), known defects in [docs/backlog.md](docs/backlog.md).
 
 ## Requirements
 
@@ -79,8 +79,9 @@ sample sets.
 - [docs/README.md](docs/README.md): feature pages, design decisions (ADRs)
   and the backlog.
 - [GLOSSARY.md](GLOSSARY.md): the project's shared vocabulary.
-- [CLAUDE.md](CLAUDE.md): product decisions, architecture, development
-  process and code standards.
+- [CLAUDE.md](CLAUDE.md): product decisions and development process;
+  [docs/architecture.md](docs/architecture.md): pipeline and modules;
+  [CODING_STANDARDS.md](CODING_STANDARDS.md): review rules.
 
 ## License
 

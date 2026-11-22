@@ -2,6 +2,7 @@
 
 Build, run and a usage walkthrough are in the [project README](../README.md).
 
+- [Architecture: pipeline stages, module layout, module boundaries](architecture.md)
 - Architecture decisions: [adr/](adr/)
   - [0001 - What we take from Vision and what we compute ourselves](adr/0001-vision-document-recognition.md)
   - [0002 - Pictures are found from pixel bands, not from OCR output](adr/0002-picture-detection.md)
@@ -14,6 +15,7 @@ Build, run and a usage walkthrough are in the [project README](../README.md).
   - [0009 - A PDF is drawn into page images once, and the project keeps them](adr/0009-pdf-drawn-to-page-images.md)
   - [0010 - Prepared scan pages replace the originals as the project's pages](adr/0010-prepared-pages-are-the-project-pages.md)
 - [Backlog: known defects, the next improvement (page preview while converting) and postponed ideas](backlog.md)
+- [Coding standards: the judgement rules a review checks](../CODING_STANDARDS.md)
 - [Glossary: the project's shared vocabulary](../GLOSSARY.md)
 - Proposals: [proposals/](proposals/) - designs agreed in direction but not built.
   - [The document's style guide: style rules applied across a whole document](proposals/style-guide.md)

@@ -230,3 +230,6 @@ hyphens are removed on scans
 - **Copy the scans into the project** (or store a reference) so that a
   moved scan folder does not leave the review without page images.
 - **Save the undo history** with the project.
+- **Scanned pages: spread splitting and dewarping.** A scan of two facing
+  pages is not split into two pages, and curved lines near the spine are not
+  straightened. See [scan preprocessing](features/scan-preprocessing.md).

@@ -6,7 +6,7 @@
 ## Context
 
 The user corrects the document by hand, which can take sessions, and may
-convert the scans again later. `CLAUDE.md` requires corrections to survive
+convert the scans again later. the architecture requires corrections to survive
 that. Blocks have no identifier that survives: their index changes when a
 paragraph is merged or dropped, and note ids are recounted.
 

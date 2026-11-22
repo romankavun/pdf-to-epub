@@ -9,6 +9,11 @@ swift test --package-path Packages/ScanCore --filter GoldenPageTests # golden pa
 Before every commit run `scripts/check.sh`: `swiftformat --lint`,
 `swiftlint --strict` and the tests without the Vision golden pages.
 
+The `.githooks/pre-commit` hook runs `scripts/check.sh` on every commit. Enable it once per clone:
+`git config core.hooksPath .githooks`. `.swiftlint.yml` also enforces the module boundaries
+(Vision only in `OCR`, `CGPDF` only in `Importing`, no UI imports in `ScanCore`), force-unwrap-free
+and documented production code.
+
 Most tests are unit tests over hand-built values. Two kinds need more:
 
 ## Golden pages

@@ -5,7 +5,7 @@
 - Evidence: synthetic pages in the tests, and a few pages of three sample
   documents run through the whole pipeline (only the resulting headings were
   inspected).
-- Answers the open question about bold and italic in `CLAUDE.md`, for
+- Answers the open question about bold and italic in [architecture](../architecture.md), for
   headings.
 
 ## Context
