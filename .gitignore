@@ -6,3 +6,6 @@ xcuserdata/
 .swiftpm/
 # Sample sets used for local experiments are never committed.
 /Samples/
+
+# Claude Code local config and session worktrees.
+.claude/
