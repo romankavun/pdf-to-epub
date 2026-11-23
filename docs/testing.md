@@ -26,9 +26,9 @@ compared with an expected structure stored in
 text: commercial material never enter the repository.
 
 What a file holds (`DocumentSnapshot`): the blocks in reading order (kind,
-heading level, text, labels of the notes a block refers to), the notes
-(label, text) and the counts of unlinked references and notes. Kinds, levels,
-note links and counts must match exactly; text only has to be about 80%
+heading level, deciding rule, text, labels of the notes a block refers to), the notes
+(label, text, deciding rule) and the counts of unlinked references and notes. Kinds, levels,
+deciding rules (where the file has one), note links and counts must match exactly; text only has to be about 80%
 alike, so a different OCR release that misreads a letter does not fail the
 suite.
 
@@ -90,9 +90,9 @@ those come first.
 
 | Suite | Property |
 |---|---|
-| `ProjectStoreInvariantTests` | save then load returns an equal document, block and note sources, page URLs, corrections of every kind and ignored words (unicode, markup and control characters in the text); converting again keeps the corrections; pages moved into the bundle are readable after loading |
+| `ProjectStoreInvariantTests` | save then load returns an equal document, block and note sources, styles (or none, as in a version 1 project), page URLs, corrections of every kind and ignored words (unicode, markup and control characters in the text); converting again keeps the corrections; pages moved into the bundle are readable after loading |
 | `CorrectionsInvariantTests` | after random retypes, edits, word replacements, merges, splits, resets and undo/redo, converting again (boxes moved by a fraction of a line, note labels recounted) gives the same document with nothing unapplied; undo right after a change restores the exact earlier corrections, document and ignored blocks, and redo the later ones; proposing a type to similar blocks and applying it twice changes nothing the second time and one undo takes the whole propagation back |
-| `JoiningInvariantTests` | a draft built from lines, and whole pages run through `LayoutAnalyzer` with the clean page and the scanned-page options, contain exactly the letters of the input (hyphens, spaces and digits are ignored: joining may add a space and a page number is dropped on purpose); on scanned pages a line-end hyphen goes exactly when a lowercase letter follows a letter |
+| `JoiningInvariantTests` | a draft built from lines, and whole pages run through `LayoutAnalyzer` with the clean page and the scanned-page options, contain exactly the letters of the input and give one style per block and note (hyphens, spaces and digits are ignored: joining may add a space and a page number is dropped on purpose); on scanned pages a line-end hyphen goes exactly when a lowercase letter follows a letter |
 | `PageGeometryInvariantTests` | a page of prose (paragraphs of one to six lines, short last lines, blank lines) laid out with the scanned-page options gives exactly its paragraphs, both upright and shifted sideways by up to 0.2 and slanted by up to 0.15 of the width per page height. It found three defects in the per-page margin before they shipped (a median slope pulled aside by first lines, the margin taken from long lines only, the document margin taken as the most common edge) |
 | `EPUBInvariantTests` | in the exported package every `href`/`src`/fragment points at an existing file and id; ids are unique per document; every file of the archive is in the manifest and every manifest item is in the archive; the spine refers to manifest items; every noteref has a footnote and every footnote a noteref and a back link; the table of contents has one working entry per chapter; all XML is well-formed |
 

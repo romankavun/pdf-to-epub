@@ -83,7 +83,7 @@ func runGolden(_ golden: GoldenCase) async throws {
         .analyze(pageURLs: urls, metadata: metadata)
     let actual = DocumentSnapshot(
         document: conversion.document, unlinkedReferences: conversion.unlinkedReferences,
-        unlinkedNotes: conversion.unlinkedNotes
+        unlinkedNotes: conversion.unlinkedNotes, styles: conversion.styles
     )
 
     if GoldenStore.isRecording {

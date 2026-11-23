@@ -146,9 +146,44 @@ public struct DocumentGenerator: Sendable {
                 return URL(fileURLWithPath: "/scans/document/\(name).png")
             },
             blockSources: places.blocks,
-            noteSources: places.notes
+            noteSources: places.notes,
+            // A project made before styles were kept has none.
+            styles: generator.chance(0.2) ? nil : styles(for: places, &generator)
         )
         return (document, conversion)
+    }
+
+    /// A style for every block and note of `places` and a little page furniture.
+    private func styles(for places: Places, _ generator: inout SeededGenerator) -> BlockStyles {
+        BlockStyles(
+            blocks: places.blocks.map { _ in style(&generator) },
+            notes: places.notes.map { _ in style(&generator) },
+            pageFurniture: (0 ..< generator.int(0 ... 3)).map { _ in
+                PageFurniture(
+                    area: PageArea(page: generator.int(0 ... max(0, places.pages - 1)), box: CGRect(
+                        x: generator.double(0 ... 0.5), y: generator.double(0 ... 1), width: 0.3, height: 0.02
+                    )),
+                    text: words(&generator, count: 1 ... 3), style: style(&generator)
+                )
+            }
+        )
+    }
+
+    /// A style with features anywhere in their range.
+    private func style(_ generator: inout SeededGenerator) -> BlockStyle {
+        BlockStyle(
+            rule: generator.pick(DecidingRule.allCases),
+            lineHeight: generator.double(0 ... 3),
+            ink: generator.chance(0.3) ? nil : generator.double(0.5 ... 2),
+            alignment: generator.pick([.margin, .indented, .centered, .right]),
+            width: generator.double(0 ... 1.2),
+            zone: generator.pick([.top, .body, .bottom]),
+            lineCount: generator.int(0 ... 30),
+            spaceAbove: generator.chance(0.3) ? nil : generator.double(0 ... 10),
+            spaceBelow: generator.chance(0.3) ? nil : generator.double(0 ... 10),
+            isUnderPicture: generator.chance(0.2),
+            opensWithNoteLabel: generator.chance(0.2)
+        )
     }
 
     private func blocks(_ generator: inout SeededGenerator, noteIDs: [Note.ID], images: [ImageResource]) -> [Block] {

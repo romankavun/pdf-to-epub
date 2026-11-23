@@ -88,6 +88,9 @@ public struct DocumentLayout: Sendable, Equatable {
     /// Note texts that nothing refers to. They stay in ``blocks`` as
     /// paragraphs that start with their label, so no text is lost.
     public var unlinkedNotes: Int
+    /// How each block and note looks and why it got its type, and the page
+    /// furniture left out of ``blocks``.
+    public var styles: BlockStyles
 
     public init(
         blocks: [Block],
@@ -95,7 +98,8 @@ public struct DocumentLayout: Sendable, Equatable {
         notes: [Note] = [],
         noteSources: [BlockSource] = [],
         unlinkedReferences: Int = 0,
-        unlinkedNotes: Int = 0
+        unlinkedNotes: Int = 0,
+        styles: BlockStyles = BlockStyles()
     ) {
         self.blocks = blocks
         self.sources = sources
@@ -103,5 +107,6 @@ public struct DocumentLayout: Sendable, Equatable {
         self.noteSources = noteSources
         self.unlinkedReferences = unlinkedReferences
         self.unlinkedNotes = unlinkedNotes
+        self.styles = styles
     }
 }

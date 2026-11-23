@@ -133,60 +133,90 @@ public struct LayoutAnalyzer: Sendable {
     ///   markers within a page may be in any order.
     public func layout(of pages: [PageContent]) -> DocumentLayout {
         var markers: [NoteMarker] = []
-        let pages = withoutRunningLines(pages.map { page in
+        var pageNumbers: [Row?] = []
+        let elements = pages.map { page in
             defer { markers += page.markers }
-            return elements(of: page, firstMarkerIndex: markers.count)
-        })
+            let found = elements(of: page, firstMarkerIndex: markers.count)
+            pageNumbers.append(found.pageNumber)
+            return found.elements
+        }
+        let (pages, runningLines) = withoutRunningLines(elements)
         // A document of pictures only has no text to measure; the metrics are
         // then never consulted.
         let metrics = Metrics(pages: pages.map { $0.compactMap(\.row?.line) })
             ?? Metrics(lineHeight: 0, lineStep: 0, margin: 0)
 
-        let typicalInk = typicalInk(of: pages)
+        let context = StyleContext(
+            metrics: metrics, pages: pages, margins: pages.map { margin(of: $0, metrics: metrics) },
+            typicalInk: typicalInk(of: pages)
+        )
         var assembly = Assembly()
         for (pageIndex, page) in pages.enumerated() {
-            let margin = margin(of: page, metrics: metrics)
-            let measures = PageMeasures(metrics: metrics, margin: margin)
-            var previous: TextLine?
-            for (elementIndex, element) in page.enumerated() {
-                switch element {
-                case let .picture(picture):
-                    flush(&assembly, metrics: metrics)
-                    assembly.blocks.append(.figure(imageID: picture.imageID, caption: []))
-                    assembly.sources.append(BlockSource(page: pageIndex, box: picture.box))
-                    // Whatever comes next is judged as a possible caption.
-                    assembly.draft = Draft(headingStyle: nil, figureIndex: assembly.blocks.count - 1)
-                    previous = nil
-                case let .row(row):
-                    let line = row.line
-                    let step = previous.map { Double(line.box.minY - $0.box.minY) }
-                    let headingStyle = headingStyle(
-                        at: elementIndex, in: page, metrics: metrics, typicalInk: typicalInk
-                    )
-                    let isHeading = headingStyle != nil
-                    if continues(assembly.draft, with: row, isHeading: isHeading, step: step, on: measures) {
-                        assembly.draft?.append(
-                            row.pieces(skippingLeadingMarker: false), page: pageIndex, box: line.box,
-                            removesSoftHyphens: options.removesSoftHyphens
-                        )
-                    } else {
-                        flush(&assembly, gapBelow: step, metrics: metrics)
-                        // A block that opens with a marker is the text of a note.
-                        var draft = Draft(
-                            headingStyle: headingStyle, noteMarker: row.leadingMarker,
-                            isHanging: row.leadingMarker != nil && !isIndented(line, margin: margin)
-                        )
-                        draft.append(row.pieces(skippingLeadingMarker: true), page: pageIndex, box: line.box)
-                        assembly.draft = draft
-                    }
-                    previous = line
-                }
-            }
-            endPage(&assembly, metrics: metrics)
+            assemble(page, at: pageIndex, into: &assembly, context: context)
         }
-        flush(&assembly, metrics: metrics)
+        flush(&assembly, context: context)
         promoteBodySizeHeadings(in: &assembly.blocks)
-        return NoteLinker(markers: markers).layout(of: assembly.blocks, sources: assembly.sources)
+        var layout = NoteLinker(markers: markers)
+            .layout(of: assembly.blocks, sources: assembly.sources, styles: assembly.styles)
+        layout.styles.pageFurniture = pageFurniture(
+            pageNumbers: pageNumbers, runningLines: runningLines, context: context
+        )
+        return layout
+    }
+
+    /// Adds the blocks of one page to `assembly`; the last block stays open,
+    /// as it may run onto the next page.
+    private func assemble(
+        _ page: [PageElement], at pageIndex: Int, into assembly: inout Assembly, context: StyleContext
+    ) {
+        let metrics = context.metrics
+        let measures = PageMeasures(metrics: metrics, margin: context.margins[pageIndex])
+        var previous: TextLine?
+        var afterPicture = false
+        for (elementIndex, element) in page.enumerated() {
+            switch element {
+            case let .picture(picture):
+                flush(&assembly, context: context)
+                assembly.blocks.append(.figure(imageID: picture.imageID, caption: []))
+                assembly.sources.append(BlockSource(page: pageIndex, box: picture.box))
+                assembly.styles.append(style(
+                    ofPictureAt: picture.box, page: pageIndex,
+                    stepAbove: previous.map { Double(picture.box.minY - $0.box.minY) }, context: context
+                ))
+                // Whatever comes next is judged as a possible caption.
+                assembly.draft = Draft(headingStyle: nil, figureIndex: assembly.blocks.count - 1)
+                previous = nil
+                afterPicture = true
+            case let .row(row):
+                let line = row.line
+                let step = previous.map { Double(line.box.minY - $0.box.minY) }
+                let headingStyle = headingStyle(
+                    at: elementIndex, in: page, metrics: metrics, typicalInk: context.typicalInk
+                )
+                let isHeading = headingStyle != nil
+                if continues(assembly.draft, with: row, isHeading: isHeading, step: step, on: measures) {
+                    assembly.draft?.append(
+                        row.pieces(skippingLeadingMarker: false), page: pageIndex, box: line.box, ink: row.ink,
+                        removesSoftHyphens: options.removesSoftHyphens
+                    )
+                } else {
+                    flush(&assembly, gapBelow: step, context: context)
+                    // A block that opens with a marker is the text of a note.
+                    var draft = Draft(
+                        headingStyle: headingStyle, noteMarker: row.leadingMarker,
+                        isHanging: row.leadingMarker != nil && !isIndented(line, margin: measures.margin),
+                        stepAbove: step, isUnderPicture: afterPicture
+                    )
+                    draft.append(
+                        row.pieces(skippingLeadingMarker: true), page: pageIndex, box: line.box, ink: row.ink
+                    )
+                    assembly.draft = draft
+                }
+                previous = line
+                afterPicture = false
+            }
+        }
+        endPage(&assembly, context: context)
     }
 
     /// Where unindented lines start on `page`: its own margin for paper
@@ -200,10 +230,10 @@ public struct LayoutAnalyzer: Sendable {
 
     /// A caption never runs onto the next page, but an ordinary paragraph
     /// under a picture may.
-    private func endPage(_ assembly: inout Assembly, metrics: Metrics) {
+    private func endPage(_ assembly: inout Assembly, context: StyleContext) {
         guard let pending = assembly.draft, pending.figureIndex != nil else { return }
-        if isCaption(pending, gapBelow: nil, metrics: metrics) {
-            flush(&assembly, metrics: metrics)
+        if captionRule(of: pending, gapBelow: nil, metrics: context.metrics) != nil {
+            flush(&assembly, context: context)
         } else {
             assembly.draft?.figureIndex = nil
         }
@@ -217,7 +247,7 @@ public struct LayoutAnalyzer: Sendable {
         if Double(line.box.height) >= options.headingHeightFactor * metrics.lineHeight {
             return overlapsNeighbour(line, among: page) ? nil : .larger
         }
-        return isBodySizeHeading(at: index, in: page, metrics: metrics, typicalInk: typicalInk) ? .bodySize : nil
+        return bodySizeHeadingStyle(at: index, in: page, metrics: metrics, typicalInk: typicalInk)
     }
 
     /// A document whose only headings are set at body size has no use for a
@@ -287,19 +317,28 @@ public struct LayoutAnalyzer: Sendable {
     ///
     /// - Parameter gapBelow: Distance to the next line on the same page,
     ///   when there is one.
-    private func flush(_ assembly: inout Assembly, gapBelow: Double? = nil, metrics: Metrics) {
+    private func flush(_ assembly: inout Assembly, gapBelow: Double? = nil, context: StyleContext) {
         guard let finished = assembly.draft else { return }
         assembly.draft = nil
         // A picture with nothing under it leaves an empty caption draft.
         guard !finished.isEmpty, let source = finished.source else { return }
+        func style(_ rule: DecidingRule) -> BlockStyle {
+            self.style(of: MeasuredBlock(
+                lines: finished.lines, rule: rule, stepAbove: finished.stepAbove, stepBelow: gapBelow,
+                isUnderPicture: finished.isUnderPicture, opensWithNoteLabel: finished.noteMarker != nil
+            ), context: context)
+        }
         if let index = finished.figureIndex, case let .figure(imageID, _) = assembly.blocks[index],
-           isCaption(finished, gapBelow: gapBelow, metrics: metrics)
+           let rule = captionRule(of: finished, gapBelow: gapBelow, metrics: context.metrics)
         {
             assembly.blocks[index] = .figure(imageID: imageID, caption: finished.pieces)
             assembly.sources[index].add(source)
+            // A captioned figure looks like its caption.
+            assembly.styles[index] = style(rule)
         } else {
             assembly.blocks.append(finished.block)
             assembly.sources.append(source)
+            assembly.styles.append(style(finished.rule))
         }
     }
 
@@ -318,14 +357,15 @@ public struct LayoutAnalyzer: Sendable {
         }
     }
 
-    /// Whether the block right under a picture is that picture's caption.
-    private func isCaption(_ draft: Draft, gapBelow: Double?, metrics: Metrics) -> Bool {
-        guard !draft.isEmpty, !draft.isHeading, draft.noteMarker == nil else { return false }
+    /// How the block right under a picture was found to be that picture's
+    /// caption; `nil` when it is not one.
+    private func captionRule(of draft: Draft, gapBelow: Double?, metrics: Metrics) -> DecidingRule? {
+        guard !draft.isEmpty, !draft.isHeading, draft.noteMarker == nil else { return nil }
         if draft.text.prefixMatch(of: Self.figureLabel) != nil {
-            return true
+            return .captionByLabel
         }
-        guard let gapBelow else { return false }
-        return gapBelow >= options.captionGapFactor * metrics.lineStep
+        guard let gapBelow else { return nil }
+        return gapBelow >= options.captionGapFactor * metrics.lineStep ? .captionByGap : nil
     }
 
     /// "Fig. 3", "Figure 12", "Мал. 27", "Рис. 5", "Іл. 2": how captions
@@ -347,5 +387,7 @@ private struct Assembly {
     var blocks: [DraftBlock] = []
     /// The origin of each block of `blocks`.
     var sources: [BlockSource] = []
+    /// The style of each block of `blocks`.
+    var styles: [BlockStyle] = []
     var draft: Draft?
 }

@@ -2,74 +2,92 @@
   "blocks" : [
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "stone violin bridge lantern mill morning winter river orchard stone violin bridge lantern mill morning winter meadow orchard stone violin bridge lantern mill morning river meadow orchard stone violin bridge lantern mill winter river meadow orchard stone violin bridge lantern"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "morning winter river meadow orchard stone violin bridge mill morning winter river meadow orchard stone violin harbour lantern mill morning winter river meadow orchard stone bridge lantern mill morning winter river meadow orchard violin bridge lantern mill morning winter river meadow"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "stone violin bridge lantern mill morning winter river orchard stone violin bridge lantern mill morning winter meadow orchard stone violin bridge lantern mill morning river meadow orchard stone violin bridge lantern mill winter river meadow orchard stone violin bridge lantern"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "lantern mill morning winter river meadow orchard stone bridge lantern mill morning winter river meadow orchard violin bridge lantern mill morning winter river meadow stone violin bridge lantern mill morning winter river orchard stone violin bridge lantern mill morning winter"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "meadow orchard stone violin bridge lantern mill morning river meadow orchard stone violin bridge lantern mill harbour winter river meadow orchard stone violin bridge lantern morning winter river meadow orchard stone violin bridge mill morning winter river meadow orchard stone violin"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "lantern mill morning winter river meadow orchard stone bridge lantern mill morning winter river meadow orchard violin bridge lantern mill morning winter river meadow stone violin bridge lantern mill morning winter river orchard stone violin bridge lantern mill morning winter"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "winter river meadow orchard stone violin bridge lantern morning winter river meadow orchard stone violin bridge mill morning winter river meadow orchard stone violin lantern mill morning winter river meadow orchard stone bridge lantern mill morning winter river meadow orchard"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "violin bridge lantern mill morning winter river meadow stone violin bridge lantern mill morning winter river harbour orchard stone violin bridge lantern mill morning winter meadow orchard stone violin bridge lantern mill morning river meadow orchard stone violin bridge lantern mill"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "winter river meadow orchard stone violin bridge lantern morning winter river meadow orchard stone violin bridge mill morning winter river meadow orchard stone violin lantern mill morning winter river meadow orchard stone bridge lantern mill morning winter river meadow orchard"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "orchard stone violin bridge lantern mill morning winter meadow orchard stone violin bridge lantern mill morning river meadow orchard stone violin bridge lantern mill winter river meadow orchard stone violin bridge lantern morning winter river meadow orchard stone violin bridge"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "mill morning winter river meadow orchard stone violin lantern mill morning winter river meadow orchard stone harbour bridge lantern mill morning winter river meadow orchard violin bridge lantern mill morning winter river meadow stone violin bridge lantern mill morning winter river"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "orchard stone violin bridge lantern mill morning winter meadow orchard stone violin bridge lantern mill morning river meadow orchard stone violin bridge lantern mill winter river meadow orchard stone violin bridge lantern morning winter river meadow orchard stone violin bridge"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "bridge lantern mill morning winter river meadow orchard violin bridge lantern mill morning winter river meadow stone violin bridge lantern mill morning winter river orchard stone violin bridge lantern mill morning winter meadow orchard stone violin bridge lantern mill morning"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "river meadow orchard stone violin bridge lantern mill winter river meadow orchard stone violin bridge lantern harbour morning winter river meadow orchard stone violin bridge mill morning winter river meadow orchard stone violin lantern mill morning winter river meadow orchard stone"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "bridge lantern mill morning winter river meadow orchard violin bridge lantern mill morning winter river meadow stone violin bridge lantern mill morning winter river orchard stone violin bridge lantern mill morning winter meadow orchard stone violin bridge lantern mill morning"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "morning winter river meadow orchard stone violin bridge mill morning winter river meadow orchard stone violin lantern mill morning winter river meadow orchard stone bridge lantern mill morning winter river meadow orchard violin bridge lantern mill morning winter river meadow"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "stone violin bridge lantern mill morning winter river orchard stone violin bridge lantern mill morning winter harbour meadow orchard stone violin bridge lantern mill morning river meadow orchard stone violin bridge lantern mill winter river meadow orchard stone violin bridge lantern"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "morning winter river meadow orchard stone violin bridge mill morning winter river meadow orchard stone violin lantern mill morning winter river meadow orchard stone bridge lantern mill morning winter river meadow orchard violin bridge lantern mill morning winter river meadow"
     }
   ],

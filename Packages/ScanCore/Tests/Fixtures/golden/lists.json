@@ -2,43 +2,53 @@
   "blocks" : [
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "river harbour orchard stone meadow bridge lantern violin morni winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour"
     },
     {
       "kind" : "heading",
       "level" : 1,
+      "rule" : "largerThanText",
       "text" : "Packing list"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "Take the following things on the journey:"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "• a warm blanket for the cold nights"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "• a lantern with spare candles"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "• a small violin case"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "Then follow these steps in order:"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "1. Close the shutters of the house."
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "2. Lock the old gate behind you."
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "3. Walk down to the harbour."
     }
   ],

@@ -54,3 +54,9 @@ custom_rules:
     included: '(Packages/ScanCore/Sources/(?!Importing/)|App/)'
     message: "Only the Importing module reads PDFs."
     severity: error
+  styles_depends_on_model_and_layout:
+    name: "Styles import"
+    regex: '^\s*(@preconcurrency\s+)?import\s+(?!(DocumentModel|LayoutAnalysis|Foundation|CoreGraphics)\b)\w+'
+    included: 'Packages/ScanCore/Sources/Styles/'
+    message: "Styles depends only on DocumentModel and LayoutAnalysis, so the app and pagescan share it."
+    severity: error

@@ -2,6 +2,7 @@
   "blocks" : [
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "river harbour orchard stone meadow bridge lantern violin morni winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winte river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone"
     },
     {
@@ -11,29 +12,35 @@
         "X",
         "XI"
       ],
+      "rule" : "paragraph",
       "text" : "Старий міст над річкою стояв порожній до самого вечора, і запалили ліхтарі і вітер стих над садом знову."
     },
     {
       "kind" : "heading",
       "level" : 1,
+      "rule" : "bodySizeBold",
       "text" : "Розділ другий"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "Другий розділ починається абзацом звичайного тексту, який займає кілька рядків і потім закінчується."
     }
   ],
   "notes" : [
     {
       "label" : "IX",
+      "rule" : "noteText",
       "text" : "Перша примітка, коротка."
     },
     {
       "label" : "X",
+      "rule" : "noteText",
       "text" : "Друга примітка, теж коротка."
     },
     {
       "label" : "XI",
+      "rule" : "noteText",
       "text" : "Третя примітка починається внизу сторінки і її речення закінчується лише одним словом."
     }
   ],

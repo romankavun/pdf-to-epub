@@ -37,21 +37,27 @@ struct NoteLinker {
         var position: Int
     }
 
-    /// - Parameter sources: The origin of each block of `drafts`.
-    func layout(of drafts: [DraftBlock], sources: [BlockSource]) -> DocumentLayout {
+    /// - Parameters:
+    ///   - sources: The origin of each block of `drafts`.
+    ///   - styles: The style of each block of `drafts`; empty for none.
+    func layout(of drafts: [DraftBlock], sources: [BlockSource], styles: [BlockStyle] = []) -> DocumentLayout {
         var bodies = bodies(in: drafts)
         let (links, unlinkedReferences) = link(drafts, to: &bodies)
 
         var blocks: [Block] = []
         var kept: [BlockSource] = []
-        // The origin of every note text, linked or not.
+        var keptStyles: [BlockStyle] = []
+        // The origin and style of every note text, linked or not.
         var noteSources: [BlockSource] = []
+        var noteStyles: [BlockStyle] = []
         var noteIndex = 0
-        for (draft, source) in zip(drafts, sources) {
+        for (index, (draft, source)) in zip(drafts, sources).enumerated() {
+            let style = styles.indices.contains(index) ? styles[index] : nil
             defer {
-                // A linked note leaves the flow of blocks, and its source with it.
+                // A linked note leaves the flow of blocks, and its source and style with it.
                 if kept.count < blocks.count {
                     kept.append(source)
+                    style.map { keptStyles.append($0) }
                 }
             }
             switch draft {
@@ -64,6 +70,7 @@ struct NoteLinker {
                 blocks.append(.figure(Figure(imageID: imageID, alternativeText: "", caption: caption)))
             case .note:
                 noteSources.append(source)
+                style.map { noteStyles.append($0) }
                 let body = bodies[noteIndex]
                 noteIndex += 1
                 if !body.isReferenced {
@@ -79,8 +86,14 @@ struct NoteLinker {
             blocks: blocks, sources: kept, notes: notes,
             noteSources: bodies.indices.filter { bodies[$0].isReferenced }.map { noteSources[$0] },
             unlinkedReferences: unlinkedReferences,
-            unlinkedNotes: bodies.count { !$0.isReferenced }
+            unlinkedNotes: bodies.count { !$0.isReferenced },
+            styles: BlockStyles(blocks: keptStyles, notes: noteStyles.isEmpty ? [] : linkedStyles(noteStyles, bodies))
         )
+    }
+
+    /// The styles of the note texts that something refers to.
+    private func linkedStyles(_ styles: [BlockStyle], _ bodies: [Body]) -> [BlockStyle] {
+        bodies.indices.filter { bodies[$0].isReferenced && styles.indices.contains($0) }.map { styles[$0] }
     }
 
     /// Links every reference in `drafts` to a note of `bodies`, marking the

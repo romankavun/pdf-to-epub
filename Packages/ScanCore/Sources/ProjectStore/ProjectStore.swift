@@ -45,12 +45,17 @@ public enum ProjectStoreError: Error, Equatable {
 ///   ignored-words.json words the review no longer flags (optional)
 /// ```
 ///
+/// Format version 2 adds the conversion's styles (``Conversion/styles``);
+/// a version 1 project still loads, without them.
+///
 /// Corrections have a file of their own because they change after every
 /// edit and are small, while the conversion is large and is written once, when
 /// the project is created. A project is never converted again (ADR 0011);
 /// *Start over* makes a new one.
 public struct ProjectStore: Sendable {
-    private static let formatVersion = 1
+    private static let formatVersion = 2
+    /// Older versions that still load.
+    private static let readableVersions = 1 ... formatVersion
     private static let projectFile = "project.json"
     private static let correctionsFile = "corrections.json"
     private static let ignoredWordsFile = "ignored-words.json"
@@ -119,7 +124,7 @@ public struct ProjectStore: Sendable {
         guard isProject(at: url) else { throw ProjectStoreError.notAProject }
         do {
             let stored = try Self.read(Stored.Project.self, from: url, name: Self.projectFile)
-            guard stored.formatVersion == Self.formatVersion else {
+            guard Self.readableVersions.contains(stored.formatVersion) else {
                 throw ProjectStoreError.unsupportedVersion(stored.formatVersion)
             }
             var images: [ImageResource] = []
@@ -140,7 +145,8 @@ public struct ProjectStore: Sendable {
                 unlinkedNotes: stored.unlinkedNotes,
                 pageURLs: stored.pageURLs.map { Self.pageURL($0, in: url) },
                 blockSources: stored.blockSources,
-                noteSources: stored.noteSources
+                noteSources: stored.noteSources,
+                styles: stored.formatVersion >= 2 ? stored.styles : nil
             )
             let corrections = try Self.read(Stored.Corrections.self, from: url, name: Self.correctionsFile)
             let ignored = try? Self.read(Stored.IgnoredWords.self, from: url, name: Self.ignoredWordsFile)
@@ -252,6 +258,8 @@ private enum Stored {
         var pageURLs: [String]
         var blockSources: [BlockSource]
         var noteSources: [BlockSource]
+        /// Absent in version 1.
+        var styles: BlockStyles?
 
         init(_ conversion: Conversion, version: Int, bundle: URL) {
             let document = conversion.document
@@ -266,6 +274,7 @@ private enum Stored {
             pageURLs = conversion.pageURLs.map { ProjectStore.storedPath(of: $0, in: bundle) }
             blockSources = conversion.blockSources
             noteSources = conversion.noteSources
+            styles = conversion.styles
         }
     }
 }

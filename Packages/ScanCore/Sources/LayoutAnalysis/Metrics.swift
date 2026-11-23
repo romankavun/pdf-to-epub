@@ -8,11 +8,15 @@ struct Metrics {
     let lineStep: Double
     /// Left edge of unindented body lines.
     let margin: Double
+    /// Where body lines end on the right: the median right edge, since most
+    /// lines of justified text run the full width.
+    let rightEdge: Double
 
-    init(lineHeight: Double, lineStep: Double, margin: Double) {
+    init(lineHeight: Double, lineStep: Double, margin: Double, rightEdge: Double = 1) {
         self.lineHeight = lineHeight
         self.lineStep = lineStep
         self.margin = margin
+        self.rightEdge = rightEdge
     }
 
     /// `nil` when there are no lines at all.
@@ -34,6 +38,9 @@ struct Metrics {
         // short paragraphs, whose long lines are mostly first lines.
         let edges = lines.map { Double($0.box.minX) }
         margin = PageMargin.leftmostLevel(of: edges) ?? Self.median(edges) ?? 0
+        // The upper median: on pages of short lines the full ones still set the edge.
+        let rights = lines.map { Double($0.box.maxX) }.sorted()
+        rightEdge = rights[rights.count / 2]
     }
 
     /// Lower median, so that an even split between two values picks the smaller.

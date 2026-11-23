@@ -122,8 +122,11 @@ struct JoiningInvariantTests {
                 }
                 pages.append(RecognizedPage(lines: lines))
             }
-            let output = analyzer.blocks(from: pages).map(text(of:)).joined()
+            let layout = analyzer.layout(of: pages.map { PageContent(lines: $0.lines) })
+            let output = layout.blocks.map(text(of:)).joined()
             try Property.requireEqual(letters(output), letters(input), "letters of the document")
+            try Property.requireEqual(layout.styles.blocks.count, layout.blocks.count, "one style per block")
+            try Property.requireEqual(layout.styles.notes.count, layout.notes.count, "one style per note")
         }
     }
 }

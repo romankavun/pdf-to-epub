@@ -9,7 +9,7 @@ checking results without the UI.
 ```bash
 swift run --package-path Packages/ScanCore -c release pagescan <folder-or-file.pdf> \
     [--output <file.epub>] [--title <title>] [--author <author>] [--language <tag>] \
-    [--prepared-pages <folder>]
+    [--prepared-pages <folder>] [--styles]
 ```
 
 | Option | Default |
@@ -19,6 +19,7 @@ swift run --package-path Packages/ScanCore -c release pagescan <folder-or-file.p
 | `--author` | None |
 | `--language` | `uk`. English is always added as a second recognition language. |
 | `--prepared-pages` | None: scanned pages are prepared in a temporary folder that is deleted. With a folder, they are kept there for inspection. |
+| `--styles` | Off. Prints the document's [styles](styles.md) after the summary: one line each, grouped by type, with its deciding rule, number of blocks, pages (from 1) and typical look. |
 
 The first page takes up to a minute while Vision loads its model; after that
 a page takes well under a second. A 380-page sample set converts in about

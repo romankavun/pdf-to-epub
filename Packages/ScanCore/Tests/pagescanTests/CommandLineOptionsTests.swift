@@ -24,6 +24,15 @@ struct CommandLineOptionsTests {
         #expect(options.preparedPages?.path == "/out/pages")
     }
 
+    @Test("prints the styles only when asked, and the flag takes no value")
+    func styles() throws {
+        #expect(try !CommandLineOptions(arguments: ["/in/document"]).printsStyles)
+        let options = try CommandLineOptions(arguments: ["--styles", "/in/document", "--title", "T"])
+        #expect(options.printsStyles)
+        #expect(options.input.path == "/in/document")
+        #expect(options.title == "T")
+    }
+
     @Test("defaults the title to the folder name, the output next to the folder, and the language to Ukrainian")
     func defaults() throws {
         let options = try CommandLineOptions(arguments: ["/in/my_document/"])

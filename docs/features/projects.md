@@ -34,6 +34,7 @@ over several sessions.
 ```
 Name.scanproject/
   project.json       the conversion: chapters, notes, where each block lies,
+                     each block's style (from version 2), the page furniture,
                      the paths of the scans (relative for `pages/`), the metadata (no image bytes)
   images/            one file per figure and the cover
   pages/             page images drawn from a PDF or prepared from scanned pages
@@ -42,9 +43,14 @@ Name.scanproject/
   ignored-words.json words the review no longer flags (optional)
 ```
 
-Both JSON files carry `formatVersion` (1). Corrections have a file of their
-own because they change after every edit and are small. Converting again
-replaces `project.json` and `images/` and leaves `corrections.json` and `ignored-words.json` alone.
+Both JSON files carry `formatVersion`: 2 for `project.json`, 1 for
+`corrections.json`. Version 2 adds the [styles](styles.md) of the conversion;
+a version 1 project still opens, without styles (they cannot be recovered,
+as the recognized lines are not kept: *Start over* makes a project that has
+them). A newer version than the app knows is refused. Corrections have a file of their
+own because they change after every edit and are small. A project is never
+converted again ([ADR 0011](../adr/0011-no-convert-again.md)), so
+`project.json` is written once.
 The folder is written beside the destination and moved into place, so a
 crash while creating it leaves no half-written project.
 

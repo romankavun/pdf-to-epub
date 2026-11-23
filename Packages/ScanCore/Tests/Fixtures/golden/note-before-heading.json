@@ -2,6 +2,7 @@
   "blocks" : [
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "river harbour orchard stone meadow bridge lantern violin morni winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winte river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone"
     },
     {
@@ -9,21 +10,25 @@
       "notes" : [
         "1"
       ],
+      "rule" : "paragraph",
       "text" : "The morning harbour was quiet and the old bridge stood empty above the water until the evening came and the lamps were lit."
     },
     {
       "kind" : "heading",
       "level" : 1,
+      "rule" : "largerThanText",
       "text" : "Chapter Two"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "The second chapter opens with a paragraph of ordinary prose tha runs over a few lines and then ends."
     }
   ],
   "notes" : [
     {
       "label" : "1",
+      "rule" : "noteText",
       "text" : "The note begins at the bottom of the page and its sentence only finishes with one word."
     }
   ],

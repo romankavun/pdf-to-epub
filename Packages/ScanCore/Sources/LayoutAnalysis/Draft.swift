@@ -31,14 +31,35 @@ enum DraftBlock: Equatable {
     case note(marker: Int, [Piece])
 }
 
-/// What sets a heading apart. The raw value is the heading level before
-/// levels are made contiguous.
-enum HeadingStyle: Int {
+/// What sets a heading apart.
+enum HeadingStyle {
     /// Set in larger type than the body text.
-    case larger = 1
-    /// Set in the body size and recognized by weight, centering and the
-    /// space around it.
-    case bodySize = 2
+    case larger
+    /// Set in the body size in heavier ink than the text.
+    case bold
+    /// Set in the body size, centred, short and set apart by blank lines.
+    case centered
+
+    /// The heading level before levels are made contiguous.
+    var level: Int {
+        self == .larger ? 1 : 2
+    }
+
+    var rule: DecidingRule {
+        switch self {
+        case .larger: .largerThanText
+        case .bold: .bodySizeBold
+        case .centered: .bodySizeCentered
+        }
+    }
+}
+
+/// One line of a block as it was measured on its page.
+struct MeasuredLine {
+    var page: Int
+    var box: CGRect
+    /// Ink density, when the page image was measured.
+    var ink: Double?
 }
 
 /// A block being assembled from consecutive lines.
@@ -55,7 +76,14 @@ struct Draft {
     /// at the margin and the lines after it are indented. Only notes in a
     /// list are recognized as such.
     let isHanging: Bool
+    /// The vertical step from the line before the block to its first line;
+    /// `nil` at the top of a page or under a picture.
+    let stepAbove: Double?
+    /// Whether the block starts right under a picture.
+    let isUnderPicture: Bool
     private(set) var pieces: [Piece] = []
+    /// Every line of the block, in order.
+    private(set) var lines: [MeasuredLine] = []
     /// The areas the block covers; `nil` until its first line is added.
     private(set) var source: BlockSource?
 
@@ -63,11 +91,27 @@ struct Draft {
         headingStyle != nil
     }
 
-    init(headingStyle: HeadingStyle?, figureIndex: Int? = nil, noteMarker: Int? = nil, isHanging: Bool = false) {
+    init(
+        headingStyle: HeadingStyle?, figureIndex: Int? = nil, noteMarker: Int? = nil, isHanging: Bool = false,
+        stepAbove: Double? = nil, isUnderPicture: Bool = false
+    ) {
         self.headingStyle = headingStyle
         self.figureIndex = figureIndex
         self.noteMarker = noteMarker
         self.isHanging = isHanging
+        self.stepAbove = stepAbove
+        self.isUnderPicture = isUnderPicture || figureIndex != nil
+    }
+
+    /// The deciding rule of the block when it is not a caption.
+    var rule: DecidingRule {
+        if noteMarker != nil {
+            .noteText
+        } else if let headingStyle {
+            headingStyle.rule
+        } else {
+            .paragraph
+        }
     }
 
     var isEmpty: Bool {
@@ -83,7 +127,10 @@ struct Draft {
     /// - Parameter removesSoftHyphens: Whether a hyphen that ends the
     ///   previous line was added by the typesetter (see
     ///   ``LayoutAnalyzer/Options/removesSoftHyphens``).
-    mutating func append(_ line: [Piece], page: Int, box: CGRect, removesSoftHyphens: Bool = false) {
+    mutating func append(
+        _ line: [Piece], page: Int, box: CGRect, ink: Double? = nil, removesSoftHyphens: Bool = false
+    ) {
+        lines.append(MeasuredLine(page: page, box: box, ink: ink))
         if source == nil {
             source = BlockSource(page: page, box: box)
         } else {
@@ -115,7 +162,7 @@ struct Draft {
         if let noteMarker {
             .note(marker: noteMarker, pieces)
         } else if let headingStyle {
-            .heading(level: headingStyle.rawValue, pieces)
+            .heading(level: headingStyle.level, pieces)
         } else {
             .paragraph(pieces)
         }

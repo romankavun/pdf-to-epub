@@ -2,38 +2,46 @@
   "blocks": [
     {
       "kind": "paragraph",
+      "rule": "paragraph",
       "text": "river harbour orchard stone meadow bridge lantern violin morni winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour"
     },
     {
       "kind": "heading",
       "level": 1,
+      "rule": "largerThanText",
       "text": "The Orchard"
     },
     {
       "kind": "heading",
       "level": 2,
+      "rule": "bodySizeCentered",
       "text": "Early Years"
     },
     {
       "kind": "paragraph",
+      "rule": "paragraph",
       "text": "The orchard was planted long ago by people who loved the river and the stone wall."
     },
     {
       "kind": "heading",
       "level": 3,
+      "rule": "bodySizeBold",
       "text": "The First Winter"
     },
     {
       "kind": "paragraph",
+      "rule": "paragraph",
       "text": "That winter was cold and the lanterns burned late into the night."
     },
     {
       "kind": "heading",
       "level": 2,
+      "rule": "bodySizeBold",
       "text": "Later Years"
     },
     {
       "kind": "paragraph",
+      "rule": "paragraph",
       "text": "Later the meadow was sold and the bridge was rebuilt."
     }
   ],

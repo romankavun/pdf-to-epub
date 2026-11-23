@@ -30,6 +30,7 @@ Build, run and a usage walkthrough are in the [project README](../README.md).
   - [Corrections: fixing types and text, applying a fix to similar blocks](features/corrections.md)
   - [Projects: saving a document and its corrections, opening it later](features/projects.md)
   - [Layout analysis](features/layout-analysis.md)
+  - [Styles: blocks grouped by how they look and why they got their type](features/styles.md)
   - [Illustrations, captions and the cover](features/illustrations.md)
   - [Notes: references, note texts and linking](features/notes.md)
   - [EPUB export](features/epub-export.md)

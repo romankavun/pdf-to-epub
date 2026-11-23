@@ -2,11 +2,13 @@
   "blocks" : [
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "river harbour orchard stone meadow bridge lantern violin morni winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winte river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone"
     },
     {
       "kind" : "heading",
       "level" : 1,
+      "rule" : "bodySizeBold",
       "text" : "The Orchard"
     },
     {
@@ -14,20 +16,24 @@
       "notes" : [
         "1"
       ],
+      "rule" : "paragraph",
       "text" : "Morning came over the harbour and the old bridge was quiet until the violin began to play."
     },
     {
       "kind" : "figure",
+      "rule" : "captionByGap",
       "text" : "The bridge at dawn"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "A second paragraph follows the picture and ends here."
     }
   ],
   "notes" : [
     {
       "label" : "1",
+      "rule" : "noteText",
       "text" : "A note about the bridge."
     }
   ],

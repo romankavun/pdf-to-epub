@@ -29,7 +29,11 @@ Import -> Preprocess -> OCR -> Layout analysis -> Document model -> EPUB export
      OCR, their labels read from a strip of crops and repaired from the
      numbering sequence; a paragraph opening with a marker is a note text;
      references are linked by label and order (ADR 0003);
-   - running headers/footers and page numbers: repetition across pages, removed;
+   - running headers/footers and page numbers: repetition across pages,
+     left out of the document and kept as page furniture;
+   - every block, note text and line of page furniture gets a block style:
+     its features relative to the body text and page, and the deciding rule
+     that gave it its type; `Styles` groups them into styles;
    - illustrations: tall unbroken bands of non-background rows, cropped out
      as images, text inside them dropped, captions attached (ADR 0002);
    - hyphenated words and paragraphs broken across lines/pages are rejoined.
@@ -70,6 +74,7 @@ Packages/ScanCore/          Swift package, no UI imports
     ProjectStore/           project bundle persistence
     Conversion/             pipeline: pages -> Document
     TextReview/             suspicious-word rules; no dependencies
+    Styles/                 groups recognized blocks into styles; DocumentModel, LayoutAnalysis
     AppModel/               view models (Observation only, no SwiftUI/AppKit)
     pagescan/               CLI for batch conversion and debugging
   Tests/                    one test target per module + Fixtures/
@@ -83,6 +88,8 @@ Boundaries, enforced by custom rules in `.swiftlint.yml`:
   package, never the reverse.
 - Only `OCR` imports Vision; only `Importing` reads PDFs (`CGPDF`, no PDFKit).
   Everything else works on the package's own value types.
+- `Styles` imports only `DocumentModel` and `LayoutAnalysis` (and Foundation),
+  so the app and `pagescan` share the same grouping.
 
 `DocumentModel` types are `Sendable`, `Codable` value types.
 

@@ -33,7 +33,19 @@ private func sampleConversion(imageBytes: [UInt8] = [1, 2, 3], title: String = "
             page: 0,
             box: CGRect(x: 0.1, y: 0.2 * Double($0), width: 0.8, height: 0.1)
         ) },
-        noteSources: [BlockSource(page: 1, box: CGRect(x: 0.1, y: 0.8, width: 0.8, height: 0.1))]
+        noteSources: [BlockSource(page: 1, box: CGRect(x: 0.1, y: 0.8, width: 0.8, height: 0.1))],
+        styles: BlockStyles(
+            blocks: [
+                BlockStyle(rule: .largerThanText, lineHeight: 1.8, ink: 1.1, alignment: .centered, width: 0.4),
+                BlockStyle(rule: .paragraph, alignment: .indented, lineCount: 4, spaceAbove: 2.5, spaceBelow: 1),
+                BlockStyle(rule: .captionByLabel, width: 0.3, isUnderPicture: true),
+            ],
+            notes: [BlockStyle(rule: .noteText, lineHeight: 0.8, zone: .bottom, opensWithNoteLabel: true)],
+            pageFurniture: [PageFurniture(
+                area: PageArea(page: 1, box: CGRect(x: 0.45, y: 0.95, width: 0.1, height: 0.02)), text: "12",
+                style: BlockStyle(rule: .pageNumber, width: 0.1, zone: .bottom)
+            )]
+        )
     )
 }
 
@@ -133,9 +145,39 @@ struct ProjectStoreTests {
             try store.create(sampleConversion(), at: url)
             let file = url.appendingPathComponent("project.json")
             let json = try String(contentsOf: file, encoding: .utf8)
-                .replacingOccurrences(of: "\"formatVersion\" : 1", with: "\"formatVersion\" : 99")
+                .replacingOccurrences(of: "\"formatVersion\" : 2", with: "\"formatVersion\" : 99")
             try Data(json.utf8).write(to: file)
             #expect(throws: ProjectStoreError.unsupportedVersion(99)) { try store.load(from: url) }
+        }
+    }
+
+    @Test("the styles of a conversion come back with the project")
+    func stylesRoundTrip() throws {
+        try withFolder { folder in
+            let url = folder.appendingPathComponent("Document.scanproject")
+            let conversion = sampleConversion()
+            try store.create(conversion, at: url)
+            #expect(try store.load(from: url).conversion.styles == conversion.styles)
+            #expect(conversion.styles != nil)
+        }
+    }
+
+    @Test("a version 1 project, written before styles were kept, loads without styles")
+    func versionOne() throws {
+        try withFolder { folder in
+            let url = folder.appendingPathComponent("Document.scanproject")
+            try store.create(sampleConversion(), at: url)
+            let file = url.appendingPathComponent("project.json")
+            var json = try #require(
+                try JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [String: Any]
+            )
+            json["formatVersion"] = 1
+            json["styles"] = nil
+            try JSONSerialization.data(withJSONObject: json).write(to: file)
+
+            let conversion = try store.load(from: url).conversion
+            #expect(conversion.styles == nil)
+            #expect(conversion.document == sampleConversion().document)
         }
     }
 

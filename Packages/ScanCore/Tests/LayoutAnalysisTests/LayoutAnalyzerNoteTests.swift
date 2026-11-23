@@ -67,6 +67,7 @@ private let prose = page([
 private func layout(_ pages: [PageContent]) -> DocumentLayout {
     var layout = LayoutAnalyzer().layout(of: [prose] + pages)
     layout.blocks.removeFirst()
+    layout.styles.blocks.removeFirst()
     return layout
 }
 
@@ -87,6 +88,20 @@ struct LayoutAnalyzerNoteTests {
         ])
         #expect(layout.notes == [note(1, label: "1", ["The text of the note on two lines."])])
         #expect(layout.unlinkedReferences == 0 && layout.unlinkedNotes == 0)
+    }
+
+    @Test("a note text, linked or not, is styled by its note label")
+    func noteStyles() throws {
+        let layout = layout([page([
+            ">Some text with a note{1} inside", "and a second line.", "",
+            ">{1} The text of the note", "on two lines.", "",
+            ">{7} A note nothing refers to.",
+        ])])
+        #expect(layout.styles.blocks.map(\.rule) == [.paragraph, .noteText])
+        #expect(layout.styles.notes.map(\.rule) == [.noteText])
+        let linked = try #require(layout.styles.notes.first)
+        #expect(linked.opensWithNoteLabel && linked.lineCount == 2)
+        #expect(layout.styles.blocks.first?.opensWithNoteLabel == false)
     }
 
     @Test("punctuation after a reference stays attached to it")

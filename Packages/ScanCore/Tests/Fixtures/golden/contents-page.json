@@ -2,36 +2,44 @@
   "blocks": [
     {
       "kind": "paragraph",
+      "rule": "paragraph",
       "text": "river harbour orchard stone meadow bridge lantern violin morni winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour"
     },
     {
       "kind": "heading",
       "level": 1,
+      "rule": "bodySizeBold",
       "text": "Contents"
     },
     {
       "kind": "paragraph",
+      "rule": "paragraph",
       "text": "The Orchard 3"
     },
     {
       "kind": "paragraph",
+      "rule": "paragraph",
       "text": "Early Years 7"
     },
     {
       "kind": "paragraph",
+      "rule": "paragraph",
       "text": "The First Winter 12"
     },
     {
       "kind": "paragraph",
+      "rule": "paragraph",
       "text": "Later Years 18"
     },
     {
       "kind": "heading",
       "level": 1,
+      "rule": "bodySizeBold",
       "text": "The Orchard"
     },
     {
       "kind": "paragraph",
+      "rule": "paragraph",
       "text": "The orchard was planted long ago by people who loved the river and the stone wall."
     }
   ],

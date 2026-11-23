@@ -22,6 +22,12 @@ public struct Conversion: Sendable, Equatable {
     /// Where the text of each note of ``Document/notes`` lies, in the same
     /// order; ``BlockSource/page`` indexes ``pageURLs``.
     public var noteSources: [BlockSource]
+    /// How each block and note looked and why it got its type, and the page
+    /// furniture left out of the document: what the style overview is made
+    /// from. `nil` for a project saved before styles were kept (project
+    /// format version 1), which has no styles to show; never re-created,
+    /// since a project is never converted again (ADR 0011).
+    public var styles: BlockStyles?
 
     public init(
         document: Document,
@@ -29,9 +35,11 @@ public struct Conversion: Sendable, Equatable {
         unlinkedNotes: Int = 0,
         pageURLs: [URL] = [],
         blockSources: [BlockSource] = [],
-        noteSources: [BlockSource] = []
+        noteSources: [BlockSource] = [],
+        styles: BlockStyles? = nil
     ) {
         self.document = document
+        self.styles = styles
         self.pageURLs = pageURLs
         self.blockSources = blockSources
         self.noteSources = noteSources
@@ -158,7 +166,8 @@ public struct DocumentConverter: Sendable {
         )
         return Conversion(
             document: document, unlinkedReferences: layout.unlinkedReferences, unlinkedNotes: layout.unlinkedNotes,
-            pageURLs: preparedURLs, blockSources: layout.sources, noteSources: layout.noteSources
+            pageURLs: preparedURLs, blockSources: layout.sources, noteSources: layout.noteSources,
+            styles: layout.styles
         )
     }
 

@@ -16,7 +16,11 @@ extension LayoutAnalyzer {
     /// every other page, which the share threshold allows for.
     ///
     /// - Parameter pages: The elements of every page, top to bottom.
-    func withoutRunningLines(_ pages: [[PageElement]]) -> [[PageElement]] {
+    /// - Returns: The pages without those lines, and the lines removed from
+    ///   each page, top to bottom, with what they were taken for.
+    func withoutRunningLines(
+        _ pages: [[PageElement]]
+    ) -> (pages: [[PageElement]], removed: [[(row: Row, rule: DecidingRule)]]) {
         struct Candidate {
             let page: Int
             let top: Double
@@ -42,17 +46,30 @@ extension LayoutAnalyzer {
                 dropped[key] = (median, Set(atHeight.map(\.page)))
             }
         }
-        guard !dropped.isEmpty else { return pages }
-
-        return pages.enumerated().map { pageIndex, page in
-            page.filter { element in
-                guard let line = element.row?.line, let key = runningKey(of: line), let match = dropped[key]
-                else { return true }
-                return !(match.pages.contains(pageIndex)
-                    && abs(Double(line.box.minY) - match.top) <= options.runningLineHeightTolerance)
+        var kept: [[PageElement]] = []
+        var removed: [[(row: Row, rule: DecidingRule)]] = []
+        for (pageIndex, page) in pages.enumerated() {
+            var keptOnPage: [PageElement] = []
+            var removedOnPage: [(row: Row, rule: DecidingRule)] = []
+            for element in page {
+                if let row = element.row, let key = runningKey(of: row.line), let match = dropped[key],
+                   match.pages.contains(pageIndex),
+                   abs(Double(row.line.box.minY) - match.top) <= options.runningLineHeightTolerance
+                {
+                    // A line that is only a number, at the top or the bottom.
+                    removedOnPage.append((row, key == Self.numberKey ? .pageNumber : .runningLine))
+                } else {
+                    keptOnPage.append(element)
+                }
             }
+            kept.append(keptOnPage)
+            removed.append(removedOnPage)
         }
+        return (kept, removed)
     }
+
+    /// The running key of a line that is only a number, Arabic or Roman.
+    private static let numberKey = "#"
 
     /// What a line must be to repeat as a running line: `nil` when it is not
     /// near the top or bottom edge or carries no letters or digits (a
@@ -63,7 +80,7 @@ extension LayoutAnalyzer {
         let text = line.text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard !text.isEmpty else { return nil }
         if text.wholeMatch(of: /[ivxlcdm]{1,8}/) != nil {
-            return "#"
+            return Self.numberKey
         }
         // Spaces are left out: in small or spaced capitals the engine reads
         // the same name with and without them ("ANDY WEIR", "ANDYWEIR").

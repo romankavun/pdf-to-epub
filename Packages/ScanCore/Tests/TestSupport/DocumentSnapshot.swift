@@ -1,8 +1,10 @@
 import DocumentModel
 import Foundation
+import LayoutAnalysis
 
 /// The structure of a converted document, reduced to what a golden file asserts:
-/// block kinds, heading levels, text and which notes each block refers to.
+/// block kinds, heading levels, deciding rules, text and which notes each
+/// block refers to.
 ///
 /// Ids and image bytes are left out because they carry no layout meaning and
 /// would make every file noisy.
@@ -16,11 +18,16 @@ public struct DocumentSnapshot: Codable, Equatable, Sendable {
         public var text: String
         /// Labels of the notes the block refers to, in order.
         public var notes: [String]?
+        /// The deciding rule (``DecidingRule``'s raw value); absent when the
+        /// conversion kept no styles.
+        public var rule: String?
     }
 
     public struct NoteEntry: Codable, Equatable, Sendable {
         public var label: String
         public var text: String
+        /// The deciding rule of the note text, as for a block.
+        public var rule: String?
     }
 
     public var blocks: [BlockEntry]
@@ -30,7 +37,9 @@ public struct DocumentSnapshot: Codable, Equatable, Sendable {
     /// `true` when the document has a cover image; absent otherwise.
     public var hasCover: Bool?
 
-    public init(document: Document, unlinkedReferences: Int, unlinkedNotes: Int) {
+    /// - Parameter styles: The conversion's styles, whose deciding rules the
+    ///   snapshot records.
+    public init(document: Document, unlinkedReferences: Int, unlinkedNotes: Int, styles: BlockStyles? = nil) {
         let labels = Dictionary(uniqueKeysWithValues: document.notes.map { ($0.id, $0.label) })
         blocks = document.chapters.flatMap(\.blocks).map { block in
             let references = block.referencedNoteIDs.map { labels[$0] ?? "?" }
@@ -46,7 +55,15 @@ public struct DocumentSnapshot: Codable, Equatable, Sendable {
             case let .figure(figure): return BlockEntry(kind: "figure", text: figure.caption.plainText, notes: notes)
             }
         }
-        notes = document.notes.map { NoteEntry(label: $0.label, text: $0.content.plainText) }
+        if let styles {
+            for index in blocks.indices where styles.blocks.indices.contains(index) {
+                blocks[index].rule = styles.blocks[index].rule.rawValue
+            }
+        }
+        notes = document.notes.enumerated().map { index, note in
+            let rule = styles.flatMap { $0.notes.indices.contains(index) ? $0.notes[index].rule.rawValue : nil }
+            return NoteEntry(label: note.label, text: note.content.plainText, rule: rule)
+        }
         self.unlinkedReferences = unlinkedReferences
         self.unlinkedNotes = unlinkedNotes
         hasCover = document.coverImageID == nil ? nil : true
@@ -70,6 +87,9 @@ public struct DocumentSnapshot: Codable, Equatable, Sendable {
             let (actual, wanted) = pair
             if actual.label != wanted.label {
                 found.append("note \(index): label \(actual.label), expected \(wanted.label)")
+            }
+            if let rule = wanted.rule, actual.rule != rule {
+                found.append("note \(index): rule \(actual.rule ?? "none"), expected \(rule)")
             }
             if !TextSimilarity.matches(actual.text, wanted.text, threshold: textThreshold) {
                 found.append("note \(index): text \"\(actual.text)\", expected \"\(wanted.text)\"")
@@ -96,6 +116,9 @@ public struct DocumentSnapshot: Codable, Equatable, Sendable {
                 .append(
                     "block \(index): \(actual.kind) \(actual.level ?? 0), expected \(wanted.kind) \(wanted.level ?? 0)"
                 )
+        }
+        if let rule = wanted.rule, actual.rule != rule {
+            found.append("block \(index): rule \(actual.rule ?? "none"), expected \(rule)")
         }
         if (actual.notes ?? []) != (wanted.notes ?? []) {
             found.append("block \(index): note references \(actual.notes ?? []), expected \(wanted.notes ?? [])")

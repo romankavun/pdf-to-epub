@@ -20,8 +20,8 @@ Pictures and their captions are described in
 | Text inside a picture | Dropped |
 | Note text in a list | A paragraph that opens with a note marker at the margin has a hanging indent: its indented lines continue it, and an unindented line without a marker ends it |
 | Heading at body size | A single line, at most 70% of the page wide, not ending in `. , ; : …`, with a blank line (or the page edge) above it and either **bold** (ink density at least 1.15 times the document's typical line; the text below may follow closely) or **centered** with at most 8 words (which also needs a blank line, the page edge or a picture below). Level 2, or level 1 when the document has no larger headings. A line right under a picture, or carrying a note marker, never qualifies. Ink is measured from the page image during conversion; without measurements only centering is used. See [ADR 0006](../adr/0006-body-size-headings.md) |
-| Page number | The last line of a page, if it is in the bottom 15%, at most four characters, digits only. Dropped |
-| Running header, footer, page number by repetition | A line in the top 10% or bottom 12% of the page whose text, with digits replaced by `#` (a lone Arabic or Roman numeral is always `#`), recurs at the same height (within 2% of the page; 5% for scanned pages, whose leaves are cropped one by one) on at least 3 pages and 10% of all pages. Spaces are ignored, as the engine reads small capitals with or without them (`ANDY WEIR`, `ANDYWEIR`). Dropped on those pages. A header that alternates between left and right pages recurs on every other page, which suffices. Lines without letters or digits (an ornament) are kept |
+| Page number | The last line of a page, if it is in the bottom 15%, at most four characters, digits only. Left out of the document, kept as page furniture |
+| Running header, footer, page number by repetition | A line in the top 10% or bottom 12% of the page whose text, with digits replaced by `#` (a lone Arabic or Roman numeral is always `#`), recurs at the same height (within 2% of the page; 5% for scanned pages, whose leaves are cropped one by one) on at least 3 pages and 10% of all pages. Spaces are ignored, as the engine reads small capitals with or without them (`ANDY WEIR`, `ANDYWEIR`). Left out of the document on those pages and kept as page furniture. A header that alternates between left and right pages recurs on every other page, which suffices. Lines without letters or digits (an ornament) are kept |
 | Line joining | Lines are joined with a space; a line ending in a letter plus hyphen is joined without one. Clean pages keep the hyphen (digital typesetting adds none of its own). Scanned pages drop it when the next line starts with a lowercase letter (`con-` + `tainers`), as the typesetter added it; before a capital it is kept (`Anglo-Saxon`) |
 
 Thresholds live in `LayoutAnalyzer.Options`; `Options.scannedPage` holds the
@@ -36,6 +36,14 @@ touches (a `BlockSource` is the area on the page it starts on plus one per
 page it runs onto), and `noteSources` does the same for the text of every
 linked note, which is not among the blocks. A caption widens the area of
 its figure.
+
+## How each block looked
+
+`DocumentLayout.styles` (`BlockStyles`) holds a `BlockStyle` for every block
+and every linked note text, in the same order as `blocks` and `notes`: the
+deciding rule that gave the block its type and its features measured against
+the body text and the page. The lines left out as page furniture are kept
+with their page, box and text. See [styles](styles.md).
 
 ## Known limits
 

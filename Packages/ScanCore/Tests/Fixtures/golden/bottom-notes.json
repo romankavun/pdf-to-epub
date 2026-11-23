@@ -2,6 +2,7 @@
   "blocks" : [
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "river harbour orchard stone meadow bridge lantern violin morni winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winte river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone"
     },
     {
@@ -13,37 +14,45 @@
         "4",
         "5"
       ],
+      "rule" : "paragraph",
       "text" : "The orchard keeps its secrets in winter and the meadow waits while the violin plays on and the lantern burns low."
     },
     {
       "kind" : "heading",
       "level" : 1,
+      "rule" : "bodySizeBold",
       "text" : "Literature"
     },
     {
       "kind" : "paragraph",
+      "rule" : "paragraph",
       "text" : "The next section opens with a paragraph of ordinary prose that runs over two lines."
     }
   ],
   "notes" : [
     {
       "label" : "1",
+      "rule" : "noteText",
       "text" : "First note, a short one."
     },
     {
       "label" : "2",
+      "rule" : "noteText",
       "text" : "Second note, also short."
     },
     {
       "label" : "3",
+      "rule" : "noteText",
       "text" : "Third note that is a little longer than the others and fills two lines."
     },
     {
       "label" : "4",
+      "rule" : "noteText",
       "text" : "Fourth note whose sentence does not end on this page but continues here at the top of the next page."
     },
     {
       "label" : "5",
+      "rule" : "noteText",
       "text" : "Fifth note, short."
     }
   ],

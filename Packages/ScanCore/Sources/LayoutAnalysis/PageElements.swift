@@ -138,7 +138,8 @@ extension LayoutAnalyzer {
     ///
     /// - Parameter firstMarkerIndex: The index, among all markers of the
     ///   document, of the page's first marker.
-    func elements(of page: PageContent, firstMarkerIndex: Int) -> [PageElement] {
+    /// - Returns: The elements and the page number that was left out, if any.
+    func elements(of page: PageContent, firstMarkerIndex: Int) -> (elements: [PageElement], pageNumber: Row?) {
         func isInPicture(_ box: CGRect) -> Bool {
             page.pictures.contains { $0.box.contains(CGPoint(x: box.midX, y: box.midY)) }
         }
@@ -164,8 +165,12 @@ extension LayoutAnalyzer {
             }
             return row
         }
-        return (withoutPageNumber(rows).map(PageElement.row) + page.pictures.map(PageElement.picture))
-            .sorted { $0.top < $1.top }
+        let pageNumber = pageNumber(among: rows)
+        if pageNumber != nil {
+            rows.removeLast()
+        }
+        let elements = (rows.map(PageElement.row) + page.pictures.map(PageElement.picture)).sorted { $0.top < $1.top }
+        return (elements, pageNumber)
     }
 
     /// Joins boxes that sit side by side on one row into a single line.
@@ -214,12 +219,12 @@ extension LayoutAnalyzer {
         }
     }
 
-    /// Removes the last line when it looks like a page number: short, digits
-    /// only, near the bottom of the page.
-    private func withoutPageNumber(_ rows: [Row]) -> [Row] {
-        guard let last = rows.last, last.line.box.minY > options.pageNumberZone else { return rows }
+    /// The last line when it looks like a page number: short, digits only,
+    /// near the bottom of the page.
+    private func pageNumber(among rows: [Row]) -> Row? {
+        guard let last = rows.last, last.line.box.minY > options.pageNumberZone else { return nil }
         let text = last.line.text.trimmingCharacters(in: .whitespaces)
-        guard !text.isEmpty, text.count <= 4, text.allSatisfy(\.isNumber) else { return rows }
-        return Array(rows.dropLast())
+        guard !text.isEmpty, text.count <= 4, text.allSatisfy(\.isNumber) else { return nil }
+        return last
     }
 }

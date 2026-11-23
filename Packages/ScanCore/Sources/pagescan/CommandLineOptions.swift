@@ -17,13 +17,15 @@ struct CommandLineOptions: Equatable {
     static let usage = """
     Usage: pagescan <folder-with-page-images | file.pdf> [--output <file.epub>]
                     [--title <title>] [--author <author>] [--language <bcp47-tag>]
-                    [--prepared-pages <folder>]
+                    [--prepared-pages <folder>] [--styles]
 
     Defaults: output is <name>.epub next to the input, title is the name of the
     folder or of the PDF without its extension, language is uk.
     --prepared-pages keeps the page images of scanned pages as they were
     prepared for recognition (cropped, cleaned, deskewed) in <folder>;
     without it they are deleted after the run.
+    --styles prints the styles recognition found: each one's type, deciding
+    rule, number of blocks and pages.
     """
 
     var input: URL
@@ -34,6 +36,8 @@ struct CommandLineOptions: Equatable {
     /// Where to keep pages prepared for recognition; `nil` keeps them only
     /// for the run.
     var preparedPages: URL?
+    /// Whether to print the document's styles after converting it.
+    var printsStyles = false
 
     /// Whether the input is a PDF file rather than a folder of page images.
     var inputIsPDF: Bool {
@@ -52,7 +56,9 @@ struct CommandLineOptions: Equatable {
         var values: [String: String] = [:]
         var remaining = arguments[...]
         while let argument = remaining.popFirst() {
-            if argument.hasPrefix("--") {
+            if argument == "--styles" {
+                printsStyles = true
+            } else if argument.hasPrefix("--") {
                 guard ["--output", "--title", "--author", "--language", "--prepared-pages"].contains(argument) else {
                     throw CommandLineError.unknownOption(argument)
                 }

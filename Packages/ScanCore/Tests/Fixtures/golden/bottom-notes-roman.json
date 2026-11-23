@@ -2,6 +2,7 @@
   "blocks": [
     {
       "kind": "paragraph",
+      "rule": "paragraph",
       "text": "river harbour orchard stone meadow bridge lantern violin morni winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winte river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone meadow bridge lantern violin morning winter river harbour orchard stone"
     },
     {
@@ -12,37 +13,45 @@
         "LXXVII",
         "LXXVIII"
       ],
+      "rule": "paragraph",
       "text": "Сад береже свої таємниці взимку, а луг чекає, поки скрипка грає далі."
     },
     {
       "kind": "heading",
       "level": 1,
+      "rule": "bodySizeBold",
       "text": "Література"
     },
     {
       "kind": "paragraph",
+      "rule": "paragraph",
       "text": "Наступний розділ починається абзацом звичайного тексту, який займає два рядки."
     }
   ],
   "notes": [
     {
       "label": "LXXV",
+      "rule": "noteText",
       "text": "Перша примітка, коротка."
     },
     {
       "label": "LXXVI",
+      "rule": "noteText",
       "text": "Запис на одному рядку який доходить майже до правого краю"
     },
     {
       "label": "LXXVII",
+      "rule": "noteText",
       "text": "Третя примітка, трохи довша за інші і займає два рядки повністю."
     },
     {
       "label": "LXXVIII",
+      "rule": "noteText",
       "text": "Четверте речення не закінчується на цій сторінці але продовжується тут, нагорі наступної сторінки."
     },
     {
       "label": "LXXIX",
+      "rule": "noteText",
       "text": "П'ята примітка."
     }
   ],

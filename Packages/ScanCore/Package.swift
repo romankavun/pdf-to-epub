@@ -19,6 +19,7 @@ let package = Package(
                 "Corrections",
                 "ProjectStore",
                 "AppModel",
+                "Styles",
             ]
         ),
         .executable(name: "pagescan", targets: ["pagescan"]),
@@ -32,6 +33,7 @@ let package = Package(
         .target(name: "Preprocessing"),
         .target(name: "Conversion", dependencies: ["DocumentModel", "OCR", "LayoutAnalysis", "Preprocessing"]),
         .target(name: "TextReview"),
+        .target(name: "Styles", dependencies: ["DocumentModel", "LayoutAnalysis"]),
         .target(name: "Corrections", dependencies: ["DocumentModel", "LayoutAnalysis", "Conversion"]),
         .target(name: "ProjectStore", dependencies: ["DocumentModel", "LayoutAnalysis", "Conversion", "Corrections"]),
         .target(
@@ -43,7 +45,10 @@ let package = Package(
         ),
         .executableTarget(
             name: "pagescan",
-            dependencies: ["DocumentModel", "OCR", "Importing", "Preprocessing", "Conversion", "EPUBExport"]
+            dependencies: [
+                "DocumentModel", "OCR", "Importing", "Preprocessing", "LayoutAnalysis", "Conversion", "EPUBExport",
+                "Styles",
+            ]
         ),
         // Test-only helpers: synthetic page rendering and golden-file comparison.
         .target(
@@ -87,6 +92,7 @@ let package = Package(
         .testTarget(name: "pagescanTests", dependencies: ["pagescan"]),
         .testTarget(name: "LayoutAnalysisTests", dependencies: ["LayoutAnalysis", "DocumentModel", "OCR"]),
         .testTarget(name: "DocumentModelTests", dependencies: ["DocumentModel"]),
+        .testTarget(name: "StylesTests", dependencies: ["Styles", "DocumentModel", "LayoutAnalysis"]),
         .testTarget(name: "EPUBExportTests", dependencies: ["EPUBExport", "DocumentModel"]),
     ],
     swiftLanguageModes: [.v6]

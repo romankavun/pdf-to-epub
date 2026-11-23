@@ -130,6 +130,10 @@ _Avoid_: Deleted block
 A group of blocks that look alike on the page and were given the same type for the same reason.
 _Avoid_: Class, category, block kind
 
+**Block style**:
+How one block, note text or line of page furniture looks on the page, measured against the document's body text and page, with its deciding rule; what styles are grouped from.
+_Avoid_: Style (that is the group), format
+
 **Deciding rule**:
 The reason layout analysis gave a block its type, such as "body size and bold" or "opens with a note label".
 _Avoid_: Heuristic, reason code

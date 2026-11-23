@@ -9,6 +9,7 @@ import Foundation
 import Importing
 import OCR
 import Preprocessing
+import Styles
 
 func fail(_ message: String) -> Never {
     FileHandle.standardError.write(Data((message + "\n").utf8))
@@ -79,6 +80,13 @@ do {
         + "figures: \(figures), cover: \(document.coverImageID == nil ? "no" : "yes")")
     print("  notes: \(document.notes.count), references without a note: \(conversion.unlinkedReferences), "
         + "notes without a reference: \(conversion.unlinkedNotes)")
+    if options.printsStyles, let styles = conversion.styles {
+        let found = StyleGrouping.styles(
+            blocks: document.blocks, blockSources: conversion.blockSources, noteSources: conversion.noteSources,
+            styles: styles
+        )
+        print(StyleReport.lines(for: found).joined(separator: "\n"))
+    }
 } catch {
     fail("pagescan: \(error)")
 }
