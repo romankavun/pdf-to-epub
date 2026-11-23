@@ -1953,6 +1953,66 @@
           }
         }
       }
+    },
+    "Probably wrong" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Імовірно, помилка"
+          }
+        }
+      }
+    },
+    "Probably wrong. %@" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Імовірно, помилка. %@"
+          }
+        }
+      }
+    },
+    "At the top or bottom edge of the page, on %lld pages: probably a running header taken for a heading." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Біля верхнього чи нижнього краю сторінки (сторінок: %lld): мабуть, колонтитул, сприйнятий як заголовок."
+          }
+        }
+      }
+    },
+    "Full-width one-line paragraphs that stop mid-sentence (%lld): probably lines of a paragraph that were not joined." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Однорядкові абзаци на всю ширину, що уриваються посеред речення (%lld): мабуть, рядки абзацу, які не з’єднано."
+          }
+        }
+      }
+    },
+    "Most of its blocks (%lld) are text probably misrecognized." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Більшість його блоків (%lld) — імовірно, хибно розпізнаний текст."
+          }
+        }
+      }
+    },
+    "Its lines are long or vary from page to page: probably body text removed as page furniture." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Його рядки довгі або різняться від сторінки до сторінки: мабуть, основний текст, вилучений як елементи сторінки."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

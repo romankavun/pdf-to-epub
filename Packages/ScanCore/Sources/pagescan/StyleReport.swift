@@ -5,10 +5,23 @@ import Styles
 /// The styles of a conversion as `pagescan --styles` prints them, in English.
 enum StyleReport {
     /// A count line, then one line per style, grouped by type as the style
-    /// overview lists them. Page numbers count from 1.
-    static func lines(for styles: [Style]) -> [String] {
+    /// overview lists them, each followed by its warning when it is probably
+    /// wrong. Page numbers count from 1.
+    static func lines(for styles: [Style], warnings: [Style.ID: StyleWarning] = [:]) -> [String] {
         let sorted = styles.sorted { ($0.type, $0.paletteIndex) < ($1.type, $1.paletteIndex) }
-        return ["Styles: \(styles.count)"] + sorted.map { "  " + line(for: $0) }
+        let count = "Styles: \(styles.count)" + (warnings.isEmpty ? "" : ", probably wrong: \(warnings.count)")
+        return [count] + sorted.flatMap { style in
+            ["  " + line(for: style)] + (warnings[style.id].map { ["    probably wrong: " + reason($0)] } ?? [])
+        }
+    }
+
+    private static func reason(_ warning: StyleWarning) -> String {
+        switch warning {
+        case let .headingAtPageEdge(pages): "at the page edge on \(pages) pages, a running header?"
+        case let .unjoinedLines(count): "\(count) full-width one-line paragraphs stop mid-sentence, lines not joined?"
+        case let .mostlyMisrecognized(count): "\(count) blocks are text probably misrecognized"
+        case .furnitureLooksLikeText: "long lines or text that varies from page to page, body text removed?"
+        }
     }
 
     private static func line(for style: Style) -> String {

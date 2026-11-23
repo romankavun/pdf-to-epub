@@ -13,7 +13,7 @@ struct StyleSidebar: View {
             ForEach(model.styleSections) { section in
                 Section {
                     ForEach(section.styles) { style in
-                        StyleRow(style: style)
+                        StyleRow(style: style, warning: model.warning(of: style))
                             .tag(style.id)
                     }
                 } header: {
@@ -26,9 +26,11 @@ struct StyleSidebar: View {
     }
 }
 
-/// A style in the sidebar: its colour, name and number of blocks.
+/// A style in the sidebar: its colour, name and number of blocks, with a
+/// mark when it is probably wrong.
 private struct StyleRow: View {
     var style: Styles.Style
+    var warning: StyleWarning?
 
     var body: some View {
         HStack(spacing: 6) {
@@ -38,13 +40,18 @@ private struct StyleRow: View {
             Text(style.name)
                 .lineLimit(1)
                 .truncationMode(.middle)
-            // The slot for the probably-wrong mark (#35).
             Spacer(minLength: 4)
+            if warning != nil {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+                    .accessibilityLabel("Probably wrong")
+                    .accessibilityIdentifier("styleWarningMark")
+            }
             Text(style.members.count.formatted())
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
         }
-        .help(style.featuresText)
+        .help(warning.map { "\(style.featuresText)\n\($0.text)" } ?? style.featuresText)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("styleRow")
     }
@@ -93,6 +100,15 @@ struct StyleBlocks: View {
                     Text(style.name).font(.headline)
                 } icon: {
                     Circle().fill(style.color).frame(width: 10, height: 10)
+                }
+                if let warning = model.warning(of: style) {
+                    Label {
+                        Text("Probably wrong. \(warning.text)")
+                    } icon: {
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("styleWarning")
                 }
                 Text(style.featuresText)
                 Text("Deciding rule: \(style.rule.name)")

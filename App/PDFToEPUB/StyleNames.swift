@@ -93,6 +93,30 @@ extension DecidingRule {
     }
 }
 
+extension StyleWarning {
+    /// What makes the style probably wrong, and what it probably is.
+    var text: String {
+        switch self {
+        case let .headingAtPageEdge(pages):
+            String(
+                // swiftlint:disable:next line_length
+                localized: "At the top or bottom edge of the page, on \(pages) pages: probably a running header taken for a heading."
+            )
+        case let .unjoinedLines(count):
+            String(
+                // swiftlint:disable:next line_length
+                localized: "Full-width one-line paragraphs that stop mid-sentence (\(count)): probably lines of a paragraph that were not joined."
+            )
+        case let .mostlyMisrecognized(count):
+            String(localized: "Most of its blocks (\(count)) are text probably misrecognized.")
+        case .furnitureLooksLikeText:
+            String(
+                localized: "Its lines are long or vary from page to page: probably body text removed as page furniture."
+            )
+        }
+    }
+}
+
 extension ReviewModel.StyleFeature {
     var text: String {
         switch self {

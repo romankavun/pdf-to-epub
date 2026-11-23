@@ -89,6 +89,67 @@ from the recognized document, not the corrected one.
 
 `pagescan --styles` prints them ([pagescan](pagescan-cli.md)).
 
+## Probably wrong
+
+A style is marked **probably wrong**, with a reason (`StyleWarning` in the
+`Styles` module), when its pattern usually means a rule misfired for the
+whole document. A mark is a hint to look, not a verdict; each rule needs the
+pattern on several blocks, since one odd block is the block list's business.
+At most one reason is given, the first that applies, in this order:
+
+| Warning | When | What it probably is |
+|---|---|---|
+| `mostlyMisrecognized` | At least 3 of the style's blocks, and more than half, are *text probably misrecognized* (see below) | A style OCR read badly |
+| `headingAtPageEdge` | A heading style in the top or bottom zone, on at least 3 pages | A running header the repetition rule missed |
+| `unjoinedLines` | A style of one-line, full-width paragraphs (rule `paragraph`) of which at least 10, and more than a quarter, stop mid-sentence: the text does not end with `. ! ? … : ;` or a closing quote or bracket | Lines of a paragraph that were not joined |
+| `furnitureLooksLikeText` | Page furniture whose median width is at least 0.6 of the text column, or whose most common text (digits and spaces ignored) is on less than 40% of its lines | Body text removed as page furniture |
+
+*Text probably misrecognized* is the review's per-block check (too many
+words of the document's language that the dictionary does not know, see
+[review](review.md)), with one change: an unknown word that recurs in at
+least 3 blocks of the same style counts as known. OCR misreads a word
+differently each time, while an abbreviation, a name or a word in another
+language comes back unchanged. Judging it needs the system dictionary, which
+only the app has ([ADR 0007](../adr/0007-spell-checker-behind-a-protocol.md)):
+`ReviewModel` computes the misrecognized blocks of each style when the review
+opens (`StyleIndex.misrecognized`) and passes them to `StyleWarning`;
+`pagescan` passes none, so it never prints that reason.
+
+Like the styles, the marks judge what recognition decided, not the
+corrections: fixing the blocks of a marked style does not clear its mark.
+The review shows the mark in the [styles sidebar](review.md#the-styles-sidebar);
+`pagescan --styles` prints the reason under the style.
+
+### Tuned on the sample sets
+
+On the four clean-page sets (with the dictionary, as in the app) the rules
+mark two styles, both right, and nothing on the other three sets or on a
+short scanned English book:
+
+- one set: two styles of one-line, full-width paragraphs, where the lines of
+  numbered references with hanging indents, and the first lines of some
+  paragraphs, were not joined; 44% and 49% of their lines stop mid-sentence.
+
+What the first cut of the rules got wrong, and what changed:
+
+- **Width does not tell an unjoined line.** The first cut marked one-line
+  paragraphs that reach the right edge (95% of the column). That marked a
+  style of 1,267 short dialogue lines on another set, whose blocks Vision
+  measured across the full column, and 27 one-sentence paragraphs on a third;
+  3% and 11% of their lines stop mid-sentence. Where the end of the text is
+  the sign, the width only picks the style.
+- **Recurring unknown words are not misreadings.** The per-block check made
+  112 of a bibliography's 170 note texts look misrecognized: archive
+  abbreviations and titles in Russian and Polish. Discounting words that
+  recur in 3 blocks of the style leaves 9, and the style unmarked.
+- No set has a heading style at the page edge on more than one page, or page
+  furniture that is long or varies, so those two rules mark nothing here;
+  their thresholds come from what running headers look like (short, one or
+  two texts in turn).
+
+The sample sets have no badly read text, so the misrecognized rule was
+checked for staying quiet, not for finding damage.
+
 ## Storage
 
 `project.json` keeps the block styles and page furniture from format version
@@ -126,3 +187,6 @@ text often come one per style, as each size is set once (a title page).
 - Italic is not measured, so it does not separate styles.
 - Wrong block boundaries show as a suspicious style; they are fixed by
   merging and splitting in the review.
+- A probably-wrong mark is per style: a style that mixes good and bad blocks
+  is marked only when the bad ones pass the rule's share.
+- `pagescan` cannot judge text probably misrecognized (no dictionary).

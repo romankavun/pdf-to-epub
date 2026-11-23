@@ -5,6 +5,7 @@ import DocumentModel
 import Foundation
 import LayoutAnalysis
 import Styles
+import TextReview
 
 public extension ReviewModel {
     /// How many examples a selected style shows before *Show All*.
@@ -126,6 +127,13 @@ public extension ReviewModel {
     func showStyle(of item: Item) {
         guard let style = style(of: item) else { return }
         selectStyle(style.id)
+    }
+
+    /// Why `style` is probably wrong, or `nil` when it looks as expected.
+    /// Judged from what recognition decided, like the styles themselves;
+    /// text probably misrecognized is judged with the review's dictionary.
+    func warning(of style: Styles.Style) -> StyleWarning? {
+        styleIndex.warnings[style.id]
     }
 
     /// How many blocks of `style` the user corrected or ignored. A word
@@ -354,8 +362,10 @@ struct StyleIndex {
     let memberStyle: [StyleMember: Int]
     /// The recognized blocks that start on each page, by index.
     let blocksByPage: [Int: [Int]]
+    /// The warnings of the styles that are probably wrong, by style.
+    let warnings: [Styles.Style.ID: StyleWarning]
 
-    init(base: Conversion) {
+    init(base: Conversion, detector: SuspiciousWordDetector) {
         let styles = base.styles.map {
             StyleGrouping.styles(
                 blocks: base.document.blocks, blockSources: base.blockSources, noteSources: base.noteSources,
@@ -372,5 +382,15 @@ struct StyleIndex {
             (styles ?? []).enumerated().flatMap { index, style in style.members.map { ($0, index) } }
         ) { first, _ in first }
         blocksByPage = Dictionary(grouping: base.blockSources.indices) { base.blockSources[$0].page }
+        if let styles, let blockStyles = base.styles {
+            let misrecognized = Self.misrecognized(in: styles, document: base.document, detector: detector)
+            warnings = Dictionary(uniqueKeysWithValues: styles.compactMap { style in
+                StyleWarning(
+                    for: style, in: blockStyles, blocks: base.document.blocks, misrecognized: misrecognized
+                ).map { (style.id, $0) }
+            })
+        } else {
+            warnings = [:]
+        }
     }
 }

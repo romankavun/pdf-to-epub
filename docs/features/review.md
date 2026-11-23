@@ -64,12 +64,16 @@ help says to *Start over* to see them.
   and captions, note texts, page furniture (running headers and page
   numbers). Each row has the style's colour, its name (type and deciding
   rule, numbered when two styles share both: "Paragraph (2) · paragraph")
-  and its number of blocks; the tooltip says what sets it apart. Room is
-  left for the *probably wrong* mark (#35).
+  and its number of blocks; the tooltip says what sets it apart. A style
+  that is [probably wrong](styles.md#probably-wrong) has an orange warning
+  triangle before its count, and its reason in the tooltip.
 - **Styles describe recognition, not the corrections.** A retyped or
   ignored block stays in the style it was recognized with, so the list never
   reshuffles while you work.
-- **Selecting a style** replaces the block list with the style: what sets it
+- **Selecting a style** replaces the block list with the style: for a
+  probably wrong one, first its warning ("Probably wrong. At the top or
+  bottom edge of the page, on 4 pages: probably a running header taken for a
+  heading."); then what sets it
   apart from body text ("1.6 × taller than the text, centred"), its deciding
   rule, the number of blocks and how many of them were corrected, the pages
   (as runs, "3–5, 9"), then six examples, crops of the page image with their

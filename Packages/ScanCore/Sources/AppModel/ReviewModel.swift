@@ -82,7 +82,7 @@ public final class ReviewModel {
         self.project = project
         self.detector = detector
         images = Dictionary(project.base.document.images.map { ($0.id, $0.data) }) { first, _ in first }
-        styleIndex = StyleIndex(base: project.base)
+        styleIndex = StyleIndex(base: project.base, detector: detector)
         rebuild()
     }
 

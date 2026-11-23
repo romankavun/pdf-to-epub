@@ -85,7 +85,12 @@ do {
             blocks: document.blocks, blockSources: conversion.blockSources, noteSources: conversion.noteSources,
             styles: styles
         )
-        print(StyleReport.lines(for: found).joined(separator: "\n"))
+        // Text quality needs the system dictionary, which only the app has
+        // (ADR 0007), so text probably misrecognized is not judged here.
+        let warnings = Dictionary(uniqueKeysWithValues: found.compactMap { style in
+            StyleWarning(for: style, in: styles, blocks: document.blocks).map { (style.id, $0) }
+        })
+        print(StyleReport.lines(for: found, warnings: warnings).joined(separator: "\n"))
     }
 } catch {
     fail("pagescan: \(error)")

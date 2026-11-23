@@ -25,7 +25,7 @@ struct CommandLineOptions: Equatable {
     prepared for recognition (cropped, cleaned, deskewed) in <folder>;
     without it they are deleted after the run.
     --styles prints the styles recognition found: each one's type, deciding
-    rule, number of blocks and pages.
+    rule, number of blocks and pages, and why a style is probably wrong.
     """
 
     var input: URL

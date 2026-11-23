@@ -142,6 +142,10 @@ _Avoid_: Heuristic, reason code
 The screen that lists a document's styles with samples, so a person can see what recognition made of the document at a glance.
 _Avoid_: Style map, style guide (a guide prescribes; the overview only shows)
 
+**Probably wrong**:
+A style the style overview marks with a reason, such as headings at the page edge on several pages, because its pattern usually means a recognition rule misfired for the whole document.
+_Avoid_: Error, invalid style
+
 **Example**:
 One of the few blocks the style overview shows to illustrate a style, taken from pages spread across the document.
 _Avoid_: Sample (a sample set is the user's scans), specimen

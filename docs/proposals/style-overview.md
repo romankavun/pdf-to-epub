@@ -140,7 +140,9 @@ prototype branch is a visual reference only. Slices, each a sub-issue of
    `pagescan --styles`, golden pages assert the deciding rule.
 2. **The sidebar in the review**: toggle, list, examples and *Show All*,
    outlines, crop to block, block to style.
-3. **Probably-wrong marks.**
+3. **Probably-wrong marks**: `StyleWarning`, shown in the sidebar and
+   printed by `pagescan --styles`; tuned on the sample sets
+   ([styles](../features/styles.md#probably-wrong)).
 4. **Editing by style.**
 
 ## Limits

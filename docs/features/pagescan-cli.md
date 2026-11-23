@@ -19,7 +19,7 @@ swift run --package-path Packages/ScanCore -c release pagescan <folder-or-file.p
 | `--author` | None |
 | `--language` | `uk`. English is always added as a second recognition language. |
 | `--prepared-pages` | None: scanned pages are prepared in a temporary folder that is deleted. With a folder, they are kept there for inspection. |
-| `--styles` | Off. Prints the document's [styles](styles.md) after the summary: one line each, grouped by type, with its deciding rule, number of blocks, pages (from 1) and typical look. |
+| `--styles` | Off. Prints the document's [styles](styles.md) after the summary: one line each, grouped by type, with its deciding rule, number of blocks, pages (from 1) and typical look; a [probably wrong](styles.md#probably-wrong) style has its reason on the next line (all but *text probably misrecognized*, which needs the app's dictionary). |
 
 The first page takes up to a minute while Vision loads its model; after that
 a page takes well under a second. A 380-page sample set converts in about
