@@ -1,7 +1,9 @@
 # Proposal: the style overview
 
-- Status: accepted; slices 1 and 2 built (#33, #34, see [styles](../features/styles.md) and
-  [review](../features/review.md#the-styles-sidebar)), slices 3-4 not built
+- Status: built: slices 1-4 (#33-#36, see [styles](../features/styles.md),
+  [review](../features/review.md#the-styles-sidebar) and
+  [corrections](../features/corrections.md#changing-a-whole-style)); *Later*
+  not built
 - Date: 2026-11-19, revised 2026-11-22 (read-only overview in the review),
   revised 2026-11-23 (implementation plan, examples, page furniture, editing
   by style back in as slice 4 after [ADR 0011](../adr/0011-no-convert-again.md))
@@ -143,7 +145,8 @@ prototype branch is a visual reference only. Slices, each a sub-issue of
 3. **Probably-wrong marks**: `StyleWarning`, shown in the sidebar and
    printed by `pagescan --styles`; tuned on the sample sets
    ([styles](../features/styles.md#probably-wrong)).
-4. **Editing by style.**
+4. **Editing by style**: `ReviewModel.changeType(of:to:)` records one
+   retype per block of the style that still stands as recognized.
 
 ## Limits
 

@@ -92,6 +92,13 @@ help says to *Start over* to see them.
 - **A selected block** shows a button with its style's name; it opens the
   sidebar on that style. A block made by a split was never recognized, so it
   has none.
+- **Change to…** in the selected style's header gives every block of the
+  style Paragraph, Heading 1–3 or Ignore (a figure style: Ignore only; note
+  texts and page furniture have none), as one step of undo. The header then
+  says how many blocks changed and, if any, how many were left as they are:
+  blocks you already gave a type, and blocks merged or split. The style
+  stays in the list and counts its blocks as corrected; see
+  [corrections](corrections.md#changing-a-whole-style).
 - While a style is shown, the issue and spelling controls are hidden: they
   act on the block list. Undo and redo stay.
 

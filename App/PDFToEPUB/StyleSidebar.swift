@@ -1,4 +1,5 @@
 import AppModel
+import Corrections
 import ImageIO
 import Styles
 import SwiftUI
@@ -119,6 +120,7 @@ struct StyleBlocks: View {
                 Text("Pages: \(style.pagesText)")
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
+                changeTo
             }
             .font(.callout)
             .textSelection(.enabled)
@@ -127,6 +129,63 @@ struct StyleBlocks: View {
                 .labelStyle(.iconOnly)
                 .buttonStyle(.plain)
                 .help("Show the page's blocks again")
+        }
+    }
+}
+
+/// *Change to…* for a whole style, and what the last change did.
+private extension StyleBlocks {
+    @ViewBuilder var changeTo: some View {
+        let choices = model.typeChoices(for: style)
+        if !choices.isEmpty {
+            Menu("Change to…") {
+                ForEach(choices, id: \.self) { type in
+                    if type == .ignored {
+                        Divider()
+                    }
+                    Button(type.menuTitle) { model.changeType(of: style, to: type) }
+                        .accessibilityIdentifier(type.menuIdentifier)
+                }
+            }
+            .fixedSize()
+            .help(
+                // swiftlint:disable:next line_length
+                "Gives every block of this style the type, as one step to undo. Blocks you already gave a type, merged or split are left as they are."
+            )
+            .accessibilityIdentifier("styleChangeTo")
+        }
+        if let change = model.styleTypeChange, change.style == style.id {
+            Group {
+                if change.skipped == 0 {
+                    Text("Blocks changed: \(change.changed).")
+                } else {
+                    Text(
+                        // swiftlint:disable:next line_length
+                        "Blocks changed: \(change.changed). Left as they are: \(change.skipped) (you already gave them a type, merged or split them)."
+                    )
+                }
+            }
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier("styleChangeResult")
+        }
+    }
+}
+
+private extension BlockType {
+    var menuTitle: LocalizedStringKey {
+        switch self {
+        case .paragraph: "Paragraph"
+        case let .heading(level): "Heading \(level)"
+        case .ignored: "Ignore"
+        }
+    }
+
+    var menuIdentifier: String {
+        switch self {
+        case .paragraph: "styleTypeParagraph"
+        case let .heading(level): "styleTypeHeading\(level)"
+        case .ignored: "styleTypeIgnore"
         }
     }
 }

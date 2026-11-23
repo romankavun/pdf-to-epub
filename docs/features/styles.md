@@ -87,6 +87,10 @@ style lists its members (blocks, notes, page furniture by index), its pages
 and its typical look (the median of each measurement). Styles are computed
 from the recognized document, not the corrected one.
 
+The review can change the type of a whole style at once (*Change to…*): one
+ordinary type correction per block, which leaves the style as it was
+([corrections](corrections.md#changing-a-whole-style)).
+
 `pagescan --styles` prints them ([pagescan](pagescan-cli.md)).
 
 ## Probably wrong
@@ -116,7 +120,8 @@ opens (`StyleIndex.misrecognized`) and passes them to `StyleWarning`;
 `pagescan` passes none, so it never prints that reason.
 
 Like the styles, the marks judge what recognition decided, not the
-corrections: fixing the blocks of a marked style does not clear its mark.
+corrections: fixing the blocks of a marked style, also with *Change to…*,
+does not clear its mark.
 The review shows the mark in the [styles sidebar](review.md#the-styles-sidebar);
 `pagescan --styles` prints the reason under the style.
 

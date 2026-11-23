@@ -51,6 +51,31 @@ final class StylesSidebarTests: XCTestCase {
         XCTAssertTrue(element("blockCard", in: app).waitForExistence(timeout: 10), "the block list did not come back")
     }
 
+    /// *Change to…* on the first style: the header says how many blocks
+    /// changed, and one Undo takes the whole change back.
+    @MainActor
+    func testChangeTypeOfAStyle() throws {
+        let app = try launchReview()
+        XCTAssertTrue(element("blockCard", in: app).waitForExistence(timeout: 30), "the review shows no blocks")
+        element("stylesToggle", in: app).click()
+        let row = element("styleRow", in: app)
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "the sidebar lists no style")
+        row.click()
+
+        let menu = element("styleChangeTo", in: app)
+        XCTAssertTrue(menu.waitForExistence(timeout: 10), "the first style has no Change to…")
+        menu.click()
+        let ignore = element("styleTypeIgnore", in: app)
+        XCTAssertTrue(ignore.waitForExistence(timeout: 10), "Change to… offers no Ignore")
+        ignore.click()
+        let result = element("styleChangeResult", in: app)
+        XCTAssertTrue(result.waitForExistence(timeout: 10), "the header does not say what changed")
+        XCTAssertTrue(element("styleExample", in: app).exists, "the style left the list after the change")
+
+        app.buttons["Undo"].click()
+        XCTAssertTrue(waitForDisappearance(result), "Undo did not take back the change")
+    }
+
     // MARK: Helpers
 
     @MainActor

@@ -60,12 +60,16 @@ public final class ReviewModel {
             }
             if !showsStyles {
                 selectedStyleID = nil
+                styleTypeChange = nil
             }
         }
     }
 
     /// The style whose blocks replace the block list, by ``Styles/Style/id``.
     public internal(set) var selectedStyleID: Styles.Style.ID?
+    /// What the last *Change to…* of a style did, for the style's header;
+    /// `nil` once the project or the selected style changes again.
+    public internal(set) var styleTypeChange: StyleTypeChange?
     /// The members of a style that the user corrected, and how.
     var correctedMembers: [StyleMember: ExampleMark] = [:]
 
@@ -111,6 +115,7 @@ public final class ReviewModel {
             editingItemID = nil
         }
         correctedMembers = correctedStyleMembers()
+        styleTypeChange = nil
     }
 
     /// Every block, then every linked note, then every ignored block, each
@@ -300,41 +305,6 @@ public final class ReviewModel {
         select(itemID: flagged[previous].itemID)
     }
 
-    // MARK: - Misspellings
-
-    /// How many blocks and notes have misspelled words.
-    public var misspelledItemCount: Int {
-        misspelled.count
-    }
-
-    /// Which misspelling stop the selected block is, counting from 1; `nil`
-    /// when the selection has no misspelled word.
-    public var misspellingPosition: Int? {
-        misspelled.firstIndex { $0.itemID == selectedItemID }.map { $0 + 1 }
-    }
-
-    /// Like ``goToNextIssue()``, for blocks with misspelled words.
-    public func goToNextMisspelling() {
-        guard !misspelled.isEmpty else { return }
-        let next = if let position = misspellingPosition {
-            position % misspelled.count
-        } else {
-            misspelled.firstIndex { $0.page >= pageIndex } ?? 0
-        }
-        select(itemID: misspelled[next].itemID)
-    }
-
-    /// Like ``goToPreviousIssue()``, for blocks with misspelled words.
-    public func goToPreviousMisspelling() {
-        guard !misspelled.isEmpty else { return }
-        let previous = if let position = misspellingPosition {
-            (position - 2 + misspelled.count) % misspelled.count
-        } else {
-            misspelled.lastIndex { $0.page < pageIndex } ?? misspelled.count - 1
-        }
-        select(itemID: misspelled[previous].itemID)
-    }
-
     // MARK: - Helpers
 
     private func with<Value>(_ value: Value, _ change: (inout Value) -> Void) -> Value {
@@ -372,5 +342,42 @@ public final class ReviewModel {
             }
             return detector.segments(of: text).map { Run(text: $0.text, style: style, reason: $0.reason) }
         }
+    }
+}
+
+public extension ReviewModel {
+    // MARK: - Misspellings
+
+    /// How many blocks and notes have misspelled words.
+    var misspelledItemCount: Int {
+        misspelled.count
+    }
+
+    /// Which misspelling stop the selected block is, counting from 1; `nil`
+    /// when the selection has no misspelled word.
+    var misspellingPosition: Int? {
+        misspelled.firstIndex { $0.itemID == selectedItemID }.map { $0 + 1 }
+    }
+
+    /// Like ``goToNextIssue()``, for blocks with misspelled words.
+    func goToNextMisspelling() {
+        guard !misspelled.isEmpty else { return }
+        let next = if let position = misspellingPosition {
+            position % misspelled.count
+        } else {
+            misspelled.firstIndex { $0.page >= pageIndex } ?? 0
+        }
+        select(itemID: misspelled[next].itemID)
+    }
+
+    /// Like ``goToPreviousIssue()``, for blocks with misspelled words.
+    func goToPreviousMisspelling() {
+        guard !misspelled.isEmpty else { return }
+        let previous = if let position = misspellingPosition {
+            (position - 2 + misspelled.count) % misspelled.count
+        } else {
+            misspelled.lastIndex { $0.page < pageIndex } ?? misspelled.count - 1
+        }
+        select(itemID: misspelled[previous].itemID)
     }
 }

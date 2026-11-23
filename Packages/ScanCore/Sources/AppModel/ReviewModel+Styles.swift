@@ -109,6 +109,9 @@ public extension ReviewModel {
     /// `nil`. Closes the editor, whose card goes out of view.
     func selectStyle(_ id: Styles.Style.ID?) {
         cancelEditing()
+        if id != selectedStyleID {
+            styleTypeChange = nil
+        }
         if id != nil {
             showsStyles = true
         }

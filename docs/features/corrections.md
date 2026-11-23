@@ -67,6 +67,31 @@ digit or apostrophe against it) in blocks, captions and notes. It is
 recorded as one rule and applies to the whole document, including text read
 later if the document is converted again.
 
+### Changing a whole style
+
+*Change to…* in a selected [style](styles.md)'s header (styles sidebar of
+the [review](review.md#the-styles-sidebar)) gives every block of the style
+one type: Paragraph, Heading 1–3 or Ignore, the types a single block can be
+changed to; a figure style can only be ignored, and note texts and page
+furniture cannot be changed. It is the mechanism of *Apply to All* above,
+with the style choosing the blocks instead of `SimilarBlocks`: one ordinary
+`retype` per block, as one step of undo. There is no new correction kind
+and the project format does not change.
+
+- Blocks you already gave a type (or ignored) are left as they are, as
+  proposals never offer them.
+- Blocks a merge or split changed are left as they are too: they no longer
+  stand as recognized, and the merged block may hold another style's text.
+- The header says how many blocks changed and how many were left as they
+  are. The report goes when the project or the selected style changes.
+- The style stays in the list, since styles come from recognition, and
+  counts its blocks as corrected. A later change to one block is a later
+  correction and wins. A [probably-wrong](styles.md#probably-wrong) mark
+  stays too.
+
+`ReviewModel.typeChoices(for:)` and `changeType(of:to:)` (`AppModel`) hold
+the logic; `ProjectModel.setType(_:for:)` records the anchors as one step.
+
 ## How it is built
 
 - `Corrections` module (pure, no UI): `CorrectionSet` holds the user's

@@ -2013,6 +2013,46 @@
           }
         }
       }
+    },
+    "Change to…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Змінити на…"
+          }
+        }
+      }
+    },
+    "Gives every block of this style the type, as one step to undo. Blocks you already gave a type, merged or split are left as they are." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дає всім блокам цього стилю тип одним кроком, який можна скасувати. Блоки, яким ви вже дали тип, які об’єднали чи розділили, лишаються як є."
+          }
+        }
+      }
+    },
+    "Blocks changed: %lld." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Змінено блоків: %lld."
+          }
+        }
+      }
+    },
+    "Blocks changed: %lld. Left as they are: %lld (you already gave them a type, merged or split them)." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Змінено блоків: %lld. Лишилися як є: %lld (ви вже дали їм тип, об’єднали чи розділили їх)."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
