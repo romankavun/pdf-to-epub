@@ -6,7 +6,8 @@ over several sessions.
 ## Usage
 
 - When a conversion finishes, the app writes `<folder or PDF name>.scanproject`
-  next to the folder of scans or the PDF (`<name> 2.scanproject` if that exists). The
+  next to the folder of scans or the PDF (`<name> 2.scanproject` if that is
+  taken by something else). The
   summary shows its name and *Show in Finder*. Nothing is asked.
 - Words ignored in the review's quick fixes are kept in the project too, in
   a file of their own (`ignored-words.json`), not as corrections: undo does
@@ -17,10 +18,14 @@ over several sessions.
   the app tells a project from a folder of scans. The document opens on the
   summary, with title, author and language restored, ready for *Review…* and
   *Save EPUB…* (exported with the corrections applied).
-- **Convert Again** on the summary converts the scans again (for example
-  after the recognition improved) and puts the result under the existing
-  corrections. Corrections that no longer find their block are counted in
-  the summary as *Corrections that no longer apply*.
+- A project is never converted again under its corrections
+  ([ADR 0011](../adr/0011-no-convert-again.md)). Opening a folder or PDF
+  that already has `<name>.scanproject` beside it shows *Already converted*
+  with **Open Project**, and **Start Over…** in place of *Convert*. Start
+  over asks first, converts the document into a new project, and only then
+  moves the old one, with its corrections, to the Trash; a cancelled or
+  failed run leaves it alone. If the old project cannot be moved, the
+  summary says so and the new one is saved as `<name> 2.scanproject`.
 - If the project cannot be written (a read-only disk, say), the summary says
   so; the document and the corrections stay usable until the window is closed.
 

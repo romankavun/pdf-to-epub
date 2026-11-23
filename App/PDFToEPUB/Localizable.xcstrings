@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Already converted" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Уже конвертовано"
+          }
+        }
+      }
+    },
     "Choose Folder or PDF…" : {
       "localizations" : {
         "uk" : {
@@ -31,6 +41,16 @@
         }
       }
     },
+    "Open Project" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відкрити проєкт"
+          }
+        }
+      }
+    },
     "Source" : {
       "localizations" : {
         "uk" : {
@@ -47,6 +67,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Створення зображень сторінок…"
+          }
+        }
+      }
+    },
+    "Start Over" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Почати заново"
+          }
+        }
+      }
+    },
+    "Start over and discard the corrections?" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Почати заново й відкинути виправлення?"
+          }
+        }
+      }
+    },
+    "Start Over converts the document again into a new project and moves this one, with its corrections, to the Trash." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«Почати заново» знову конвертує документ у новий проєкт, а цей разом із виправленнями переміщує в Кошик."
+          }
+        }
+      }
+    },
+    "Start Over…" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Почати заново…"
+          }
+        }
+      }
+    },
+    "The existing project and its corrections are moved to the Trash once the new conversion has finished." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Наявний проєкт і його виправлення буде переміщено в Кошик, щойно нова конвертація завершиться."
+          }
+        }
+      }
+    },
+    "The old project could not be moved to the Trash: %@" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося перемістити старий проєкт у Кошик: %@"
           }
         }
       }
@@ -336,17 +416,6 @@
         }
       }
     },
-    "Convert Again" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Конвертувати знову"
-          }
-        }
-      }
-    },
     "Converted document" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -376,17 +445,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Не вдалося зберегти виправлення: %@"
-          }
-        }
-      }
-    },
-    "Corrections that no longer apply" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Виправлення, які більше не застосовуються"
           }
         }
       }

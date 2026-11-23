@@ -68,22 +68,6 @@ struct ProjectStorePagesTests {
         }
     }
 
-    @Test("converting again keeps the pages the bundle holds")
-    func replaceKeepsPages() throws {
-        let folder = try scratch()
-        defer { try? FileManager.default.removeItem(at: folder) }
-        let staging = folder.appendingPathComponent("staging")
-        try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
-        let bundle = folder.appendingPathComponent("Document.scanproject")
-        let stored = try store.create(conversion(withPagesIn: staging), at: bundle, movingPages: true)
-
-        try store.replaceConversion(in: bundle, with: stored)
-        let loaded = try store.load(from: bundle)
-
-        #expect(loaded.conversion.pageURLs.map(\.lastPathComponent) == ["page-0001.png", "page-0002.png"])
-        #expect(loaded.conversion.pageURLs.allSatisfy { FileManager.default.fileExists(atPath: $0.path) })
-    }
-
     @Test("pages that were not moved stay where they are")
     func scansStayInPlace() throws {
         let folder = try scratch()

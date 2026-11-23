@@ -46,9 +46,9 @@ public enum ProjectStoreError: Error, Equatable {
 /// ```
 ///
 /// Corrections have a file of their own because they change after every
-/// edit and are small, while the conversion is large and changes only when
-/// the document is converted again. Converting again replaces the conversion
-/// and leaves the corrections alone.
+/// edit and are small, while the conversion is large and is written once, when
+/// the project is created. A project is never converted again (ADR 0011);
+/// *Start over* makes a new one.
 public struct ProjectStore: Sendable {
     private static let formatVersion = 1
     private static let projectFile = "project.json"
@@ -166,31 +166,6 @@ public struct ProjectStore: Sendable {
     public func save(ignoredWords: Set<String>, to url: URL) throws {
         guard isProject(at: url) else { throw ProjectStoreError.notAProject }
         try Self.write(Stored.IgnoredWords(words: ignoredWords.sorted()), to: url, name: Self.ignoredWordsFile)
-    }
-
-    /// Replaces the conversion of the project at `url`, for a document converted
-    /// again, and keeps its corrections.
-    ///
-    /// The new images are written first and swapped in, then the project
-    /// file; a crash in between leaves a project that reports itself as
-    /// damaged rather than one that silently mixes the two conversions.
-    public func replaceConversion(in url: URL, with conversion: Conversion) throws {
-        guard isProject(at: url) else { throw ProjectStoreError.notAProject }
-        try Self.validateImageNames(of: conversion)
-        let manager = FileManager.default
-        let staging = url.appendingPathComponent(".images.\(UUID().uuidString).partial")
-        do {
-            try Self.writeImages(of: conversion.document, to: staging)
-            let images = url.appendingPathComponent(Self.imagesFolder)
-            try? manager.removeItem(at: images)
-            try manager.moveItem(at: staging, to: images)
-        } catch {
-            try? manager.removeItem(at: staging)
-            throw error
-        }
-        try Self.write(
-            Stored.Project(conversion, version: Self.formatVersion, bundle: url), to: url, name: Self.projectFile
-        )
     }
 
     // MARK: - Files

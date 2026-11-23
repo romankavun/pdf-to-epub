@@ -114,49 +114,6 @@ struct ContentView: View {
     }
 }
 
-/// Document metadata and the button that starts the conversion.
-private struct MetadataForm: View {
-    @Bindable var model: ConversionModel
-    var chooseFolder: () -> Void
-
-    var body: some View {
-        Form {
-            Section {
-                LabeledContent("Source") {
-                    HStack {
-                        Text(model.input?.path(percentEncoded: false) ?? "")
-                            .lineLimit(1)
-                            .truncationMode(.head)
-                        Button("Change…", action: chooseFolder)
-                    }
-                }
-                LabeledContent("Pages", value: model.pageCount.formatted())
-            }
-            Section {
-                TextField("Title", text: $model.title)
-                TextField("Author", text: $model.author)
-                Picker("Language", selection: $model.language) {
-                    Text("Ukrainian").tag("uk")
-                    Text("English").tag("en")
-                }
-            }
-        }
-        .formStyle(.grouped)
-        .safeAreaInset(edge: .bottom) {
-            HStack {
-                Spacer()
-                Button("Convert", action: model.start)
-                    .accessibilityIdentifier("convertButton")
-                    .buttonStyle(.borderedProminent)
-                    .keyboardShortcut(.defaultAction)
-                    .disabled(!model.canStart)
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 8)
-        }
-    }
-}
-
 /// Page counter and the scan of the page being recognized, shown while the
 /// pipeline runs. Only the scan is shown, never recognized text: nothing
 /// here can be edited.
@@ -287,8 +244,6 @@ private struct ResultScreen: View {
                 HStack {
                     Button("Choose Another Folder or PDF…", action: chooseFolder)
                     Spacer()
-                    Button("Convert Again", action: model.start)
-                        .disabled(!model.canStart)
                     Button("Review…") { review(.top) }
                         .accessibilityIdentifier("reviewButton")
                         .keyboardShortcut("r")
@@ -330,8 +285,12 @@ private struct ResultScreen: View {
                     }
                 }
                 LabeledContent("Corrections", value: project.corrections.corrections.count.formatted())
-                if !project.unapplied.isEmpty {
-                    LabeledContent("Corrections that no longer apply", value: project.unapplied.count.formatted())
+                if let error = model.startOverError {
+                    Label(
+                        "The old project could not be moved to the Trash: \(error)",
+                        systemImage: "exclamationmark.triangle.fill"
+                    )
+                    .foregroundStyle(.orange)
                 }
                 if let error = project.saveError {
                     Label("Corrections could not be saved: \(error)", systemImage: "xmark.octagon.fill")

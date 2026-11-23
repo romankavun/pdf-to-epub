@@ -52,12 +52,12 @@ func projectConversion() -> Conversion {
 final class FakeStorage: ProjectPersisting, @unchecked Sendable {
     private let lock = NSLock()
     private var savedStorage: [CorrectionSet] = []
-    private var replacedStorage: [Conversion] = []
+    private var discardedStorage: [URL] = []
     private var ignoredStorage: [Set<String>] = []
     private var createdStorage: [Conversion] = []
     private var createdDetails: [(name: String, parent: URL, movingPages: Bool)] = []
     var saveFailure: (any Error)?
-    var replaceFailure: (any Error)?
+    var discardFailure: (any Error)?
     var createFailure: (any Error)?
     /// Projects that "exist on disk", by location.
     var projects: [URL: Project] = [:]
@@ -70,8 +70,8 @@ final class FakeStorage: ProjectPersisting, @unchecked Sendable {
         lock.withLock { ignoredStorage }
     }
 
-    var replaced: [Conversion] {
-        lock.withLock { replacedStorage }
+    var discarded: [URL] {
+        lock.withLock { discardedStorage }
     }
 
     var created: [Conversion] {
@@ -122,11 +122,12 @@ final class FakeStorage: ProjectPersisting, @unchecked Sendable {
         lock.withLock { ignoredStorage.append(ignoredWords) }
     }
 
-    func replaceConversion(in _: URL, with conversion: Conversion) throws {
-        if let replaceFailure {
-            throw replaceFailure
+    func discardProject(at url: URL) throws {
+        if let discardFailure {
+            throw discardFailure
         }
-        lock.withLock { replacedStorage.append(conversion) }
+        lock.withLock { discardedStorage.append(url) }
+        projects[url] = nil
     }
 }
 
@@ -227,15 +228,6 @@ struct ProjectModelTests {
         #expect(!model.canRedo)
     }
 
-    @Test("converting again clears what could be redone")
-    func redoClearedByNewBase() {
-        let model = model()
-        model.setType(.heading(level: 1), for: BlockAnchor(projectConversion().blockSources[0]))
-        model.undo()
-        model.replaceBase(projectConversion())
-        #expect(!model.canRedo)
-    }
-
     @Test("an ignored word is kept lowercased and saved apart from the corrections, and undo leaves it")
     func ignoredWords() {
         let model = model()
@@ -283,23 +275,6 @@ struct ProjectModelTests {
             to: "Журавель is there."
         )))
         #expect(model.conversion.document.blocks[2] == .paragraph(["Журавель is there."]))
-    }
-
-    @Test("converting again keeps the corrections, saves the new conversion and reports what no longer applies")
-    func replaceBase() {
-        let model = model()
-        let kept = BlockAnchor(projectConversion().blockSources[0])
-        let lost = BlockAnchor(projectConversion().blockSources[3])
-        model.setType(.heading(level: 1), for: kept)
-        model.setType(.heading(level: 1), for: lost)
-        var again = projectConversion()
-        again.blockSources[3] = BlockSource(page: 1, box: CGRect(x: 0.1, y: 0.0, width: 0.3, height: 0.04))
-        model.replaceBase(again)
-        #expect(model.base == again)
-        #expect(model.conversion.document.blocks[0] == .heading(level: 1, content: ["Title one"]))
-        #expect(model.unapplied == [.retype(lost, to: .heading(level: 1))])
-        #expect(storage.replaced == [again])
-        #expect(model.canUndo == false)
     }
 
     @Test("similar blocks leave out the ones the user already decided")
@@ -376,20 +351,5 @@ struct ProjectModelStructureTests {
         model.setText("Sample is here. Title two", for: BlockAnchor(sources[2]))
         #expect(model.unapplied.isEmpty)
         #expect(model.conversion.document.blocks[2] == .paragraph(["Sample is here. Title two"]))
-    }
-
-    @Test("merges and splits made before converting again apply to the new conversion")
-    func survivesNewBase() {
-        let model = model()
-        _ = model.merge(BlockAnchor(sources[1]), with: BlockAnchor(sources[2]))
-        var again = projectConversion()
-        again.blockSources = again.blockSources.map { source in
-            var moved = source
-            moved.start.box = moved.start.box.offsetBy(dx: 0.003, dy: 0.004)
-            return moved
-        }
-        model.replaceBase(again)
-        #expect(model.conversion.document.blocks.count == 4)
-        #expect(model.unapplied.isEmpty)
     }
 }

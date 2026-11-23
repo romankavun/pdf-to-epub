@@ -9,9 +9,9 @@ import ProjectStore
 /// A document being worked on: the conversion as the pipeline produced it and
 /// the user's corrections on top of it.
 ///
-/// The model keeps the two apart on purpose. The corrected conversion is
-/// derived from them after every change, so converting again only replaces
-/// the base and the corrections apply to the new one. Corrections are
+/// The model keeps the two apart on purpose: the corrected conversion is
+/// derived from them after every change, and undo is keeping an earlier set
+/// of corrections. The base never changes (ADR 0011). Corrections are
 /// written to the project folder after each change, so closing the app
 /// loses nothing.
 @MainActor
@@ -29,11 +29,10 @@ public final class ProjectModel {
     /// Blocks the user left out of the document.
     public private(set) var ignored: [IgnoredBlock] = []
     /// Words the review no longer flags, lowercased. Kept in the project
-    /// beside the corrections but not part of them: not undone, and not
-    /// affected by converting again.
+    /// beside the corrections but not part of them, so they are not undone.
     public private(set) var ignoredWords: Set<String>
-    /// Corrections that found nothing to act on in the current base, for the
-    /// user to know about after converting again.
+    /// Corrections that found nothing to act on in the base; empty unless the
+    /// project's files were changed outside the app.
     public private(set) var unapplied: [Correction] = []
     /// Why the last write to disk failed, or `nil` when it succeeded.
     public private(set) var saveError: String?
@@ -172,24 +171,6 @@ public final class ProjectModel {
         corrections = next
         recompute()
         persist()
-    }
-
-    /// Puts a newly converted document under the corrections: the same document
-    /// converted again, with the corrections the user made before. What no
-    /// longer applies is listed in ``unapplied``. Undo history starts over,
-    /// because it refers to the old conversion.
-    public func replaceBase(_ conversion: Conversion) {
-        base = conversion
-        history = []
-        undone = []
-        recompute()
-        guard let location else { return }
-        do {
-            try storage.replaceConversion(in: location, with: conversion)
-            saveError = nil
-        } catch {
-            saveError = String(describing: error)
-        }
     }
 
     // MARK: - Questions

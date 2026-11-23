@@ -95,47 +95,23 @@ private func editText(
     model.setText(String(characters.filter { $0 != "\u{FFFC}" }), for: anchor)
 }
 
-/// The same recognized pages analysed again: the layout is the same but
-/// boxes differ by a fraction of a line and note labels are counted again.
-private func rerun(_ conversion: Conversion, _ random: inout SeededGenerator) -> Conversion {
-    func moved(_ source: BlockSource, _ random: inout SeededGenerator) -> BlockSource {
-        var source = source
-        let shift = random.chance(0.5) ? 0 : random.double(-0.001 ... 0.001)
-        source.start.box = source.start.box.offsetBy(dx: shift, dy: -shift)
-        return source
-    }
-    var result = conversion
-    result.blockSources = conversion.blockSources.map { moved($0, &random) }
-    result.noteSources = conversion.noteSources.map { moved($0, &random) }
-    result.document.notes = conversion.document.notes.map { note in
-        var note = note
-        note.label = "r\(random.int(0 ... 99))"
-        return note
-    }
-    return result
-}
-
 @MainActor
 @Suite("Corrections invariants")
 struct CorrectionsInvariantTests {
     private let generator = DocumentGenerator(text: .tidy, layout: .tidy, maximumBlocks: 12)
 
-    @Test("every correction survives converting again: the same document comes out and nothing is left unapplied")
-    func survivesRerun() {
-        Property.check("survives re-run", cases: 150) { random in
-            let base = generator.conversion(&random)
-            let model = ProjectModel(base: base)
+    @Test("every correction applies to the base it was made on: nothing is left unapplied")
+    func appliesToItsBase() {
+        Property.check("applies to its base", cases: 150) { random in
+            let model = ProjectModel(base: generator.conversion(&random))
             for _ in 0 ..< random.int(1 ... 14) {
                 randomChange(model, &random, vocabulary: generator)
             }
-            let before = model.outcome
-            let corrections = model.corrections
-            try Property.requireEqual(before.unapplied, [], "corrections not applied to the base they were made on")
-
-            model.replaceBase(rerun(base, &random))
-            try Property.requireEqual(model.corrections, corrections, "corrections after converting again")
-            try Property.requireEqual(model.outcome.unapplied, [], "corrections lost by converting again")
-            try Property.require(model.outcome == before, "the corrected document differs after converting again")
+            try Property.requireEqual(
+                model.outcome.unapplied,
+                [],
+                "corrections not applied to the base they were made on"
+            )
         }
     }
 

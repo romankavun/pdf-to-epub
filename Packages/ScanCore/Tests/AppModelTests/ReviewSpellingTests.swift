@@ -193,5 +193,5 @@ private struct NoStorage: ProjectPersisting {
 
     func save(_: CorrectionSet, to _: URL) throws {}
     func save(ignoredWords _: Set<String>, to _: URL) throws {}
-    func replaceConversion(in _: URL, with _: Conversion) throws {}
+    func discardProject(at _: URL) throws {}
 }

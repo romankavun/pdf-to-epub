@@ -1,6 +1,6 @@
 # ADR 0011: A project is never converted again under its corrections
 
-- Status: accepted (not built yet)
+- Status: accepted
 - Date: 2026-11-23
 - Amends: [ADR 0005](0005-corrections-apart-from-recognition.md)
 

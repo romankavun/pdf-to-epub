@@ -96,14 +96,13 @@ struct ProjectStoreTests {
         }
     }
 
-    @Test("ignored words come back with the project and survive converting again")
+    @Test("ignored words come back with the project")
     func savesIgnoredWords() throws {
         try withFolder { folder in
             let url = folder.appendingPathComponent("Document.scanproject")
             try store.create(sampleConversion(), at: url)
             #expect(try store.load(from: url).ignoredWords.isEmpty)
             try store.save(ignoredWords: ["бо", "abc"], to: url)
-            try store.replaceConversion(in: url, with: sampleConversion(title: "Again"))
             #expect(try store.load(from: url).ignoredWords == ["бо", "abc"])
         }
     }
@@ -159,22 +158,6 @@ struct ProjectStoreTests {
             #expect(throws: ProjectStoreError.invalidImageName("../evil.png")) { try store.create(conversion, at: url) }
             #expect(!FileManager.default.fileExists(atPath: url.path))
             #expect(!FileManager.default.fileExists(atPath: folder.appendingPathComponent("evil.png").path))
-        }
-    }
-
-    @Test("converting again replaces the conversion and its images but keeps the corrections")
-    func replaceConversion() throws {
-        try withFolder { folder in
-            let url = folder.appendingPathComponent("Document.scanproject")
-            try store.create(sampleConversion(), at: url)
-            try store.save(sampleCorrections(), to: url)
-            var again = sampleConversion(imageBytes: [4, 4], title: "Again")
-            again.document.images[0].filename = "figure-002.png"
-            try store.replaceConversion(in: url, with: again)
-            let project = try store.load(from: url)
-            #expect(project.conversion == again)
-            #expect(project.corrections == sampleCorrections())
-            #expect(!FileManager.default.fileExists(atPath: url.appendingPathComponent("images/figure-001.png").path))
         }
     }
 }

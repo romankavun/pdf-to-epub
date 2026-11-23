@@ -81,26 +81,6 @@ struct ProjectStoreInvariantTests {
         }
     }
 
-    @Test("converting again keeps the corrections and replaces the document")
-    func replaceConversionKeepsCorrections() throws {
-        let folder = try temporaryFolder()
-        defer { try? FileManager.default.removeItem(at: folder) }
-        let generator = DocumentGenerator(text: .wild, layout: .wild, maximumBlocks: 12)
-        Property.check("replace conversion", cases: 40) { random in
-            let first = generator.conversion(&random)
-            let second = generator.conversion(&random)
-            let corrections = randomCorrections(&random)
-            let url = folder.appendingPathComponent("\(UUID().uuidString).scanproject")
-            try store.create(first, at: url)
-            try store.save(corrections, to: url)
-            try store.replaceConversion(in: url, with: second)
-
-            let loaded = try store.load(from: url)
-            try Property.require(loaded.conversion == second, "the new conversion was not stored as given")
-            try Property.requireEqual(loaded.corrections, corrections, "corrections after converting again")
-        }
-    }
-
     @Test("pages moved into the bundle are found again after loading")
     func movedPages() throws {
         let folder = try temporaryFolder()

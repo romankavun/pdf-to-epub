@@ -27,9 +27,9 @@ public protocol ProjectPersisting: Sendable {
     /// Replaces the ignored words of the project at `url`.
     func save(ignoredWords: Set<String>, to url: URL) throws
 
-    /// Replaces the conversion of the project at `url` and keeps its
-    /// corrections.
-    func replaceConversion(in url: URL, with conversion: Conversion) throws
+    /// Moves the project at `url` to the Trash, with its corrections, before
+    /// its source is converted again (*Start over*).
+    func discardProject(at url: URL) throws
 }
 
 /// The project on the real disk, in a `.scanproject` folder beside the folder
@@ -70,7 +70,8 @@ public struct LiveProjectStorage: ProjectPersisting {
         try store.save(ignoredWords: ignoredWords, to: url)
     }
 
-    public func replaceConversion(in url: URL, with conversion: Conversion) throws {
-        try store.replaceConversion(in: url, with: conversion)
+    public func discardProject(at url: URL) throws {
+        guard store.isProject(at: url) else { throw ProjectStoreError.notAProject }
+        try FileManager.default.trashItem(at: url, resultingItemURL: nil)
     }
 }

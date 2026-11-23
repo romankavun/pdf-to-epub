@@ -85,27 +85,6 @@ struct ConversionModelProjectTests {
         #expect(model.phase == .ready)
     }
 
-    @Test("converting an opened project again keeps its corrections")
-    func convertAgain() async throws {
-        var corrections = CorrectionSet()
-        corrections.replaceWord("Text", with: "Fixed")
-        var conversion = fakeConversion()
-        conversion.pageURLs = threePages
-        storage.projects[projectURL] = Project(conversion: conversion, corrections: corrections)
-        let model = ConversionModel(pipeline: pipeline, storage: storage)
-        model.open(projectURL)
-        let project = try #require(model.project)
-
-        model.start()
-        await model.conversionTask?.value
-
-        #expect(model.project === project)
-        #expect(storage.created.isEmpty)
-        #expect(storage.replaced.count == 1)
-        #expect(project.corrections == corrections)
-        #expect(project.conversion.document.blocks == [.paragraph(["Fixed."])])
-    }
-
     @Test("opening another folder drops the project")
     func dropsProject() async {
         let model = await finishedModel()
@@ -118,7 +97,7 @@ struct ConversionModelProjectTests {
 @MainActor
 @Suite("Projects on disk")
 struct ProjectOnDiskTests {
-    @Test("corrections survive closing and reopening the project, and a second conversion gets a name of its own")
+    @Test("corrections survive closing and reopening the project, and opening the scans again finds it")
     func survivesReopening() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let scans = root.appendingPathComponent("Document")
@@ -141,10 +120,7 @@ struct ProjectOnDiskTests {
 
         let second = ConversionModel(pipeline: pipeline, storage: LiveProjectStorage())
         second.open(folder: scans)
-        second.start()
-        await second.conversionTask?.value
-        #expect(second.project?.location?.lastPathComponent == "Document 2.scanproject")
-        #expect(second.project?.corrections.isEmpty == true)
+        #expect(second.existingProject?.standardizedFileURL == location.standardizedFileURL)
     }
 }
 
@@ -165,5 +141,5 @@ private struct FailingLoadStorage: ProjectPersisting {
 
     func save(_: CorrectionSet, to _: URL) throws {}
     func save(ignoredWords _: Set<String>, to _: URL) throws {}
-    func replaceConversion(in _: URL, with _: Conversion) throws {}
+    func discardProject(at _: URL) throws {}
 }

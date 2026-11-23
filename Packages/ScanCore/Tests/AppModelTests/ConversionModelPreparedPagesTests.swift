@@ -39,20 +39,4 @@ struct ConversionModelPreparedPagesTests {
         #expect(model.project?.base.pageURLs == threePages)
         #expect(!FileManager.default.fileExists(atPath: prepared.path))
     }
-
-    @Test("converting an open project again reads its stored pages without preparing them again")
-    func reconvertDoesNotPrepare() async {
-        let location = URL(fileURLWithPath: "/documents/Sample.scanproject")
-        var conversion = fakeConversion()
-        conversion.pageURLs = (1 ... 2).map { location.appendingPathComponent("pages/page-000\($0).png") }
-        storage.projects[location] = Project(conversion: conversion)
-        let pipeline = FakePipeline(prepares: true)
-        let model = ConversionModel(pipeline: pipeline, storage: storage)
-
-        model.open(location)
-        model.start()
-        await model.conversionTask?.value
-
-        #expect(pipeline.preparedInto.values == [nil])
-    }
 }

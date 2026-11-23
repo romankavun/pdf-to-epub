@@ -35,6 +35,12 @@ public final class ConversionModel {
     /// Why the project could not be written beside the folder; the document is
     /// still there, but its corrections are kept in memory only.
     public private(set) var projectError: String?
+    /// The project already saved for the open folder or PDF. While it is set,
+    /// ``start()`` does nothing: it is opened or replaced (``startOver()``).
+    public private(set) var existingProject: URL?
+    /// Why the project replaced by ``startOver()`` could not be moved to the
+    /// Trash; the new project was made under a name of its own.
+    public private(set) var startOverError: String?
 
     /// The title written into the EPUB metadata.
     public var title = ""
@@ -43,11 +49,14 @@ public final class ConversionModel {
     /// BCP 47 tag of the document's main language.
     public var language = "uk"
 
+    /// Whether the running or next conversion replaces ``existingProject``.
+    var replacesExistingProject = false
+
     /// The running conversion. Exposed to tests so they can wait for it.
     private(set) var conversionTask: Task<Void, Never>?
 
     private let pipeline: any ConversionPipeline
-    private let storage: any ProjectPersisting
+    let storage: any ProjectPersisting
     private var pages: [URL] = []
     /// The PDF being converted; its pages are drawn into ``pages`` when the
     /// conversion starts, and those files belong to the project afterwards.
@@ -80,9 +89,15 @@ public final class ConversionModel {
         return PageInProgress(number: done + 1, url: pages[done])
     }
 
-    /// Whether ``start()`` would do anything.
+    /// Whether ``start()`` would do anything. An open project is never
+    /// converted again under its corrections (ADR 0011).
     public var canStart: Bool {
-        guard pageCount > 0, !trimmed(title).isEmpty else { return false }
+        canConvert && (existingProject == nil || replacesExistingProject)
+    }
+
+    /// Whether a conversion could start now, leaving ``existingProject`` aside.
+    var canConvert: Bool {
+        guard project == nil, pageCount > 0, !trimmed(title).isEmpty else { return false }
         switch phase {
         case .converting, .rendering: return false
         default: return true
@@ -117,6 +132,7 @@ public final class ConversionModel {
             pdf = url
             input = url
             title = Self.documentName(for: url)
+            existingProject = projectBeside(url)
             phase = .ready
         } catch {
             phase = .failed(Self.failure(for: error))
@@ -124,8 +140,8 @@ public final class ConversionModel {
     }
 
     /// Opens a project saved earlier: its document and corrections come from
-    /// disk, nothing is converted. The scans are expected where they were,
-    /// and ``start()`` converts them again under the same corrections.
+    /// disk, nothing is converted. Scans the project does not hold are
+    /// expected where they were.
     public func openProject(at url: URL) {
         reset()
         do {
@@ -167,6 +183,7 @@ public final class ConversionModel {
             pages = try pipeline.pageURLs(in: folder)
             input = folder
             title = folder.lastPathComponent
+            existingProject = projectBeside(folder)
             phase = .ready
         } catch {
             phase = .failed(Self.failure(for: error))
@@ -181,6 +198,9 @@ public final class ConversionModel {
         exportResult = nil
         project = nil
         projectError = nil
+        existingProject = nil
+        startOverError = nil
+        replacesExistingProject = false
         pages = []
         pdf = nil
         pdfPageCount = 0
@@ -211,8 +231,7 @@ public final class ConversionModel {
                 if let renderFirst {
                     try await render(renderFirst, run: run)
                 }
-                // An open project's pages were prepared when it was created.
-                let preparedFolder = project == nil ? try makePreparedFolder() : nil
+                let preparedFolder = try makePreparedFolder()
                 outcome = try await .finished(
                     pipeline.convert(
                         pageURLs: pages, metadata: metadata, preparingPagesIn: preparedFolder, progress: progress
@@ -257,8 +276,9 @@ public final class ConversionModel {
         default: return
         }
         cancelRun()
-        // A PDF that was only partly drawn starts over next time.
-        if pdf != nil, stagingFolder != nil, projectLocation == nil {
+        replacesExistingProject = false
+        // A PDF that was only partly drawn is drawn again next time.
+        if pdf != nil, stagingFolder != nil {
             pages = []
         }
         discardStaging()
@@ -278,15 +298,20 @@ public final class ConversionModel {
         }
     }
 
-    /// Puts a conversion that just finished under the corrections: into the
-    /// project that is open, which keeps them, or into a new project written
-    /// beside the folder of scans or the PDF. Returns the conversion as it
-    /// is now stored: pages drawn from a PDF are moved into the project.
+    /// Puts a conversion that just finished into a new project written beside
+    /// the folder of scans or the PDF, after moving the project it replaces
+    /// to the Trash. Returns the conversion as it is now stored: pages drawn
+    /// from a PDF are moved into the project.
     private func adopt(_ conversion: Conversion) -> Conversion {
-        if let project {
-            project.replaceBase(conversion)
-            return conversion
+        if replacesExistingProject, let existingProject {
+            do {
+                try storage.discardProject(at: existingProject)
+            } catch {
+                startOverError = String(describing: error)
+            }
         }
+        replacesExistingProject = false
+        existingProject = nil
         var stored = conversion
         var location: URL?
         // Pages drawn from a PDF or prepared from scans exist only in the
@@ -315,10 +340,6 @@ public final class ConversionModel {
         }
         project = ProjectModel(base: stored, location: location, storage: storage)
         return stored
-    }
-
-    private var projectLocation: URL? {
-        project?.location
     }
 
     private func cancelRun() {
