@@ -1,4 +1,5 @@
 import AppModel
+import Styles
 import SwiftUI
 
 /// One block: what it is, its text with flagged words highlighted, and for
@@ -8,6 +9,8 @@ struct BlockCard: View {
     var item: ReviewModel.Item
     var image: NSImage?
     var isSelected: Bool
+    /// The style the block was recognized with; `nil` without styles.
+    var style: Styles.Style?
     /// The run whose quick fixes are open.
     @State private var fixingRun: Int?
     @State private var isHovered = false
@@ -157,6 +160,20 @@ struct BlockCard: View {
     private var actions: some View {
         HStack {
             ForEach(item.actions, id: \.self, content: actionButton)
+            if let style {
+                Spacer()
+                Button {
+                    model.showStyle(of: item)
+                } label: {
+                    Label {
+                        Text(style.name).lineLimit(1)
+                    } icon: {
+                        Image(systemName: "circle.fill").foregroundStyle(style.color)
+                    }
+                }
+                .help("Show this block's style in the styles sidebar")
+                .accessibilityIdentifier("blockStyleButton")
+            }
         }
         .controlSize(.small)
     }

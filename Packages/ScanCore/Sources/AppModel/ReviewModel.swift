@@ -5,6 +5,7 @@ import DocumentModel
 import Foundation
 import LayoutAnalysis
 import Observation
+import Styles
 import TextReview
 
 /// State behind the review screen: the converted document laid out page by
@@ -48,6 +49,26 @@ public final class ReviewModel {
     /// A correction offered for similar blocks, waiting for the user's answer; `nil` when none is pending.
     public internal(set) var proposal: Proposal?
 
+    /// The document's styles and how to find a block's, made once.
+    let styleIndex: StyleIndex
+    /// Whether the styles sidebar is shown. Off whenever a review opens, and
+    /// always off without ``styles``; hiding it drops ``selectedStyle``.
+    public var showsStyles = false {
+        didSet {
+            if styleIndex.styles == nil, showsStyles {
+                showsStyles = false
+            }
+            if !showsStyles {
+                selectedStyleID = nil
+            }
+        }
+    }
+
+    /// The style whose blocks replace the block list, by ``Styles/Style/id``.
+    public internal(set) var selectedStyleID: Styles.Style.ID?
+    /// The members of a style that the user corrected, and how.
+    var correctedMembers: [StyleMember: ExampleMark] = [:]
+
     /// Blocks and notes to look at (see ``Item/isIssue``), in the order of
     /// the pages they start on, top to bottom. A block on two pages is one
     /// stop, on the page it starts on.
@@ -61,6 +82,7 @@ public final class ReviewModel {
         self.project = project
         self.detector = detector
         images = Dictionary(project.base.document.images.map { ($0.id, $0.data) }) { first, _ in first }
+        styleIndex = StyleIndex(base: project.base)
         rebuild()
     }
 
@@ -88,6 +110,7 @@ public final class ReviewModel {
         if editingItemID != selectedItemID {
             editingItemID = nil
         }
+        correctedMembers = correctedStyleMembers()
     }
 
     /// Every block, then every linked note, then every ignored block, each

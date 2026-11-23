@@ -1,5 +1,6 @@
 import AppModel
 import Corrections
+import Styles
 import SwiftUI
 
 /// The page scan next to the blocks recognized on it, with suspicious
@@ -15,10 +16,24 @@ struct ReviewScreen: View {
                 // Equal halves rather than a split view: a split view lets the
                 // long text column squeeze the scan down to its minimum width.
                 HStack(spacing: 16) {
-                    PageScan(page: page, selectedItemID: model.selectedItemID, select: model.select)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    BlockList(page: page, model: model)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    if model.showsStyles {
+                        StyleSidebar(model: model)
+                            .frame(width: 260)
+                    }
+                    PageScan(
+                        page: page, selectedItemID: model.selectedItemID, select: model.select,
+                        highlight: model.selectedStyle.flatMap { style in
+                            model.styleOutlines.map { PageScan.Highlight(outlines: $0, color: style.color) }
+                        }
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    if let style = model.selectedStyle {
+                        StyleBlocks(model: model, style: style)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        BlockList(page: page, model: model)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
                 }
             } else {
                 ContentUnavailableView("The document has no pages", systemImage: "doc")
@@ -31,6 +46,8 @@ struct ReviewScreen: View {
                     .foregroundStyle(.red)
             }
         }
+        // Room for the sidebar, the scan and the right-hand column.
+        .frame(minWidth: model.showsStyles ? 1180 : nil)
     }
 
     private var toolbar: some View {
@@ -38,6 +55,18 @@ struct ReviewScreen: View {
             Button("Back to Summary", systemImage: "chevron.backward", action: done)
                 // Esc belongs to the text editor while one is open.
                 .keyboardShortcut(model.editingItemID == nil ? .cancelAction : nil)
+            Toggle(isOn: $model.showsStyles) {
+                Label("Styles", systemImage: "sidebar.left")
+            }
+            .toggleStyle(.button)
+            .keyboardShortcut("s", modifiers: [.control, .command])
+            .disabled(model.styles == nil)
+            .help(
+                model.styles == nil
+                    ? Text("This project was converted before styles were kept. Start over to see them.")
+                    : Text("Show every style the document was recognized with (⌃⌘S).")
+            )
+            .accessibilityIdentifier("stylesToggle")
             Spacer()
             Button("Previous Page", systemImage: "chevron.left", action: model.goToPreviousPage)
                 .labelStyle(.iconOnly)
@@ -58,7 +87,10 @@ struct ReviewScreen: View {
                 .labelStyle(.iconOnly)
                 .keyboardShortcut("z", modifiers: [.command, .shift])
                 .disabled(!model.canRedo || model.isEditing)
-            issueNavigation
+            // Issues and spelling act on the block list, which a style's blocks replace.
+            if !model.isShowingStyle {
+                issueNavigation
+            }
         }
     }
 
@@ -130,7 +162,8 @@ private struct BlockList: View {
                                 model: model,
                                 item: item,
                                 image: figureImage(for: item),
-                                isSelected: item.id == model.selectedItemID
+                                isSelected: item.id == model.selectedItemID,
+                                style: model.style(of: item)
                             )
                             .id(item.id)
                             .onTapGesture { model.select(itemID: item.id) }

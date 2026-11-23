@@ -40,7 +40,7 @@ let package = Package(
             name: "AppModel",
             dependencies: [
                 "DocumentModel", "OCR", "Importing", "Preprocessing", "LayoutAnalysis", "Conversion", "EPUBExport",
-                "TextReview", "Corrections", "ProjectStore",
+                "TextReview", "Corrections", "ProjectStore", "Styles",
             ]
         ),
         .executableTarget(
@@ -82,7 +82,7 @@ let package = Package(
             name: "AppModelTests",
             dependencies: [
                 "AppModel", "Conversion", "DocumentModel", "Importing", "Preprocessing", "LayoutAnalysis",
-                "TextReview", "Corrections", "ProjectStore",
+                "TextReview", "Corrections", "ProjectStore", "Styles",
             ]
         ),
         .testTarget(name: "ImportingTests", dependencies: ["Importing"]),

@@ -6,7 +6,8 @@ document at a glance: when a rule is wrong for a document it is usually
 wrong the same way on every page, and that shows up as one odd style. They
 are the data behind the style overview of the review (design:
 [proposal](../proposals/style-overview.md), issue #31). This page covers the
-data layer; the overview itself is not built yet.
+data layer; the overview is the [styles sidebar](review.md#the-styles-sidebar)
+of the review.
 
 ## Block styles
 
@@ -79,7 +80,9 @@ the top of a page is no different from one in the middle.
 Styles come in order of first appearance (page, then top), which is also
 their **palette index**, so a project always gets the same colours. A
 style's name is its type and deciding rule; when two styles share both they
-are numbered in order of first appearance ("Paragraph 2 · paragraph"). Each
+are numbered in order of first appearance (the review shows "Paragraph (2) ·
+paragraph", the number in brackets so that it does not run into a heading's
+level). Each
 style lists its members (blocks, notes, page furniture by index), its pages
 and its typical look (the median of each measurement). Styles are computed
 from the recognized document, not the corrected one.

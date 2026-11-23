@@ -1513,6 +1513,446 @@
           }
         }
       }
+    },
+    "Styles" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стилі"
+          }
+        }
+      }
+    },
+    "Show every style the document was recognized with (⌃⌘S)." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показати всі стилі, з якими розпізнано документ (⌃⌘S)."
+          }
+        }
+      }
+    },
+    "This project was converted before styles were kept. Start over to see them." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цей проєкт конвертовано до того, як стилі почали зберігатися. Почніть заново, щоб їх побачити."
+          }
+        }
+      }
+    },
+    "%@ · %@" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@ (%lld) · %@" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$lld) · %3$@"
+          }
+        }
+      }
+    },
+    "Note text" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текст примітки"
+          }
+        }
+      }
+    },
+    "Page furniture" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Елементи сторінки"
+          }
+        }
+      }
+    },
+    "Figures and captions" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ілюстрації й підписи"
+          }
+        }
+      }
+    },
+    "Note texts" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тексти приміток"
+          }
+        }
+      }
+    },
+    "larger than the text" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "більший за текст"
+          }
+        }
+      }
+    },
+    "body size, bold" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "розмір тексту, жирний"
+          }
+        }
+      }
+    },
+    "body size, centred" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "розмір тексту, по центру"
+          }
+        }
+      }
+    },
+    "caption by label" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "підпис за міткою"
+          }
+        }
+      }
+    },
+    "caption by gap" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "підпис за відступом"
+          }
+        }
+      }
+    },
+    "picture" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "малюнок"
+          }
+        }
+      }
+    },
+    "note label" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "мітка примітки"
+          }
+        }
+      }
+    },
+    "paragraph" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "абзац"
+          }
+        }
+      }
+    },
+    "running line" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "колонтитул"
+          }
+        }
+      }
+    },
+    "page number" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "номер сторінки"
+          }
+        }
+      }
+    },
+    "Looks like the body text" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Схожий на основний текст"
+          }
+        }
+      }
+    },
+    "%@ × taller than the text" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "у %@ раза вищий за текст"
+          }
+        }
+      }
+    },
+    "small print, %@ × the text" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "дрібний шрифт, %@ від тексту"
+          }
+        }
+      }
+    },
+    "heavier" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "жирніший"
+          }
+        }
+      }
+    },
+    "lighter" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "світліший"
+          }
+        }
+      }
+    },
+    "indented" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "з відступом"
+          }
+        }
+      }
+    },
+    "centred" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "по центру"
+          }
+        }
+      }
+    },
+    "right-aligned" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "праворуч"
+          }
+        }
+      }
+    },
+    "full width" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "на всю ширину"
+          }
+        }
+      }
+    },
+    "%lld lines" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "рядків: %lld"
+          }
+        }
+      }
+    },
+    "at the top edge" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "біля верхнього краю"
+          }
+        }
+      }
+    },
+    "at the bottom edge" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "біля нижнього краю"
+          }
+        }
+      }
+    },
+    "under a picture" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "під малюнком"
+          }
+        }
+      }
+    },
+    "opens with a note label" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "починається з мітки примітки"
+          }
+        }
+      }
+    },
+    "Deciding rule: %@" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вирішальне правило: %@"
+          }
+        }
+      }
+    },
+    "Blocks: %lld · corrected: %lld" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Блоків: %1$lld · виправлено: %2$lld"
+          }
+        }
+      }
+    },
+    "Pages: %@" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сторінки: %@"
+          }
+        }
+      }
+    },
+    "Back to Blocks" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назад до блоків"
+          }
+        }
+      }
+    },
+    "Show the page's blocks again" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Знову показати блоки сторінки"
+          }
+        }
+      }
+    },
+    "Show All %lld" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показати всі (%lld)"
+          }
+        }
+      }
+    },
+    "Show Fewer" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показати менше"
+          }
+        }
+      }
+    },
+    "Show this block on its page" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показати цей блок на його сторінці"
+          }
+        }
+      }
+    },
+    "p. %lld" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "с. %lld"
+          }
+        }
+      }
+    },
+    "corrected" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "виправлено"
+          }
+        }
+      }
+    },
+    "Show this block's style in the styles sidebar" : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показати стиль цього блоку на панелі стилів"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

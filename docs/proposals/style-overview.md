@@ -1,6 +1,7 @@
 # Proposal: the style overview
 
-- Status: accepted; slice 1 built (#33, see [styles](../features/styles.md)), slices 2-4 not built
+- Status: accepted; slices 1 and 2 built (#33, #34, see [styles](../features/styles.md) and
+  [review](../features/review.md#the-styles-sidebar)), slices 3-4 not built
 - Date: 2026-11-19, revised 2026-11-22 (read-only overview in the review),
   revised 2026-11-23 (implementation plan, examples, page furniture, editing
   by style back in as slice 4 after [ADR 0011](../adr/0011-no-convert-again.md))

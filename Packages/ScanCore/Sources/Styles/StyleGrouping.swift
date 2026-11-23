@@ -116,7 +116,7 @@ public enum StyleGrouping {
 
     /// 0 for body text, positive for larger type in steps of
     /// ``lineHeightStep``, negative for small print; `nil` for no lines.
-    static func lineHeightBucket(of style: BlockStyle) -> Int? {
+    public static func lineHeightBucket(of style: BlockStyle) -> Int? {
         let height = style.lineHeight
         guard height > 0 else { return nil }
         let body = bodyLineHeight
@@ -129,7 +129,7 @@ public enum StyleGrouping {
 
     /// 0 for regular ink, 1 for heavy, -1 for light (several lines only);
     /// `nil` when not measured, or for a heading that is bold by its rule.
-    static func inkBucket(of style: BlockStyle) -> Int? {
+    public static func inkBucket(of style: BlockStyle) -> Int? {
         guard let ink = style.ink, style.rule != .bodySizeBold else { return nil }
         if ink >= regularInk.upperBound {
             return 1

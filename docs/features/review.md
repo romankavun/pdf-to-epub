@@ -44,9 +44,58 @@ levelled, because that is the image the blocks were found on; see
 - **Corrections**: select a block to change its type, edit its text or
   ignore it, and use *Undo* (⌘Z) and *Redo* (⇧⌘Z; a new correction drops what could be redone; both are off while a text is being edited); the bar below offers the same change for
   similar blocks. See [corrections](corrections.md).
+- **Styles** (⌃⌘S) shows the styles sidebar: every style the document was
+  recognized with. See [below](#the-styles-sidebar).
 - **Back to Summary** (Esc) returns to the numbers and *Save EPUB…*.
 
 Linked note references appear as the note's label, raised and coloured.
+
+## The styles sidebar
+
+*Styles* in the toolbar (⌃⌘S) shows a sidebar on the left with every
+[style](styles.md) of the document, so a rule that went wrong the same way on
+many pages stands out without reading every page (design:
+[proposal](../proposals/style-overview.md)). It is off every time the review
+opens; while it is shown the window is at least 1180 pt wide. For a project
+saved before styles were kept (format version 1) *Styles* is disabled, and its
+help says to *Start over* to see them.
+
+- **The list** groups styles by type: Heading 1, 2, 3…, paragraphs, figures
+  and captions, note texts, page furniture (running headers and page
+  numbers). Each row has the style's colour, its name (type and deciding
+  rule, numbered when two styles share both: "Paragraph (2) · paragraph")
+  and its number of blocks; the tooltip says what sets it apart. Room is
+  left for the *probably wrong* mark (#35).
+- **Styles describe recognition, not the corrections.** A retyped or
+  ignored block stays in the style it was recognized with, so the list never
+  reshuffles while you work.
+- **Selecting a style** replaces the block list with the style: what sets it
+  apart from body text ("1.6 × taller than the text, centred"), its deciding
+  rule, the number of blocks and how many of them were corrected, the pages
+  (as runs, "3–5, 9"), then six examples, crops of the page image with their
+  page numbers. The examples come from pages spread across the document: with
+  six pages or more, one from each of six pages evenly spaced from the first
+  to the last; with fewer, one from every page in turn. *Show All N* shows a
+  crop of every block. A corrected block's crop says *corrected*, an ignored
+  one's *Ignored*. A block counts as corrected when a type, an edit, a merge
+  or a split names it; a word replaced everywhere does not count.
+- **On the scan** the style's blocks on the page in view are outlined in its
+  colour, page furniture included; other outlines fade. Paging keeps the
+  style.
+- **Clicking a crop** goes to its page, selects its block (for a block
+  merged into the one before, the merged block; for page furniture, nothing)
+  and brings back the block list. The style is no longer selected.
+- **A selected block** shows a button with its style's name; it opens the
+  sidebar on that style. A block made by a split was never recognized, so it
+  has none.
+- While a style is shown, the issue and spelling controls are hidden: they
+  act on the block list. Undo and redo stay.
+
+`ReviewModel` (`AppModel`) groups the base conversion's block styles with
+`StyleGrouping` once, when the review opens, and keeps the sidebar's state:
+whether it is shown, the selected style, the examples, the outlines on the
+page and the corrected blocks of each style (recomputed after every change).
+The views only draw it.
 
 ## Quick fixes
 
