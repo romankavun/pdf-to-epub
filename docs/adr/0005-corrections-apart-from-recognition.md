@@ -1,6 +1,6 @@
 # ADR 0005: Corrections are kept apart from recognition and find their block by its place on the page
 
-- Status: accepted
+- Status: accepted; converting again under the corrections is withdrawn by [ADR 0011](0011-no-convert-again.md)
 - Date: 2026-11-14
 
 ## Context

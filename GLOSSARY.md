@@ -62,8 +62,12 @@ _Avoid_: Image, picture
 The text attached to an illustration.
 _Avoid_: Label, legend
 
+**Page furniture**:
+Lines recognition left out of the document because they belong to the page, not the text, such as running headers and page numbers; kept so the style overview can show them.
+_Avoid_: Removed line, running line, deleted line
+
 **Running header**:
-Text repeated at the top or bottom of pages, such as a page number or the source's title; removed from the document.
+Text repeated at the top or bottom of pages, such as the source's or the chapter's title; one kind of page furniture.
 _Avoid_: Header, footer
 
 ## Notes
@@ -103,7 +107,7 @@ One recorded decision of the person, stored apart from recognition and applied o
 _Avoid_: Edit, override, fix
 
 **Block anchor**:
-The place on a page by which a correction finds its block again after a new conversion.
+The place on a page by which a correction finds its block again after merges and splits shift the block list.
 _Avoid_: Block ID
 
 **Proposal**:
@@ -134,6 +138,10 @@ _Avoid_: Heuristic, reason code
 The screen that lists a document's styles with samples, so a person can see what recognition made of the document at a glance.
 _Avoid_: Style map, style guide (a guide prescribes; the overview only shows)
 
+**Example**:
+One of the few blocks the style overview shows to illustrate a style, taken from pages spread across the document.
+_Avoid_: Sample (a sample set is the user's scans), specimen
+
 ## Output and storage
 
 **Project**:
@@ -143,6 +151,10 @@ _Avoid_: Session, workspace
 **Conversion**:
 One run of the pipeline from a source's pages to a document.
 _Avoid_: Import, processing
+
+**Start over**:
+Discarding a project's corrections and converting its source again; the only way a source is converted twice.
+_Avoid_: Convert again, reconvert
 
 **Chapter**:
 A part of the EPUB that begins at a level 1 heading.
