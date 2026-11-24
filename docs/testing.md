@@ -176,7 +176,7 @@ There is no CI: checks run locally (`scripts/check.sh`, and the golden pages by 
 ## Not yet covered
 
 Not covered by any test: the layout and look of the views (colours, spacing,
-the scan overlay in `PageScan`), the text selection and cursor handling in the
+the scan overlay in `PageScan`; look at them with `scripts/render-views.sh`, below), the text selection and cursor handling in the
 editor (`TextSelection` in `BlockCard`), the file panels, and the position of
 the quick-fix row (a known defect, `docs/backlog.md`). The sheet that picks
 which similar blocks to change (`CandidateSheet`) has no UI test either: it
@@ -195,6 +195,58 @@ and editing (`ReviewItemPresentationTests`, `ReviewEditingTests`). The views
 map those values to buttons and colours one to one. What is left is checked
 by the UI tests below: that the buttons exist, are wired to the model and the
 screens change.
+
+## Looking at a view
+
+`scripts/render-views.sh <project.scanproject> [page] [style title]` draws the
+review screen of a saved project to PNG files and prints their paths, so an
+agent can Read the pictures instead of driving the app. It needs no screen: no
+window comes forward, no input is sent, a locked screen does not stop it, and
+no approval is asked. It writes, in light and dark:
+
+- `blocks`: the page (counted from 1) with its block list;
+- `styles`: the same with the styles sidebar;
+- `style`: a style selected, by its title as the sidebar shows it, such as
+  `"Paragraph (3)"`; by default the first probably-wrong style, else the first.
+
+The project must be saved in the current format (styles need format version
+2); make one with `scripts/hand-check.sh --fresh` below. Nothing is saved to
+it. The pictures go to `$TMPDIR/pdftoepub-renders` (`RENDER_OUTPUT` overrides).
+
+How it works: `App/PDFToEPUBRenderTests` is a unit test target hosted in the
+app, skipped unless `RENDER_PROJECT` is set. It puts `ReviewScreen` in a
+window placed off every screen and captures it with ScreenCaptureKit
+(`SCShareableContent.currentProcess`: a process may capture its own windows
+without the screen recording permission). `NSView.cacheDisplay` and
+`ImageRenderer` were tried and left the system's glass buttons and materials
+blank. It asserts nothing; it is for looking. Another screen needs one more
+render in `ReviewRenders`.
+
+## Checking by hand
+
+For what a picture cannot show (a click, a menu, undo):
+
+```bash
+scripts/hand-check.sh --fresh weinachten_short
+```
+
+builds the Debug app into `.build/hand-check` and opens it on a sample set
+through `-UITestFolder`. Without `--fresh` it opens the set itself, which
+offers its project if one was converted before (older projects may lack
+styles). With `--fresh` it opens a copy that was never converted:
+`Samples/_handcheck-<set>-<time>`, hard links to the pages (no extra space;
+the importer skips symbolic links). `scripts/hand-check.sh --clean` removes
+those copies and their projects. weinachten_short (31 pages) converts in
+about a minute.
+
+Driving the app with the computer-use tools:
+
+- The bundle id is `local.pdftoepub.PDFToEPUB`; the `app_*` tools act on it in
+  the background.
+- Pop-up menus (*Change to…*, the type menu) cannot be opened in the
+  background; they need full-screen control, which the user must approve.
+- After a click that changes many blocks, wait a second before the
+  screenshot: the view updates a moment after the change is saved.
 
 ## UI tests (XCUITest)
 
