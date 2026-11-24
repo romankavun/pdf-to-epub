@@ -14,6 +14,7 @@
 		A10000000000000000000002 /* PDFToEPUB.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PDFToEPUB.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000000000000000000102 /* PDFToEPUBUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PDFToEPUBUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000000000000000000202 /* PDFToEPUBRenderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PDFToEPUBRenderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000302 /* PDFToEPUBUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PDFToEPUBUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -30,6 +31,11 @@
 		A10000000000000000000203 /* PDFToEPUBRenderTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = PDFToEPUBRenderTests;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000303 /* PDFToEPUBUnitTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PDFToEPUBUnitTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -49,10 +55,24 @@
 			remoteGlobalIDString = A10000000000000000000007;
 			remoteInfo = PDFToEPUB;
 		};
+		A10000000000000000000308 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A10000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A10000000000000000000007;
+			remoteInfo = PDFToEPUB;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A10000000000000000000204 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000304 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -84,6 +104,7 @@
 				A10000000000000000000003 /* PDFToEPUB */,
 				A10000000000000000000103 /* PDFToEPUBUITests */,
 				A10000000000000000000203 /* PDFToEPUBRenderTests */,
+				A10000000000000000000303 /* PDFToEPUBUnitTests */,
 				A10000000000000000000006 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -94,6 +115,7 @@
 				A10000000000000000000002 /* PDFToEPUB.app */,
 				A10000000000000000000102 /* PDFToEPUBUITests.xctest */,
 				A10000000000000000000202 /* PDFToEPUBRenderTests.xctest */,
+				A10000000000000000000302 /* PDFToEPUBUnitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -166,6 +188,27 @@
 			productReference = A10000000000000000000202 /* PDFToEPUBRenderTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		A10000000000000000000301 /* PDFToEPUBUnitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1000000000000000000030C /* Build configuration list for PBXNativeTarget "PDFToEPUBUnitTests" */;
+			buildPhases = (
+				A10000000000000000000305 /* Sources */,
+				A10000000000000000000304 /* Frameworks */,
+				A10000000000000000000306 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A10000000000000000000309 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A10000000000000000000303 /* PDFToEPUBUnitTests */,
+			);
+			name = PDFToEPUBUnitTests;
+			productName = PDFToEPUBUnitTests;
+			productReference = A10000000000000000000302 /* PDFToEPUBUnitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -180,6 +223,9 @@
 						TestTargetID = A10000000000000000000007;
 					};
 					A10000000000000000000201 = {
+						TestTargetID = A10000000000000000000007;
+					};
+					A10000000000000000000301 = {
 						TestTargetID = A10000000000000000000007;
 					};
 				};
@@ -205,12 +251,20 @@
 				A10000000000000000000007 /* PDFToEPUB */,
 				A10000000000000000000101 /* PDFToEPUBUITests */,
 				A10000000000000000000201 /* PDFToEPUBRenderTests */,
+				A10000000000000000000301 /* PDFToEPUBUnitTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		A10000000000000000000206 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000306 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -241,6 +295,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A10000000000000000000305 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A10000000000000000000008 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -262,6 +323,11 @@
 			isa = PBXTargetDependency;
 			target = A10000000000000000000007 /* PDFToEPUB */;
 			targetProxy = A10000000000000000000208 /* PBXContainerItemProxy */;
+		};
+		A10000000000000000000309 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A10000000000000000000007 /* PDFToEPUB */;
+			targetProxy = A10000000000000000000308 /* PBXContainerItemProxy */;
 		};
 		A10000000000000000000109 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -386,6 +452,21 @@
 			};
 			name = Debug;
 		};
+		A10000000000000000000322 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = local.pdftoepub.PDFToEPUBUnitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PDFToEPUB.app/Contents/MacOS/PDFToEPUB";
+			};
+			name = Debug;
+		};
 		A10000000000000000000223 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -401,6 +482,21 @@
 			};
 			name = Release;
 		};
+		A10000000000000000000323 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = local.pdftoepub.PDFToEPUBUnitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PDFToEPUB.app/Contents/MacOS/PDFToEPUB";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -409,6 +505,15 @@
 			buildConfigurations = (
 				A10000000000000000000222 /* Debug */,
 				A10000000000000000000223 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1000000000000000000030C /* Build configuration list for PBXNativeTarget "PDFToEPUBUnitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000000000000000000322 /* Debug */,
+				A10000000000000000000323 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

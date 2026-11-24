@@ -515,12 +515,13 @@
         }
       }
     },
-    "corrected" : {
+    "Corrected" : {
+      "comment" : "Badge on a style example whose block the user corrected.",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "виправлено"
+            "value" : "Виправлено"
           }
         }
       }

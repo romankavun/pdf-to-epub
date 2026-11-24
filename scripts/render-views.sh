@@ -7,7 +7,12 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 project=$(cd "$(dirname "$1")" && pwd)/$(basename "$1")
-output=${RENDER_OUTPUT:-${TMPDIR:-/tmp}/pdftoepub-renders}
+# Inside the repository (git-ignored): a render of a sample project shows
+# its pages, which never leave the repository.
+output=${RENDER_OUTPUT:-$(pwd)/.build/renders}
+[[ "$output" == /* ]] || output=$(pwd)/$output
+case "$output/" in "$(pwd)"/*) ;; *) echo "RENDER_OUTPUT must be inside the repository" >&2; exit 1 ;; esac
+mkdir -p "$output"
 rm -f "$output"/*.png 2>/dev/null || true
 
 # xcodebuild passes TEST_RUNNER_<NAME> to the test as <NAME>.

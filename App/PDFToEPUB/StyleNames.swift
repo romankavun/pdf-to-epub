@@ -27,16 +27,27 @@ extension Styles.Style {
     /// The style's colour: one hue per type, so the styles of a group read
     /// as one family, in a different shade for each style of the type.
     var color: Color {
-        // Three brightness steps, then three saturations: nine shades
-        // before they repeat, all bright enough for a dark background and
-        // dark enough for a light one.
-        let shade = (number ?? 1) - 1
-        let brightness = [0.96, 0.8, 0.66][shade % 3]
-        guard let hue = type.hue else {
-            return Color(white: [0.62, 0.48, 0.76][shade % 3])
-        }
-        let saturation = [0.7, 0.42, 0.95][(shade / 3) % 3]
-        return Color(hue: hue, saturation: saturation, brightness: brightness)
+        let shade = shade
+        guard let hue = shade.hue else { return Color(white: shade.brightness) }
+        return Color(hue: hue, saturation: shade.saturation, brightness: shade.brightness)
+    }
+
+    /// The parts of ``color``: the type's hue (`nil` for grey) and the
+    /// style's place among the shades of its type. Three brightness steps,
+    /// then three saturations: nine shades before they repeat, all bright
+    /// enough for a dark background and dark enough for a light one.
+    var shade: StyleShade {
+        let step = (number ?? 1) - 1
+        guard let hue = type.hue else { return StyleShade(
+            hue: nil,
+            saturation: 0,
+            brightness: [0.62, 0.48, 0.76][step % 3]
+        ) }
+        return StyleShade(
+            hue: hue,
+            saturation: [0.7, 0.42, 0.95][(step / 3) % 3],
+            brightness: [0.96, 0.8, 0.66][step % 3]
+        )
     }
 
     /// The pages as runs ("3–5, 9, 12–40"); long lists end in "…".
@@ -54,6 +65,13 @@ extension Styles.Style {
         guard !features.isEmpty else { return String(localized: "Looks like the body text") }
         return features.map(\.text).joined(separator: ", ")
     }
+}
+
+/// A style's colour as numbers: `hue` is `nil` for grey.
+struct StyleShade: Hashable {
+    var hue: Double?
+    var saturation: Double
+    var brightness: Double
 }
 
 extension StyleType {

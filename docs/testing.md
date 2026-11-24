@@ -197,6 +197,15 @@ map those values to buttons and colours one to one. What is left is checked
 by the UI tests below: that the buttons exist, are wired to the model and the
 screens change.
 
+What the app itself computes for a view, without a window, is unit tested in
+`App/PDFToEPUBUnitTests`, a test target hosted in the app: a style's title,
+name, subtitle and colour shade (`StyleNamesTests`). These tests need no
+desktop session and run in seconds:
+
+```bash
+xcodebuild -project App/PDFToEPUB.xcodeproj -scheme PDFToEPUB -only-testing:PDFToEPUBUnitTests test
+```
+
 ## Looking at a view
 
 `scripts/render-views.sh <project.scanproject> [page] [style title]` draws the
@@ -212,7 +221,9 @@ no approval is asked. It writes, in light and dark:
 
 The project must be saved in the current format (styles need format version
 2); make one with `scripts/hand-check.sh --fresh` below. Nothing is saved to
-it. The pictures go to `$TMPDIR/pdftoepub-renders` (`RENDER_OUTPUT` overrides).
+it. The pictures go to `.build/renders`, inside the repository and
+git-ignored, because they show the project's pages; `RENDER_OUTPUT` may name
+another folder inside the repository.
 
 How it works: `App/PDFToEPUBRenderTests` is a unit test target hosted in the
 app, skipped unless `RENDER_PROJECT` is set. It puts `ReviewScreen` in a

@@ -241,7 +241,7 @@ private struct ExampleCrop: View {
                     .monospacedDigit()
                 switch example.mark {
                 case .corrected:
-                    Label("corrected", systemImage: "pencil.circle.fill")
+                    Label("Corrected", systemImage: "pencil.circle.fill")
                         .foregroundStyle(.blue)
                 case .ignored:
                     Label("Ignored", systemImage: "eye.slash")

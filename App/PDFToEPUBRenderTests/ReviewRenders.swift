@@ -16,7 +16,7 @@ import XCTest
 /// (`docs/testing.md`, *Looking at a view*).
 ///
 /// - `RENDER_PROJECT`: the `.scanproject` to open; the test is skipped without it.
-/// - `RENDER_OUTPUT`: the folder the PNG files go to.
+/// - `RENDER_OUTPUT`: the folder the PNG files go to; the test is skipped without it.
 /// - `RENDER_PAGE`: the page shown, counted from 1 (default 1).
 /// - `RENDER_STYLE`: the style selected in the `style` picture, by its title
 ///   as the sidebar shows it (default: the first probably-wrong style, else
@@ -30,7 +30,12 @@ final class ReviewRenders: XCTestCase {
         guard let projectPath = environment["RENDER_PROJECT"] else {
             throw XCTSkip("RENDER_PROJECT is not set; run scripts/render-views.sh")
         }
-        let output = URL(filePath: environment["RENDER_OUTPUT"] ?? NSTemporaryDirectory() + "pdftoepub-renders")
+        // Required: the pictures show the project's pages, so the script
+        // keeps them inside the repository.
+        guard let outputPath = environment["RENDER_OUTPUT"] else {
+            throw XCTSkip("RENDER_OUTPUT is not set; run scripts/render-views.sh")
+        }
+        let output = URL(filePath: outputPath)
         try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
         let project = try ProjectStore().load(from: URL(filePath: projectPath))
         // No location: nothing the pictures do is saved to the project.
