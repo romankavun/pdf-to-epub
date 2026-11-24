@@ -6,6 +6,8 @@ cd "$(dirname "$0")/.."
 
 echo "== no sample material tracked"
 scripts/check-no-samples.sh
+echo "== String Catalog in Xcode's format"
+python3 -I scripts/add-string.py --check
 echo "== swiftformat --lint"
 swiftformat --lint .
 echo "== swiftlint"

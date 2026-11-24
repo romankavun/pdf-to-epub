@@ -28,7 +28,7 @@ Pipeline in `Packages/ScanCore` (CLI `pagescan`), SwiftUI app in `App/`.
 | Out of scope (v1) | Tables, multi-column layout, math formulas, verse line preservation, LLM-based correction. |
 | Distribution | Personal / open-source build. No App Store, no sandbox requirement. |
 | Output | EPUB 3 that passes `epubcheck` with no errors. |
-| UI strings | Localizable String Catalog: English base, Ukrainian localization. |
+| UI strings | Localizable String Catalog: English base, Ukrainian localization. Add strings with `scripts/add-string.py` (`docs/testing.md`, "Adding a UI string"). |
 
 Everything written here is English: code, comments, docs, commits, conversation.
 Ask the user before adding a dependency, a network call, or an out-of-scope feature.

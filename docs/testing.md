@@ -7,7 +7,8 @@ swift test --package-path Packages/ScanCore --filter GoldenPageTests # golden pa
 ```
 
 Before every commit run `scripts/check.sh`: `swiftformat --lint`,
-`swiftlint --strict` and the tests without the Vision golden pages.
+`swiftlint --strict`, the String Catalog's format (below, [Adding a UI
+string](#adding-a-ui-string)) and the tests without the Vision golden pages.
 
 The `.githooks/pre-commit` hook runs `scripts/check.sh` on every commit. Enable it once per clone:
 `git config core.hooksPath .githooks`. `.swiftlint.yml` also enforces the module boundaries
@@ -247,6 +248,26 @@ Driving the app with the computer-use tools:
   background; they need full-screen control, which the user must approve.
 - After a click that changes many blocks, wait a second before the
   screenshot: the view updates a moment after the change is saved.
+
+## Adding a UI string
+
+Add or change a string in `App/PDFToEPUB/Localizable.xcstrings` with
+
+```bash
+python3 -I scripts/add-string.py "Save EPUB…" "Зберегти EPUB…" --comment "Menu item"
+```
+
+(the English key as written in the code, the Ukrainian value, an optional
+comment for translators). It writes the file the way Xcode does, so the diff
+is the one entry: keys sorted case-insensitively, `" : "` between key and
+value, an empty object as `{`, an empty line and `}`, no final newline.
+Editing the file with `json.dump` or by hand reorders or reformats it and
+makes a diff of the whole file.
+
+`scripts/check.sh` runs `python3 -I scripts/add-string.py --check`, which
+fails when the file is not in that form; `--format` rewrites it. The form was
+taken from the last version Xcode saved (commit `e362be9`), which the script
+reproduces byte for byte.
 
 ## UI tests (XCUITest)
 

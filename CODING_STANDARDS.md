@@ -28,4 +28,10 @@ DocC, module import boundaries) are enforced by `scripts/check.sh`
   choice has a short ADR in `docs/adr/`.
 - **UI strings are localizable**: String Catalog, English base, Ukrainian
   localization.
+- **A view change was looked at.** A change to a SwiftUI view comes with
+  evidence that someone saw it: pictures from `scripts/render-views.sh` for
+  the review screen, or a recorded hand check with `scripts/hand-check.sh`
+  for clicks, menus and undo ([testing](docs/testing.md), "Looking at a
+  view" and "Checking by hand"). A report that says the UI was not checked
+  means the change is not done.
 - **Commits** follow Conventional Commits, small and focused.
