@@ -4,24 +4,39 @@ import Styles
 import SwiftUI
 
 extension Styles.Style {
-    /// The type and deciding rule, numbered when another style shares both:
-    /// "Heading 1 · larger than the text", "Paragraph (2) · paragraph".
+    /// The style's name: its type, numbered when the type has other styles,
+    /// and its deciding rule unless that only repeats the type:
+    /// "Heading 1 · larger than the text", "Paragraph (2)".
     var name: String {
-        let rule = rule.name
-        if let number {
-            return String(localized: "\(type.name) (\(number)) · \(rule)")
-        }
-        return String(localized: "\(type.name) · \(rule)")
+        namesRule ? String(localized: "\(title) · \(rule.name)") : title
     }
 
-    /// The style's colour: a fixed sequence of hues, so a project always gets
-    /// the same colours and neighbours in the order of first appearance
-    /// differ clearly.
+    /// The type and number alone, which tell the style apart from the
+    /// others of its group: "Paragraph (2)".
+    var title: String {
+        guard let number else { return type.name }
+        return String(localized: "\(type.name) (\(number))")
+    }
+
+    /// What a sidebar row shows under the title: the deciding rule when the
+    /// name has it, then what sets the style apart from body text.
+    var subtitle: String {
+        namesRule ? "\(rule.name) · \(featuresText)" : featuresText
+    }
+
+    /// The style's colour: one hue per type, so the styles of a group read
+    /// as one family, in a different shade for each style of the type.
     var color: Color {
-        // The golden angle spreads any number of hues around the wheel.
-        let hue = (Double(paletteIndex) * 0.618_034).truncatingRemainder(dividingBy: 1)
-        let brightness = paletteIndex.isMultiple(of: 2) ? 0.78 : 0.62
-        return Color(hue: hue, saturation: 0.75, brightness: brightness)
+        // Three brightness steps, then three saturations: nine shades
+        // before they repeat, all bright enough for a dark background and
+        // dark enough for a light one.
+        let shade = (number ?? 1) - 1
+        let brightness = [0.96, 0.8, 0.66][shade % 3]
+        guard let hue = type.hue else {
+            return Color(white: [0.62, 0.48, 0.76][shade % 3])
+        }
+        let saturation = [0.7, 0.42, 0.95][(shade / 3) % 3]
+        return Color(hue: hue, saturation: saturation, brightness: brightness)
     }
 
     /// The pages as runs ("3–5, 9, 12–40"); long lists end in "…".
@@ -61,6 +76,18 @@ extension StyleType {
         case .figure: String(localized: "Figures and captions")
         case .note: String(localized: "Note texts")
         case .pageFurniture: String(localized: "Page furniture")
+        }
+    }
+
+    /// The hue of the type's styles; page furniture is grey. Heading levels
+    /// share the warm hues, a step apart.
+    var hue: Double? {
+        switch self {
+        case let .heading(level): min(Double(max(level, 1) - 1) * 0.055, 0.11)
+        case .paragraph: 0.6
+        case .figure: 0.8
+        case .note: 0.46
+        case .pageFurniture: nil
         }
     }
 

@@ -129,7 +129,7 @@ struct StyleGroupingTests {
         #expect(styles([(paragraph, line(1.0), source(page: 0)), (paragraph, line(1.6), source(page: 1))]).count == 2)
     }
 
-    @Test("styles that share a type and rule are numbered in order of first appearance")
+    @Test("styles that share a type are numbered in order of first appearance")
     func numbering() {
         let found = styles([
             (heading, title, source(page: 0)),
@@ -139,6 +139,33 @@ struct StyleGroupingTests {
         #expect(found.map(\.type) == [.heading(level: 1), .paragraph, .paragraph])
         #expect(found.map(\.number) == [nil, 1, 2])
         #expect(found.map(\.members) == [[.block(0)], [.block(2)], [.block(1)]])
+    }
+
+    @Test("numbers are unique within a type even when the deciding rules differ")
+    func numberingAcrossRules() {
+        let labelled = BlockStyle(rule: .noteText, lineHeight: 1, ink: 1, alignment: .margin, width: 1, lineCount: 2)
+        let found = styles([
+            (paragraph, body(), source(page: 0)),
+            (paragraph, labelled, source(page: 1)),
+            (paragraph, body(alignment: .margin), source(page: 2)),
+        ])
+        #expect(found.map(\.rule) == [.paragraph, .noteText, .paragraph])
+        #expect(found.map(\.number) == [1, 2, 3])
+    }
+
+    @Test("a name leaves out a deciding rule that only repeats the type")
+    func impliedRule() {
+        let found = styles(
+            [
+                (paragraph, body(), source(page: 0)),
+                (paragraph, BlockStyle(rule: .noteText, lineHeight: 1, ink: 1, alignment: .margin, width: 1),
+                 source(page: 1)),
+                (heading, title, source(page: 2)),
+            ],
+            notes: [(BlockStyle(rule: .noteText, lineHeight: 0.8, alignment: .margin, width: 1), source(page: 3))]
+        )
+        #expect(found.map(\.type) == [.paragraph, .paragraph, .heading(level: 1), .note])
+        #expect(found.map(\.namesRule) == [false, true, true, false])
     }
 
     @Test("note texts and page furniture are styles too, coloured by where they first appear")

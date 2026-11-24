@@ -75,10 +75,10 @@ public enum StyleGrouping {
             groups[signature, default: []].append(entry)
         }
 
-        let clashes = Dictionary(grouping: order) { NameKey(type: $0.type, rule: $0.rule) }
+        let sameType = Dictionary(grouping: order, by: \.type)
         return order.enumerated().map { paletteIndex, signature in
             let members = groups[signature] ?? []
-            let sharing = clashes[NameKey(type: signature.type, rule: signature.rule)] ?? []
+            let sharing = sameType[signature.type] ?? []
             return Style(
                 type: signature.type,
                 rule: signature.rule,
@@ -135,12 +135,6 @@ public enum StyleGrouping {
             return 1
         }
         return ink < regularInk.lowerBound && style.lineCount > 1 ? -1 : 0
-    }
-
-    /// The type and rule a style's name is made of.
-    private struct NameKey: Hashable {
-        let type: StyleType
-        let rule: DecidingRule
     }
 
     /// One thing to group, with where it first appears.

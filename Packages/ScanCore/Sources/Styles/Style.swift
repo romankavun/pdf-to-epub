@@ -33,10 +33,11 @@ public struct Style: Sendable, Equatable, Identifiable {
     public var type: StyleType
     /// Why recognition gave the blocks their type.
     public var rule: DecidingRule
-    /// Tells apart styles that share ``type`` and ``rule``, from 1 in order
-    /// of first appearance; `nil` when no other style shares them. A name is
-    /// made of the type, the rule and this number ("Paragraph 2 ·
-    /// paragraph"); the app localizes it.
+    /// Tells apart styles of the same ``type``, from 1 in order of first
+    /// appearance, whatever their rules; `nil` when the style is the only
+    /// one of its type. A name is made of the type, this number and the
+    /// rule when ``namesRule`` ("Paragraph 2", "Heading 1 (2) · body size,
+    /// bold"); the app localizes it. The app also shades the type's colour by it.
     public var number: Int?
     /// The style's blocks in order of appearance: by page, then from the top.
     public var members: [StyleMember]
@@ -49,6 +50,16 @@ public struct Style: Sendable, Equatable, Identifiable {
     /// What the style's blocks look like: the median of each measurement,
     /// with the place (alignment, zone) of the first block.
     public var typical: BlockStyle
+
+    /// Whether the style's name shows its deciding rule: not when the rule
+    /// only repeats the type, as the paragraph rule of a paragraph or the
+    /// note-label rule of a note text do.
+    public var namesRule: Bool {
+        switch (type, rule) {
+        case (.paragraph, .paragraph), (.note, .noteText): false
+        default: true
+        }
+    }
 
     /// The style's place in the order of first appearance, which is also
     /// its ``paletteIndex``.

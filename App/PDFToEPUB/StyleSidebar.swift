@@ -27,8 +27,9 @@ struct StyleSidebar: View {
     }
 }
 
-/// A style in the sidebar: its colour, name and number of blocks, with a
-/// mark when it is probably wrong.
+/// A style in the sidebar: its colour, title and number of blocks, with a
+/// mark when it is probably wrong; the rule and look on a line below, cut
+/// at the end when long, so the title always shows whole.
 private struct StyleRow: View {
     var style: Styles.Style
     var warning: StyleWarning?
@@ -38,9 +39,16 @@ private struct StyleRow: View {
             Circle()
                 .fill(style.color)
                 .frame(width: 9, height: 9)
-            Text(style.name)
-                .lineLimit(1)
-                .truncationMode(.middle)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(style.title)
+                    .lineLimit(1)
+                    .fixedSize()
+                Text(style.subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
             Spacer(minLength: 4)
             if warning != nil {
                 Image(systemName: "exclamationmark.triangle.fill")
@@ -52,9 +60,14 @@ private struct StyleRow: View {
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
         }
-        .help(warning.map { "\(style.featuresText)\n\($0.text)" } ?? style.featuresText)
+        .help(helpText)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("styleRow")
+    }
+
+    /// The whole name and look, and why the style is probably wrong.
+    private var helpText: String {
+        [style.name, style.featuresText, warning?.text].compactMap(\.self).joined(separator: "\n")
     }
 }
 
@@ -70,8 +83,9 @@ struct StyleBlocks: View {
             header
                 .padding(.horizontal, 12)
             ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 10)], spacing: 10) {
-                    ForEach(model.examples(of: style, limit: showsAll ? nil : ReviewModel.exampleCount)) { example in
+                let examples = model.examples(of: style, limit: showsAll ? nil : ReviewModel.exampleCount)
+                LazyVGrid(columns: columns(for: examples), spacing: 10) {
+                    ForEach(examples) { example in
                         Button {
                             model.open(example)
                         } label: {
@@ -92,6 +106,16 @@ struct StyleBlocks: View {
         }
         // Another style starts with its examples again.
         .id(style.id)
+    }
+
+    /// Tiles for most styles; one example per row when most examples are
+    /// long strips such as full-width lines, which a tile would shrink
+    /// past reading.
+    private func columns(for examples: [ReviewModel.StyleExample]) -> [GridItem] {
+        let strips = examples.filter(\.isStrip).count
+        return strips * 2 > examples.count
+            ? [GridItem(.flexible())]
+            : [GridItem(.adaptive(minimum: 180), spacing: 10)]
     }
 
     private var header: some View {
@@ -208,7 +232,7 @@ private struct ExampleCrop: View {
                     Rectangle().fill(.quaternary)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 24, maxHeight: 90)
+            .frame(maxWidth: .infinity, minHeight: 24, maxHeight: example.isStrip ? 120 : 90)
             .background(.white)
             .clipShape(RoundedRectangle(cornerRadius: 4))
             .overlay(RoundedRectangle(cornerRadius: 4).stroke(.separator))
@@ -232,6 +256,14 @@ private struct ExampleCrop: View {
         .task(id: example) {
             image = await PageCrops.shared.crop(of: url, box: example.box)
         }
+    }
+}
+
+private extension ReviewModel.StyleExample {
+    /// Whether the block is a long strip: on a page about 0.7 as wide as
+    /// it is tall, at least eight times as wide as it is high.
+    var isStrip: Bool {
+        box.height > 0 && box.width * 0.7 / box.height >= 8
     }
 }
 

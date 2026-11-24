@@ -1554,12 +1554,12 @@
         }
       }
     },
-    "%@ (%lld) · %@" : {
+    "%@ (%lld)" : {
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ (%2$lld) · %3$@"
+            "value" : "%1$@ (%2$lld)"
           }
         }
       }

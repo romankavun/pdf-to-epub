@@ -78,11 +78,23 @@ Spaces above and below are measured but do not split styles: a paragraph at
 the top of a page is no different from one in the middle.
 
 Styles come in order of first appearance (page, then top), which is also
-their **palette index**, so a project always gets the same colours. A
-style's name is its type and deciding rule; when two styles share both they
-are numbered in order of first appearance (the review shows "Paragraph (2) ·
-paragraph", the number in brackets so that it does not run into a heading's
-level). Each
+their **palette index**. A style's name is its type, a number when the type
+has other styles, and its deciding rule: "Heading 1 (2) · body size, bold".
+Styles of one type are numbered 1, 2, … in order of first appearance,
+whatever their rules, so no two styles of a group share a number (the number
+is in brackets so that it does not run into a heading's level). The rule is
+left out when it only repeats the type: the `paragraph` rule of a paragraph
+and the `noteText` rule of a note text ("Paragraph (3)").
+
+In the review's sidebar a row shows the type and number on one line, never
+cut, and the rule and look on a smaller line below, cut at the end when long.
+A style's **colour** is its type's hue (warm for headings, a step apart per
+level; blue for paragraphs, purple for figures and captions, teal for note
+texts, grey for page furniture) in a shade set by its number: three
+brightness steps, then three saturations, so nine shades before they repeat.
+The sidebar, the outlines on the page and the block card's style button use
+the same colour. A style whose examples are mostly long strips (full-width
+lines) shows them one per row at full width instead of in tiles. Each
 style lists its members (blocks, notes, page furniture by index), its pages
 and its typical look (the median of each measurement). Styles are computed
 from the recognized document, not the corrected one.
